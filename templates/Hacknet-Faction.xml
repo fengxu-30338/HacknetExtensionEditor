@@ -1,0 +1,14 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<!-- 
+    定义一个自定义的组织/派系
+    id: 后续设置玩家派系需要填入此值
+    playerVal: 玩家在派系的初始等级
+-->
+<CustomFaction name="IntroFac" id="introfac" playerVal="0">
+  
+    <!-- ValueRequired: 当玩家在派系的等级达到定义的值就会触发内部的action -->
+    <Action ValueRequired="1">
+        <!-- 内部可以执行一些Action -->
+    </Action>
+
+</CustomFaction>

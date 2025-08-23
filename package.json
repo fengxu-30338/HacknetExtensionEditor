@@ -1,0 +1,148 @@
+{
+  "name": "hacknetextensionhelper",
+  "displayName": "HacknetExtensionHelper",
+  "description": "hacknet extension write helper",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.103.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:xml",
+    "onLanguage:plaintext"
+  ],
+  "main": "./out/extension.js",
+  "icon": "resources/icon.png",
+  "contributes": {
+    "commands": [
+      {
+        "command": "hacknetextensionhelper.createEditorHintFile",
+        "title": "创建Hacknet编辑器提示文件"
+      },
+      {
+        "command": "hacknetextensionhelper.triggerHint",
+        "title": "基于Hacknet文件当前上下文给出编辑器提示"
+      },
+      {
+        "command": "hacknetextensionhelper.createComputerFile",
+        "title": "创建Computer文件",
+        "category": "创建Hacknet资源文件"
+      },
+      {
+        "command": "hacknetextensionhelper.createPeopleFile",
+        "title": "创建People文件",
+        "category": "创建Hacknet资源文件"
+      },
+      {
+        "command": "hacknetextensionhelper.createActionFile",
+        "title": "创建Action文件",
+        "category": "创建Hacknet资源文件"
+      },
+      {
+        "command": "hacknetextensionhelper.createFactionFile",
+        "title": "创建Faction文件",
+        "category": "创建Hacknet资源文件"
+      },
+      {
+        "command": "hacknetextensionhelper.createMissionFile",
+        "title": "创建Mission文件",
+        "category": "创建Hacknet资源文件"
+      },
+      {
+        "command": "hacknetextensionhelper.createHackerScriptFile",
+        "title": "创建HackerScript文件",
+        "category": "创建Hacknet资源文件"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "hacknetextensionhelper.triggerHint",
+        "key": "ctrl+enter",
+        "mac": "cmd+enter",
+        "when": "editorTextFocus"
+      }
+    ],
+    "webview": {
+      "allowedScriptDomains": [
+        "vscode-resource:"
+      ]
+    },
+    "menus": {
+      "explorer/context": [
+        {
+          "submenu": "hacknetextensionhelper/createHacknetResourceFile",
+          "group": "createHacknetResourceFile",
+          "when": "explorerResourceIsFolder"
+        }
+      ],
+      "hacknetextensionhelper/createHacknetResourceFile": [
+        {
+          "command": "hacknetextensionhelper.createComputerFile",
+          "group": "createHacknetResourceFile@1",
+          "when": "explorerResourceIsFolder"
+        },
+        {
+          "command": "hacknetextensionhelper.createPeopleFile",
+          "group": "createHacknetResourceFile@6",
+          "when": "explorerResourceIsFolder"
+        },
+        {
+          "command": "hacknetextensionhelper.createActionFile",
+          "group": "createHacknetResourceFile@3",
+          "when": "explorerResourceIsFolder"
+        },
+        {
+          "command": "hacknetextensionhelper.createFactionFile",
+          "group": "createHacknetResourceFile@4",
+          "when": "explorerResourceIsFolder"
+        },
+        {
+          "command": "hacknetextensionhelper.createMissionFile",
+          "group": "createHacknetResourceFile@2",
+          "when": "explorerResourceIsFolder"
+        },
+        {
+          "command": "hacknetextensionhelper.createHackerScriptFile",
+          "group": "createHacknetResourceFile@5",
+          "when": "explorerResourceIsFolder"
+        }
+      ]
+    },
+    "submenus":[
+      {
+        "id": "hacknetextensionhelper/createHacknetResourceFile",
+        "label": "创建Hacknet资源文件",
+        "when": "explorerResourceIsFolder"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vitest --run"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.17.20",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "@types/vscode": "^1.103.0",
+    "@typescript-eslint/eslint-plugin": "^8.39.0",
+    "@typescript-eslint/parser": "^8.39.0",
+    "@vscode/test-cli": "^0.0.11",
+    "@vscode/test-electron": "^2.5.2",
+    "eslint": "^9.32.0",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^5.2.5",
+    "lodash": "^4.17.21",
+    "minimatch": "^9.0.5",
+    "moo": "^0.5.2"
+  }
+}

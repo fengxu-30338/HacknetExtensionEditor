@@ -1,0 +1,3 @@
+config playerComp [SOURCE_COMP] 0 $#%#$
+openPort 22 $#%#$
+delay 1.3 $#%#$

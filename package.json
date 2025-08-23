@@ -15,6 +15,9 @@
   ],
   "main": "./out/extension.js",
   "icon": "resources/icon.png",
+  "repository": {
+    "url": "https://github.com/fengxu-30338/HacknetExtensionEditor.git"
+  },
   "contributes": {
     "commands": [
       {
@@ -74,7 +77,7 @@
         {
           "submenu": "hacknetextensionhelper/createHacknetResourceFile",
           "group": "createHacknetResourceFile",
-          "when": "explorerResourceIsFolder"
+          "when": "explorerResourceIsFolder && hacknetextensionhelper.HasCodeHintFile"
         }
       ],
       "hacknetextensionhelper/createHacknetResourceFile": [

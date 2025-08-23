@@ -584,6 +584,7 @@ function ClearHacknetCodeHint() {
         codeHintItems: []
     };
     EventManager.fireEvent(EventType.CodeHintSourceChange, CodeHints);
+    vscode.commands.executeCommand('setContext', 'hacknetextensionhelper.HasCodeHintFile', false);
 }
 
 
@@ -595,7 +596,6 @@ async function GetCodeHintFromHacknetCodeHintFile() {
     if (!workspaceFolders || workspaceFolders.length === 0) {
         return;
     }
-
     const rootPath = vscode.workspace.workspaceFolders![0].uri;
     const targetPath = vscode.Uri.joinPath(rootPath, 'Hacknet-EditorHint.xml');
     try {
@@ -607,6 +607,7 @@ async function GetCodeHintFromHacknetCodeHintFile() {
         CodeHints.CommonTextSource = GetCommonTextCodeHints(xmlObj);
         CodeHints.HackerScriptSource = GetHackerScriptsCodeHints(xmlObj);
         EventManager.fireEvent(EventType.CodeHintSourceChange, CodeHints);
+        vscode.commands.executeCommand('setContext', 'hacknetextensionhelper.HasCodeHintFile', true);
     } catch(err) {
         // ignore
         console.error(err);
@@ -621,7 +622,7 @@ function WatchHacknetCodeHintFile(context: vscode.ExtensionContext) {
     if (workspaceFolders === undefined || workspaceFolders.length === 0) {
         return;
     }
-
+    vscode.commands.executeCommand('setContext', 'hacknetextensionhelper.HasCodeHintFile', false);
     const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspaceFolders[0], "Hacknet-EditorHint.xml"));
     // 文件内容变更（磁盘层面）
     watcher.onDidChange(_ => {

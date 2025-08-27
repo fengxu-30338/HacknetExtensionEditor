@@ -255,6 +255,16 @@
         <Content default="21, 22, 25" desc="计算机的所有端口,多个用逗号隔开" />
     </Node>
 
+    <Node name="Computer.proxy" enable="true" multi="false" desc="设置计算机的代理">
+        <Attribute name="time" required="true" default="-1" desc="代理所需的破解时间,实际时间等于用该值x30秒">
+            <Enums>
+                <Enum desc="无代理">-1</Enum>
+                <Enum desc="30s">1</Enum>
+                <Enum desc="60s">2</Enum>
+            </Enums>
+        </Attribute>
+    </Node>
+
     <!-- <portsForCrack val="0" /> -->
     <Node name="Computer.portsForCrack" enable="true" multi="false" desc="设置破解该计算机所需的端口数">
         <Attribute name="val" required="true" desc="破解所需的端口数" default="0" hint="enum" />
@@ -2019,7 +2029,7 @@
     <Node name="CustomTheme.defaultHighlightColor" enable="true" multi="false" desc="高亮图标颜色，同时也会显示在netmap内的节点上“您是本系统管理员”标志、按钮侧面等的颜色">
        <Content desc="" default="255,41,63" hint="color"/>
     </Node>
-    <Node name="CustomTheme.defaultTopBarColor" enable="true" multi="false" desc="屏幕顶部栏的颜色">
+    <Node name="CustomTheme.defaultTopBarColor" enable="true" multi="false" desc="顶部栏背景色">
        <Content desc="" default="74,7,14,255" hint="color"/>
     </Node>
     <Node name="CustomTheme.moduleColorSolidDefault" enable="true" multi="false" desc="窗口边框的颜色">
@@ -2028,73 +2038,73 @@
     <Node name="CustomTheme.moduleColorStrong" enable="true" multi="false" desc="窗口顶部的颜色">
        <Content desc="" default="14,40,25,80" hint="color"/>
     </Node>
-    <Node name="CustomTheme.moduleColorBacking" enable="true" multi="false" desc="窗口的主要颜色">
+    <Node name="CustomTheme.moduleColorBacking" enable="true" multi="false" desc="moduleColorBacking">
        <Content desc="" default="5,7,6,10" hint="color"/>
     </Node>
-    <Node name="CustomTheme.exeModuleTopBar" enable="true" multi="false" desc="RAM 监视器中程序的彩色顶栏">
+    <Node name="CustomTheme.exeModuleTopBar" enable="true" multi="false" desc="exe bar背景色">
        <Content desc="" default="130,65,27,80" hint="color"/>
     </Node>
-    <Node name="CustomTheme.exeModuleTitleText" enable="true" multi="false" desc="程序顶部栏上的文本颜色">
+    <Node name="CustomTheme.exeModuleTitleText" enable="true" multi="false" desc="exe bar文字色">
        <Content desc="" default="155,85,37,0" hint="color"/>
     </Node>
     <Node name="CustomTheme.warningColor" enable="true" multi="false" desc="在跟踪和“红线”事件（例如CCC）期间通过某些元素闪烁的颜色。">
        <Content desc="" default="255,0,0" hint="color"/>
     </Node>
-    <Node name="CustomTheme.subtleTextColor" enable="true" multi="false" desc="">
+    <Node name="CustomTheme.subtleTextColor" enable="true" multi="false" desc="登录按钮主题色，如果存在daemo则是后面三个按钮的颜色">
        <Content desc="" default="90,90,90" hint="color"/>
     </Node>
-    <Node name="CustomTheme.darkBackgroundColor" enable="true" multi="false" desc="">
+    <Node name="CustomTheme.darkBackgroundColor" enable="true" multi="false" desc="搜索框背景/邮件按钮等颜色">
        <Content desc="" default="8,8,8" hint="color"/>
     </Node>
-    <Node name="CustomTheme.indentBackgroundColor" enable="true" multi="false" desc="">
+    <Node name="CustomTheme.indentBackgroundColor" enable="true" multi="false" desc="use ram / 登录 模块背景色">
        <Content desc="" default="12,12,12" hint="color"/>
     </Node>
-    <Node name="CustomTheme.outlineColor" enable="true" multi="false" desc="">
+    <Node name="CustomTheme.outlineColor" enable="true" multi="false" desc="节点之间连接线的颜色">
        <Content desc="" default="68,68,68" hint="color"/>
     </Node>
-    <Node name="CustomTheme.lockedColor" enable="true" multi="false" desc="">
+    <Node name="CustomTheme.lockedColor" enable="true" multi="false" desc="断开/取消 按钮颜色、端口被锁住的颜色">
        <Content desc="" default="65,16,16,200" hint="color"/>
     </Node>
-    <Node name="CustomTheme.brightLockedColor" enable="true" multi="false" desc="端口号的背景颜色">
+    <Node name="CustomTheme.brightLockedColor" enable="true" multi="false" desc="显示端口不可破解的背景色">
        <Content desc="" default="160,0,0" hint="color"/>
     </Node>
-    <Node name="CustomTheme.brightUnlockedColor" enable="true" multi="false" desc="">
+    <Node name="CustomTheme.brightUnlockedColor" enable="true" multi="false" desc="sshcrack.exe小方格过度颜色、成功登录后成功两个字颜色等">
        <Content desc="" default="0,160,0" hint="color"/>
     </Node>
-    <Node name="CustomTheme.unlockedColor" enable="true" multi="false" desc="解锁颜色">
+    <Node name="CustomTheme.unlockedColor" enable="true" multi="false" desc="端口解锁后的颜色">
        <Content desc="" default="39,65,36" hint="color"/>
     </Node>
-    <Node name="CustomTheme.lightGray" enable="true" multi="false" desc="">
+    <Node name="CustomTheme.lightGray" enable="true" multi="false" desc="MessageBoard使用">
        <Content desc="" default="180,180,180" hint="color"/>
     </Node>
     <Node name="CustomTheme.shellColor" enable="true" multi="false" desc="过载节点颜色[指RAM上的] 运行Shell时节点的颜色，以及您在[probe或nmap]看到的[检测到代理]和[检测到防火墙]的颜色">
        <Content desc="" default="222,201,24" hint="color"/>
     </Node>
-    <Node name="CustomTheme.shellButtonColor" enable="true" multi="false" desc="">
+    <Node name="CustomTheme.shellButtonColor" enable="true" multi="false" desc="shell过载按钮侧边颜色(经测试，按钮不够宽显示不出来侧边)">
        <Content desc="" default="105,167,188" hint="color"/>
     </Node>
-    <Node name="CustomTheme.semiTransText" enable="true" multi="false" desc="">
+    <Node name="CustomTheme.semiTransText" enable="true" multi="false" desc="模块bar文字色">
        <Content desc="" default="120,120,120,0" hint="color"/>
     </Node>
-    <Node name="CustomTheme.terminalTextColor" enable="true" multi="false" desc="">
+    <Node name="CustomTheme.terminalTextColor" enable="true" multi="false" desc="终端文本颜色">
        <Content desc="" default="213,245,255" hint="color"/>
     </Node>
     <Node name="CustomTheme.topBarTextColor" enable="true" multi="false" desc="顶部栏下的文字颜色">
        <Content desc="" default="126,126,126,100" hint="color"/>
     </Node>
-    <Node name="CustomTheme.superLightWhite" enable="true" multi="false" desc="">
+    <Node name="CustomTheme.superLightWhite" enable="true" multi="false" desc="破解端口界面斜条纹颜色">
        <Content desc="" default="2,2,2,30" hint="color"/>
     </Node>
-    <Node name="CustomTheme.connectedNodeHighlight" enable="true" multi="false" desc="连接节点高亮颜色">
+    <Node name="CustomTheme.connectedNodeHighlight" enable="true" multi="false" desc="当前连接的节点颜色">
        <Content desc="" default="222,0,0,195" hint="color"/>
     </Node>
-    <Node name="CustomTheme.netmapToolTipColor" enable="true" multi="false" desc="">
+    <Node name="CustomTheme.netmapToolTipColor" enable="true" multi="false" desc="鼠标放到netmap节点上后显示右侧文字的颜色">
        <Content desc="" default="213,245,255,0" hint="color"/>
     </Node>
-    <Node name="CustomTheme.netmapToolTipBackground" enable="true" multi="false" desc="节点整理器NetmapOrganizer背景色">
+    <Node name="CustomTheme.netmapToolTipBackground" enable="true" multi="false" desc="鼠标放到netmap节点上后显示右侧文字的背景">
        <Content desc="" default="0,0,0,70" hint="color"/>
     </Node>
-    <Node name="CustomTheme.topBarIconsColor" enable="true" multi="false" desc="">
+    <Node name="CustomTheme.topBarIconsColor" enable="true" multi="false" desc="顶部栏icon颜色">
        <Content desc="" default="255,255,255" hint="color"/>
     </Node>
     <Node name="CustomTheme.thisComputerNode" enable="true" multi="false" desc="控制玩家计算机节点的颜色">

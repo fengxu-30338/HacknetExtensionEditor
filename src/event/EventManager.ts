@@ -1,7 +1,8 @@
 import { EventEmitter } from 'events';
 
 export enum EventType {
-    CodeHintSourceChange = 'CodeHintSourceChange'
+    CodeHintSourceChange = 'CodeHintSourceChange',
+    HacknetNodeFileChange = 'HacknetNodeFileChange',
 }
 
 

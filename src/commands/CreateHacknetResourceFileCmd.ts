@@ -46,6 +46,10 @@ export function RegisterCreateHacknetResourceFileCommands(context:vscode.Extensi
         CreateHacknetTemplateFile(uri, `Mission-${CommonUtils.GetRandStr(6)}.xml`, 'Hacknet-Mission.xml');
     }));
 
+    context.subscriptions.push(vscode.commands.registerCommand('hacknetextensionhelper.createThemeFile', uri => {
+        CreateHacknetTemplateFile(uri, `Theme-${CommonUtils.GetRandStr(6)}.xml`, 'Hacknet-Theme.xml');
+    }));
+
     context.subscriptions.push(vscode.commands.registerCommand('hacknetextensionhelper.createHackerScriptFile', uri => {
         CreateHacknetTemplateFile(uri, `HackerScript-${CommonUtils.GetRandStr(6)}.txt`, 'Hacknet-HackerScript.txt');
     }));

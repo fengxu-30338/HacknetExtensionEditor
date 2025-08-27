@@ -7,6 +7,7 @@ import * as CommonUtils from './utils/CommonUtils';
 import { RegisterHackerScriptsHightlight } from "./decorator/HackerScriptFuncDecorator";
 import { RegisterHacknetReplaceTextHightlight } from "./decorator/HackerReplaceTextDecorator";
 import { RegisterCreateHacknetResourceFileCommands } from "./commands/CreateHacknetResourceFileCmd";
+import { RegiserHacknetThemeView } from "./view/ThemeViewer";
 
 export function activate(context: vscode.ExtensionContext) {
 
@@ -46,6 +47,9 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// 创建可替换文本的高亮显示
 	RegisterHacknetReplaceTextHightlight();
+
+	// 注册主题视图
+	RegiserHacknetThemeView(context);
 }
 
 

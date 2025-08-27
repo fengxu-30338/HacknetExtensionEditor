@@ -174,3 +174,30 @@ export function GetRandStr(length: number) {
     
     return result;
 }
+
+export interface Range {
+    startOffset: number
+    endOffset: number
+    match: string
+}
+
+export function SearchKeywordInDocument(pattern: RegExp, text: string, filter:((matchTtem:string) => boolean) | null = null):Range[] {
+    const ranges:Range[]  = [];
+    let match;
+    while ((match = pattern.exec(text)) !== null) {
+        const startPos = match.index;
+        const endPos = startPos + match[0].length;
+        const item = match[0];
+        if (filter !== null && !filter(item)) {
+          continue;
+        }
+        
+        ranges.push({
+            startOffset: startPos,
+            endOffset: endPos,
+            match: item
+        });
+    }
+
+    return ranges;
+}

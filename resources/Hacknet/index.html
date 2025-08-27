@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hacknet Extension Theme Viewer</title>
+    <link rel="stylesheet" href="index.css" />
+    <script src="index.js"></script>
+</head>
+<body>
+    <div id="app">
+        <div id="topbar">
+            <div class="left-bar">
+                <div class="icon-content">
+                    <div class="top-icon" style="mask-image: url('img/exit.png');"></div>
+                    <div class="top-icon" style="mask-image: url('img/setting.png');"></div>
+                    <div class="top-icon" style="mask-image: url('img/save.png');"></div>
+                </div>
+                <div id="random-num-txt">900</div>
+            </div>
+            
+            <div class="right-bar">
+                <div class="bar-text">
+                    位置：fx Workstation@66.66.66.66
+                </div>
+                <div class="top-icon" style="mask-image: url('img/mail.png');"></div>
+            </div>
+        </div>
+        <div id="module" themeLayoutName="blue">
+            <div id="module-content">
+                <!-- 左侧列 -->
+                 <div id="left-module" class="layout">
+                    <div id="ram-content">
+                        <!-- ram模块 -->
+                        <div id="ram" class="module">
+                            <div class="module-bar">
+                                <div class="bar-text">RAM</div>
+                            </div>
+                            <div class="use-ram">
+                                <div class="use-ram-progress"></div>
+                                <div class="use-ram-txt">USED RAM:300mb&nbsp;/&nbsp;761mb</div>
+                                <div class="use-ram-num">1</div>
+                            </div>
+                            <div class="test-exe">
+                                <div class="app-bar">
+                                    <div class="name">app:ExeName</div>
+                                    <div class="ip">IP:66.66.66.66</div>
+                                </div>
+                                <div class="content">
+                                    <div class="content-inner"></div>
+                                    <div class="tip-text">EXE模块内容</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="ram-bottom">
+
+                        </div>
+                    </div>
+                 </div>
+                
+                <!-- 中间列-->
+                 <div id="mid-module" class="layout">
+                    <!-- (聚合模块)  -->
+                    <div id="double-colume">
+                        <!-- display模块 -->
+                        <div id="display" class="module">
+                            <div class="module-bar">
+                                <div class="bar-text">DISPLAY</div>
+                            </div>
+                            <!-- 默认服务 -->
+                            <div class="default" mode="default">
+                                <div class="nav">
+                                    <div class="type-icon">
+                                        <img src="img/server.png" />
+                                    </div>
+                                    <div class="text-content">
+                                        <div class="title">连接到</div>
+                                        <div class="name">fx Workstation</div>
+                                        <div class="ip">@&nbsp; 66.66.66.66</div>
+                                    </div>
+                                </div>
+                                <div class="banner">您是本系统的管理员</div>
+                                <div class="content">
+                                    <div class="btn-group" login-mode="default">
+                                        <div class="hacknet-btn" onclick="displayContentChange('search-service')">
+                                            <div class="color-bar"></div>
+                                            <div class="text">搜索服务</div>
+                                        </div>
+                                        <div class="hacknet-btn" onclick="displayLoginChange('login')">
+                                            <div class="color-bar"></div>
+                                            <div class="text">登录</div>
+                                        </div>
+                                        <div class="hacknet-btn" onclick="displayContentChange('detail')">
+                                            <div class="color-bar"></div>
+                                            <div class="text">检测系统</div>
+                                        </div>
+                                        <div class="hacknet-btn" type="subtle">
+                                            <div class="color-bar"></div>
+                                            <div class="text">查看文件系统</div>
+                                        </div>
+                                        <div class="hacknet-btn" type="subtle">
+                                            <div class="color-bar"></div>
+                                            <div class="text">查看日志</div>
+                                        </div>
+                                        <div class="hacknet-btn" type="subtle">
+                                            <div class="color-bar"></div>
+                                            <div class="text">扫描网络</div>
+                                        </div>
+                                        <!-- 断开连接按钮 -->
+                                        <div class="hacknet-btn discon-btn" type="lock">
+                                            <div class="color-bar"></div>
+                                            <div class="text">断开</div>
+                                        </div>
+                                    </div>
+                                    <!-- 等待登录区域 -->
+                                    <div class="login" login-mode="login" style="display: none;">
+                                        <div class="title">Login</div>
+                                        <div class="line username">
+                                            <div class="input">用户名:</div>
+                                        </div>
+                                        <div class="line pwd">
+                                            <div class="input">密码:</div>
+                                        </div>
+                                        <div class="login-btn-group success">
+                                            <div class="hacknet-btn" type="darkBg" onclick="displayLoginChange('login:success')">
+                                                <div class="color-bar"></div>
+                                                <div class="text">Login - User:admin Pass: 66666(成功)</div>
+                                            </div>
+
+                                            <div class="hacknet-btn" type="lock" onclick="displayLoginChange('default')">
+                                                <div class="color-bar"></div>
+                                                <div class="text">取消</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="login-btn-group fail">
+                                            <div class="hacknet-btn" type="darkBg" onclick="displayLoginChange('login:fail')">
+                                                <div class="color-bar"></div>
+                                                <div class="text">Login - User:admin Pass: 11111(失败)</div>
+                                            </div>
+
+                                            <div class="hacknet-btn" type="lock" onclick="displayLoginChange('default')">
+                                                <div class="color-bar"></div>
+                                                <div class="text">取消</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- 登录成功区域 -->
+                                    <div class="login" login-mode="login:success" style="display: none;">
+                                        <div class="title">
+                                            Login
+                                            <span>成功</span>
+                                        </div>
+                                        <div class="line username">
+                                            <div class="input">用户名:</div>
+                                            <div class="text">admin</div>
+                                        </div>
+                                        <div class="line pwd">
+                                            <div class="input">密码:</div>
+                                            <div class="text">*********</div>
+                                        </div>
+                                        <div class="btn">
+                                            <div class="hacknet-btn" type="indent" onclick="displayLoginChange('default')">
+                                                <div class="color-bar"></div>
+                                                <div class="text">完成</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- 登录失败区域 -->
+                                    <div class="login" login-mode="login:fail" style="display: none;">
+                                        <div class="title">
+                                            Login
+                                            <span>失败</span>
+                                        </div>
+                                        <div class="line username">
+                                            <div class="input">用户名:</div>
+                                            <div class="text">admin</div>
+                                        </div>
+                                        <div class="line pwd">
+                                            <div class="input">密码:</div>
+                                            <div class="text">*********</div>
+                                        </div>
+                                        <div class="btn">
+                                            <div class="hacknet-btn" type="indent" onclick="displayLoginChange('default')">
+                                                <div class="color-bar"></div>
+                                                <div class="text">返回</div>
+                                            </div>
+                                            <div class="hacknet-btn" type="indent" onclick="displayLoginChange('login')">
+                                                <div class="color-bar"></div>
+                                                <div class="text">重试</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 搜索服务 -->
+                            <div class="search-service" mode="search-service">
+                                <div class="nav">
+                                    <div class="line" style="--ani-delay: 0s;"></div>
+                                    <div class="line" style="--ani-delay: -1s;"></div>
+                                    <div class="line" style="--ani-delay: -2s;"></div>
+                                    <div class="line" style="--ani-delay: -3s;"></div>
+                                    <div class="line" style="--ani-delay: -4s;"></div>
+                                    <div class="line" style="--ani-delay: -5s;"></div>
+                                    <div class="line" style="--ani-delay: -6s;"></div>
+                                    <div class="line" style="--ani-delay: -7s;"></div>
+                                    <div class="line" style="--ani-delay: -8s;"></div>
+                                    <div class="line" style="--ani-delay: -9s;"></div>
+                                    <div class="content title">搜索服务</div>
+                                    <div class="content permission">已授予访问权限</div>
+                                </div>
+                                <div class="btn-group">
+                                    <div class="hacknet-btn search-btn" onclick="ShowProgress()">
+                                        <div class="color-bar"></div>
+                                        <div class="text">搜索</div>
+                                    </div>
+                                    <!-- 搜索进度区 -->
+                                    <div class="progress">
+                                        <div class="progress-bar"></div>
+                                    </div>
+
+                                    <div class="hacknet-btn discon-btn" type="lock">
+                                        <div class="color-bar"></div>
+                                        <div class="text" onclick="displayContentChange('default')">退出</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 端口破解详情 -->
+                             <div class="detail-bg" mode="detail" style="--displayDetailBgHeight: 0;">
+                                <div class="line" style="--ani-delay: -1s;"></div>
+                                <div class="line" style="--ani-delay: -2s;"></div>
+                                <div class="line" style="--ani-delay: -3s;"></div>
+                                <div class="line" style="--ani-delay: -4s;"></div>
+                                <div class="line" style="--ani-delay: -5s;"></div>
+                                <div class="line" style="--ani-delay: -6s;"></div>
+                                <div class="line" style="--ani-delay: -7s;"></div>
+                                <div class="line" style="--ani-delay: -8s;"></div>
+                                <div class="line" style="--ani-delay: -9s;"></div>
+                                <div class="line" style="--ani-delay: -10s;"></div>
+                                <div class="line" style="--ani-delay: -11s;"></div>
+                                <div class="line" style="--ani-delay: -12s;"></div>
+                                <div class="line" style="--ani-delay: -13s;"></div>
+                                <div class="line" style="--ani-delay: -14s;"></div>
+                                <div class="line" style="--ani-delay: -15s;"></div>
+                                <div class="line" style="--ani-delay: -16s;"></div>
+                                <div class="line" style="--ani-delay: -17s;"></div>
+                                <div class="line" style="--ani-delay: -18s;"></div>
+                                <div class="line" style="--ani-delay: -19s;"></div>
+                                <div class="line" style="--ani-delay: -20s;"></div>
+                             </div>
+                            <div class="detail" mode="detail">
+                                <div class="title">开放的端口</div>
+                                <div class="tip">
+                                    <div class="ip">fx Workstation @66.66.66.66</div>
+                                    <div class="back" onclick="displayContentChange('default')">&lt;-</div>
+                                </div>
+                                <div class="port-num-txt">破解所需开放端口数:<span>1257</span></div>
+                                <div class="invalid"></div>
+                                <div class="inv-text" data-text="INVIOLABILITY ERROR">INVIOLABILITY ERROR</div>
+                                <div class="empty" style="height: 20px;"></div>
+                                <div class="hack proxy">
+                                    <div class="line" style="--ani-delay:-1s;"></div>
+                                    <div class="line" style="--ani-delay:-2s;"></div>
+                                    <div class="line" style="--ani-delay:-3s;"></div>
+                                    <div class="line" style="--ani-delay:-4s;"></div>
+                                    <div class="line" style="--ani-delay:-5s;"></div>
+                                    <div class="line" style="--ani-delay:-6s;"></div>
+                                    <div class="line" style="--ani-delay:-7s;"></div>
+                                    <div class="line" style="--ani-delay:-8s;"></div>
+                                    <div class="line" style="--ani-delay:-9s;"></div>
+                                    <div class="line" style="--ani-delay:-10s;"></div>
+                                    <div class="line" style="--ani-delay:-11s;"></div>
+                                    <div class="line" style="--ani-delay:-12s;"></div>
+                                    <div class="line" style="--ani-delay:-13s;"></div>
+                                    <div class="line" style="--ani-delay:-14s;"></div>
+                                    <div class="line" style="--ani-delay:-15s;"></div>
+                                    <div class="line" style="--ani-delay:-16s;"></div>
+                                    <div class="line" style="--ani-delay:-17s;"></div>
+                                    <div class="line" style="--ani-delay:-18s;"></div>
+                                    <div class="line" style="--ani-delay:-19s;"></div>
+                                    <div class="line" style="--ani-delay:-20s;"></div>
+                                    <span>检测到代理</span>
+                                </div>
+                                <div class="hack firewall">
+                                    <div class="line" style="--ani-delay:-1s;"></div>
+                                    <div class="line" style="--ani-delay:-2s;"></div>
+                                    <div class="line" style="--ani-delay:-3s;"></div>
+                                    <div class="line" style="--ani-delay:-4s;"></div>
+                                    <div class="line" style="--ani-delay:-5s;"></div>
+                                    <div class="line" style="--ani-delay:-6s;"></div>
+                                    <div class="line" style="--ani-delay:-7s;"></div>
+                                    <div class="line" style="--ani-delay:-8s;"></div>
+                                    <div class="line" style="--ani-delay:-9s;"></div>
+                                    <div class="line" style="--ani-delay:-10s;"></div>
+                                    <div class="line" style="--ani-delay:-11s;"></div>
+                                    <div class="line" style="--ani-delay:-12s;"></div>
+                                    <div class="line" style="--ani-delay:-13s;"></div>
+                                    <div class="line" style="--ani-delay:-14s;"></div>
+                                    <div class="line" style="--ani-delay:-15s;"></div>
+                                    <div class="line" style="--ani-delay:-16s;"></div>
+                                    <div class="line" style="--ani-delay:-17s;"></div>
+                                    <div class="line" style="--ani-delay:-18s;"></div>
+                                    <div class="line" style="--ani-delay:-19s;"></div>
+                                    <div class="line" style="--ani-delay:-20s;"></div>
+                                    <span>检测到防火墙</span>
+                                </div>
+                                <div class="port-list">
+                                    <div class="port-info" lock>
+                                        <div class="info">
+                                            <div class="port">Port#: &nbsp;80</div>
+                                            <div class="type">- HTTP WebServer</div>
+                                        </div>
+                                        <div class="icon">
+                                            <img src="img/lock.png" />
+                                        </div>
+                                    </div>
+                                    <div class="port-info" lock>
+                                        <div class="info">
+                                            <div class="port">Port#: &nbsp;22</div>
+                                            <div class="type">- SSH</div>
+                                        </div>
+                                        <div class="icon">
+                                            <img src="img/lock.png" />
+                                        </div>
+                                    </div>
+                                    <div class="port-info" unlock>
+                                        <div class="info">
+                                            <div class="port">Port#: &nbsp;22</div>
+                                            <div class="type">- SSH</div>
+                                        </div>
+                                        <div class="icon">
+                                            <img src="img/unlock.png" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- netMap模块 -->
+                        <div id="netmap" class="module">
+                            <div class="module-bar">
+                                <div class="bar-text">netMap v1.7</div>
+                            </div>
+                            <div class="grid">
+                                <canvas id="netMapCanvas"></canvas>
+                                <div class="this-node node">
+                                    <div class="circle-content">
+                                        <div class="circle"></div>
+                                        <div class="node-mask"></div>
+                                    </div>
+                                    <div class="ring"></div>
+                                    <div class="text" content="fx Workstation&#10;66.66.66.66"></div>
+                                </div>
+
+                                <div class="other-node node">
+                                    <div class="circle"></div>
+                                    <div class="node-mask"></div>
+                                    <div class="ring"></div>
+                                    <div class="text" content="jmail&#10;146.175.59.98"></div>
+                                </div>
+
+                                <div class="connect-node node">
+                                    <div class="circle"></div>
+                                    <div class="node-mask"></div>
+                                    <div class="ring"></div>
+                                    <canvas id="arc" width="75" height="75"></canvas>
+                                    <div class="text" content="Extension Example PC&#10;167.62.87.56"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                 </div>
+                 <!-- 右侧模块 -->
+                  <div id="right-module" class="layout">
+                    <div id="terminal" class="module">
+                        <div class="module-bar">
+                            <div class="bar-text">TERMINAL</div>
+                        </div>
+                        <div class="bottom-content">
+                            <div class="command-display">
+                                <pre class="old-cmd">> connect   66.66.66.66
+Disconnected
+Scanning For 66.66.66.66
+66.66.66.66@> cd home
+
+                                </pre>
+                            </div>
+                            <dis class="command-input">
+                                66.66.66.66/>
+                                <span class="cursor"> |</span>
+                            </dis>
+                            </div>
+                    </div>
+                  </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

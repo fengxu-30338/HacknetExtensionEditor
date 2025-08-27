@@ -1,0 +1,1482 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    border-radius: 0px;
+    user-select: none;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    border-radius: 0px;
+}
+
+:root {
+    color: white;
+    font-size: 12px;
+
+    /* 背景图片路径 */
+    --backgroundImagePath: url('img/Cube.png');
+    /* 默认节点颜色以及一些主题色 */
+    --defaultHighlightColor: #00FFC7FF;
+    /* 顶部栏背景色 */
+    --defaultTopBarColor: #f8638aff;
+    /* 模块线的颜色 */
+    --moduleColorSolidDefault: #FF9001FF;
+    /* 模块bar背景色 */
+    --moduleColorStrong: #078370FF;
+    /* 模块整体背景色 */
+    --moduleColorBacking: #00000078;
+    /* exe bar背景色 */
+    --exeModuleTopBar: #00FFFF;
+    /* exe bar文字色 */
+    --exeModuleTitleText: #FF0099FF;
+    /* ESequencer.exe中使用 */
+    --warningColor: red;
+    /* 登录按钮主题色，如果存在daemo则是后面三个按钮的颜色 */
+    --subtleTextColor: rgb(236, 4, 205);
+    /* 搜索框背景/邮件按钮等颜色 */
+    --darkBackgroundColor: black;
+    /* use ram / 登录 模块背景色 */
+    --indentBackgroundColor: black;
+    /* 节点之间连接线的颜色 */
+    --outlineColor: #005aff;
+    /* 断开/取消 按钮颜色、端口被锁住的颜色 */
+    --lockedColor: #b92424c8;
+    /* 显示端口不可破解的背景色 */
+    --brightLockedColor: rgba(255, 0, 0, 1);
+    /* sshcrack.exe小方格过度颜色、成功登录后成功两个字颜色等 */
+    --brightUnlockedColor: green;
+    /* 端口解锁后的颜色 */
+    --unlockedColor: #00FF00;
+    /* MessageBoard使用 */
+    --lightGray: white;
+    /* shellColor，破解处显示防火墙和代理的前景色 */
+    --shellColor: #DEC918FF;
+    /* shell过载按钮侧边颜色(经测试，按钮不够宽显示不出来侧边) */
+    --shellButtonColor: white;
+    /* 模块bar文字色 */
+    --semiTransText: #ffd500;
+    /* 终端文本颜色 */
+    --terminalTextColor: #3FC0E8FF;
+    /* 顶部栏文字颜色 */
+    --topBarTextColor: white;
+    /* 破解端口界面斜条纹颜色 */
+    --superLightWhite: #0202021E;
+    /* 当前连接的节点颜色 */
+    --connectedNodeHighlight: #FF5900FF;
+    /* 鼠标放到netmap节点上后显示右侧文字的颜色 */
+    --netmapToolTipColor: #09c1ff;
+    /* 鼠标放到netmap节点上后显示右侧文字的背景 */
+    --netmapToolTipBackground: #00000046;
+    /* 顶部栏icon颜色 */
+    --topBarIconsColor: white;
+    /* 自己节点的颜色 */
+    --thisComputerNode: #7cfb6cff;
+    /* 搜索线的颜色 */
+    --scanlinesColor: #FFFFFF0F;
+}
+
+@property --hacknetProp {
+    syntax: '*';
+    inherits: true;
+    initial-value: "";
+}
+
+#app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+#app #module {
+    width: 100%;
+    height: 100%;
+}
+
+#app #module #module-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+
+#app #topbar {
+    height: 22px;
+    display: flex;
+    justify-content: space-between;
+    background-color: var(--defaultTopBarColor);
+    color: var(--topBarTextColor);
+    font-size: 14px;
+    --hacknetProp: 'defaultTopBarColor,topBarTextColor';
+}
+
+#topbar .left-bar {
+    display: flex;
+    height: 100%;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+#topbar .left-bar .icon-content {
+    width: 100%;
+    height: 18px;
+    margin: 1px 3px 1px 3px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+#topbar .top-icon {
+    height: 18px;
+    width: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    mask-position: center;
+    mask-size: cover;
+    mask-repeat: no-repeat;
+    background-color: var(--topBarIconsColor);
+    --hacknetProp: 'topBarIconsColor';
+}
+
+#topbar .left-bar .icon-content img {
+    height: 100%;
+}
+
+#topbar .left-bar .icon-content .top-icon:last-child {
+    margin-left: 3px;
+}
+
+#topbar .left-bar #random-num-txt {
+    height: 100%;
+    margin-left: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 14px;
+    margin-bottom: 2px;
+}
+
+#topbar .right-bar {
+    display: flex;
+    height: 100%;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+#topbar .right-bar .top-icon {
+    width: 30px;
+    height: 18px;
+    mask-size: 100% 100%;
+}
+
+#topbar .right-bar .bar-text {
+    font-size: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 2px;
+    margin-right: 5px;
+}
+
+/* 模块定义开始 */
+#module {
+    background-image: var(--backgroundImagePath);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+}
+
+#module #module-content {
+    margin: 1px;
+}
+
+#ram-content {
+    width: 252px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+#ram-content #ram {
+    width: 100%;
+    height: 761px;
+}
+
+#ram-content #ram-bottom {
+    flex: 1;
+}
+
+/* 定义所有模块的边框等属性 */
+.module {
+    border: 1px solid var(--moduleColorSolidDefault);
+    position: relative;
+    background-color: var(--moduleColorBacking);
+    --hacknetProp: 'moduleColorSolidDefault,moduleColorBacking';
+}
+
+/* 定义所有模块的顶部栏 */
+.module-bar {
+    width: 100%;
+    height: 15px;
+    background-color: var(--moduleColorStrong);
+    font-size: 12px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    --hacknetProp: 'moduleColorStrong';
+}
+
+/* 模块bar 文本 */
+.module-bar .bar-text {
+    color: var(--semiTransText);
+    mix-blend-mode: screen;
+    --hacknetProp: 'semiTransText';
+}
+
+
+/* use ram 区域 */
+#ram .use-ram {
+    display: flex;
+    height: 16px;
+    font-size: 11px;
+    margin-top: 1px;
+    justify-content: space-between;
+    position: relative;
+    background-color: var(--indentBackgroundColor);
+    --hacknetProp: 'indentBackgroundColor';
+}
+
+#ram .use-ram .use-ram-progress {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 34%;
+    height: 100%;
+    background-color: #52525b;
+    z-index: 1;
+}
+
+#ram .use-ram .use-ram-txt {
+    z-index: 2;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+#ram .use-ram .use-ram-num {
+    z-index: 2;
+    margin-right: 5px;
+}
+
+/* 测试exe模块 */
+.test-exe {
+    height: 300px;
+    width: 100%;
+    border-top: 1px solid var(--moduleColorSolidDefault);
+    border-bottom: 1px solid var(--moduleColorSolidDefault);
+    display: flex;
+    flex-direction: column;
+    --hacknetProp: 'moduleColorSolidDefault,moduleColorSolidDefault';
+}
+
+@keyframes rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.test-exe .content {
+    width: 100%;
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+.test-exe .content .content-inner {
+    width: 200%;
+    height: 200%;
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    background-image: url('img/exeBg.png');
+    animation: rotate 20s linear infinite;
+}
+
+.test-exe .content .tip-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* exe模块顶部栏 */
+.app-bar {
+    width: 100%;
+    height: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--exeModuleTopBar);
+    color: var(--exeModuleTitleText);
+    --hacknetProp: 'exeModuleTopBar,exeModuleTitleText';
+}
+
+.app-bar * {
+    font-size: 11px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 2px;
+}
+
+
+/* terminal 模块样式 */
+#terminal {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+}
+
+#terminal .bottom-content {
+    position: absolute;
+    left: 5px;
+    bottom: 10px;
+}
+
+#terminal .bottom-content .old-cmd{
+    font-family: unset;
+    font-size: 14px;
+    color: var(--terminalTextColor);
+    mix-blend-mode: lighten;
+    --hacknetProp: 'terminalTextColor';
+}
+
+#terminal .bottom-content .command-input {
+    font-size: 15px;
+}
+
+#terminal .bottom-content .command-input .cursor {
+    visibility: visible;
+}
+
+/* netmap模块样式 */
+#netmap  {
+    display: flex;
+    flex-direction: column;
+    min-width: 330px;
+}
+
+#netmap .grid {
+    flex: 1;
+    position: relative;
+}
+#netmap .grid #netMapCanvas {
+    width: 100%;
+    height: 100%;
+}
+
+#netmap .grid .node {
+    height: 50px;
+    width: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+#netmap .grid .node .text {
+    position: absolute;
+    height: 20px;
+    width: 20px;
+    left: 50%;
+    top: 50%;
+    white-space: pre;
+    transform: translate(-50%, -50%);
+}
+
+#netmap .grid .node .text:hover:after {
+    content: attr(content);
+    position: absolute;
+    width: fit-content;
+    height: fit-content;
+    left: 28px;
+    top: -10px;
+    font-size: 14px;
+    color: var(--netmapToolTipColor);
+    background-color: var(--netmapToolTipBackground);
+    --hacknetProp: 'netmapToolTipColor,netmapToolTipBackground';
+}
+
+@property --ringDiameter {
+    syntax: '<length>';
+    inherits: false;
+    initial-value: 0px;
+}
+
+@keyframes rotateDiameter {
+  0% { 
+    --ringDiameter: 10px; 
+    opacity: 1;
+  }
+  25% {
+    opacity: 0;
+  }
+  100% {
+    --ringDiameter: 240px;
+    opacity: 0;
+  }
+}
+
+#netmap .grid .node .ring {
+    --ringDiameter: 10px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: var(--ringDiameter);
+    height: var(--ringDiameter);
+    border: 1px solid var(--defaultHighlightColor);
+    border-radius: 50%;
+    animation: rotateDiameter 4s linear infinite;
+    --hacknetProp: 'defaultHighlightColor';
+}
+
+#netmap .grid .node .circle-content {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    animation: rotate 10s linear infinite;
+}
+
+#netmap .grid .node .circle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    background-color: black;
+    border-radius: 50%;
+}
+
+#netmap .grid .this-node {
+    position: absolute;
+    left: 50px;
+    top: 50px;
+    --hacknetProp: 'thisComputerNode';
+}
+
+#netmap .grid .this-node .circle {
+    top: 46%;
+    left: 47%;
+}
+
+#netmap .grid .this-node .node-mask {
+    width: 100%;
+    height: 100%;
+    mask-image: url('img/thisNode.png');
+    background-color: var(--thisComputerNode);
+}
+
+#netmap .grid .other-node {
+    position: absolute;
+    left: 150px;
+    top: 80px;
+    --hacknetProp: 'defaultHighlightColor';
+}
+
+#netmap .grid .other-node .node-mask {
+    width: 100%;
+    height: 100%;
+    mask-image: url('img/otherNode.png');
+    background-color: var(--defaultHighlightColor);
+}
+
+#netmap .grid .connect-node {
+    position: absolute;
+    left: 260px;
+    top: 45px;
+    filter: drop-shadow(0 0 5px var(--connectedNodeHighlight));
+    --hacknetProp: 'connectedNodeHighlight';
+}
+/* 圆弧 f44141ff */
+#netmap .grid .connect-node  #arc{
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 150%;
+    height: 150%;
+    transform: translate(-50%, -50%);
+}
+
+#netmap .grid .connect-node .node-mask {
+    width: 100%;
+    height: 100%;
+    mask-image: url('img/connectNode.png');
+    background-color: var(--connectedNodeHighlight);
+}
+
+/* hacknet通用按钮 */
+.hacknet-btn {
+    width: 300px;
+    height: 42px;
+    border: 1px solid rgb(100, 100, 100);
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    background-color: rgba(30, 30, 30, 0.4);
+}
+
+.hacknet-btn:hover {
+    background-color: rgba(200, 200, 200, 0.4);
+}
+
+.hacknet-btn:active {
+    background-color: rgba(20, 20, 20, 0.78);
+}
+
+.hacknet-btn .color-bar {
+    width: 12px;
+    height: 100%;
+    background-color: var(--defaultHighlightColor);
+    --hacknetProp: 'defaultHighlightColor';
+}
+
+.hacknet-btn[type="subtle"] .color-bar {
+    background-color: var(--subtleTextColor);
+    --hacknetProp: 'subtleTextColor';
+}
+
+.hacknet-btn[type="lock"] .color-bar {
+    background-color: var(--lockedColor);
+    --hacknetProp: 'lockedColor';
+}
+
+.hacknet-btn[type="darkBg"] .color-bar {
+    background-color: var(--darkBackgroundColor);
+    --hacknetProp: 'darkBackgroundColor';
+}
+
+.hacknet-btn[type="indent"] .color-bar {
+    background-color: var(--indentBackgroundColor);
+    --hacknetProp: 'indentBackgroundColor';
+}
+
+.hacknet-btn .text {
+    height: 100%;
+    flex: 1;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-left: 5px;
+    font-size: 15px;
+    user-select: none;
+}
+
+/* display模块 */
+#display {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+/* 默认显示连接到xxx的画面 */
+#display .default {
+    flex: 1;
+    display: none;
+    flex-direction: column;
+}
+
+#display .default  .nav {
+    width: 100%;
+    height: 130px;
+    display: flex;
+    flex-direction: row;
+}
+
+#display .default  .nav .type-icon {
+    margin-top: 15px;
+    margin-left: 70px;
+}
+
+#display .default  .nav .text-content {
+    margin-top: 10px;
+    margin-left: 50px;
+}
+
+#display .default .nav .text-content .title {
+    font-size: 30px;
+}
+
+#display .default  .nav .text-content .name {
+    font-size: 25px;
+}
+
+#display .default  .nav .text-content .ip {
+    font-size: 16px;
+}
+
+#display .default .banner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--defaultHighlightColor);
+    color: black;
+    font-size: 16px;
+    --hacknetProp: 'defaultHighlightColor';
+}
+
+#display .default .content {
+    width: 100%;
+    flex: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+#display .default  .content .btn-group {
+    position: absolute;
+    width: 400px;
+    height: calc(100% - 60px - 20px);
+    left: 24px;
+    top: 60px;
+    display: flex;
+    flex-direction: column;
+}
+
+#display .default  .content .btn-group > .hacknet-btn:not(:first-child) {
+    margin-top: 6px;
+}
+
+#display .default  .content .btn-group .discon-btn {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 20px;
+    font-size: 12px;
+}
+
+#display .default  .content .login {
+    display: flex;
+    width: 100%;
+    height: 200px;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    background-color: var(--indentBackgroundColor);
+    display: flex;
+    flex-direction: column;
+    --hacknetProp: 'indentBackgroundColor';
+}
+
+#display .default  .content .login[login-mode="login:fail"] {
+    background-color: var(--lockedColor);
+    --hacknetProp: 'lockedColor';
+}
+
+#display .default  .content .login > *:first-child {
+    margin-top: 20px;
+}
+
+#display .default  .content .login > div {
+    padding-left: 25px;
+}
+
+#display .default  .content .login .title {
+    font-size: 32px;
+}
+
+#display .default  .content .login[login-mode="login:success"]  .title span {
+    color: var(--brightUnlockedColor);
+    --hacknetProp: 'brightUnlockedColor';
+}
+
+#display .default  .content .login[login-mode="login:fail"]  .title span {
+    color: var(--brightLockedColor);
+    --hacknetProp: 'brightLockedColor';
+}
+
+#display .default  .content .login .line {
+    font-size: 16px;
+    display: flex;
+    flex-direction: row;
+}
+
+#display .default  .content .login .line .input {
+    width: 100px;
+}
+
+#display .default  .content .login .username{
+    margin-top: 20px;
+}
+
+#display .default  .content .login[login-mode="login"] .username {
+    background-color: var(--subtleTextColor);
+    --hacknetProp: 'subtleTextColor';
+}
+
+#display .default  .content .login .pwd {
+    margin-top: 6px;
+}
+
+#display .default  .content .login .success{
+    position: absolute;
+    left: 0px;
+    bottom: -35px;
+    display: flex;
+}
+
+#display .default  .content .login .fail{
+    position: absolute;
+    left: 0px;
+    bottom: -65px;
+    display: flex;
+}
+
+#display .default  .content .login .login-btn-group .hacknet-btn{
+    height: 25px;
+}
+
+#display .default  .content .login .login-btn-group .hacknet-btn[type='lock'] {
+    margin-left: 15px;
+    width: 100px;
+}
+
+#display .default  .content .login .btn {
+    margin-top: 10px;
+    display: flex;
+}
+
+#display .default  .content .login .btn .hacknet-btn:not(:first-child) {
+    margin-left: 10px;
+}
+
+#display .default  .content .login .btn .hacknet-btn {
+    height: 30px;
+    width: 140px;
+    background-color: rgba(30, 30, 30, 1);
+}
+
+/* 搜索模块画面 */
+#display .search-service {
+    display: none;
+    flex-direction: column;
+}
+
+#display .search-service .nav {
+    width: 100%;
+    height: 190px;
+    margin-top: 50px;
+    font-size: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    overflow: hidden;
+    position: relative;
+    background-color: #00000011;
+}
+
+#display .search-service .nav > .content {
+    margin-left: 60px;
+    z-index: 1;
+}
+
+#display .search-service .nav .permission { 
+    color: #4987f2ff;
+}
+
+@keyframes lineMove {
+    0% {
+        left: 0%;
+    }
+    100% {
+        left: calc(100% + 190px);
+    }
+}
+
+#display .search-service .nav .line {
+    z-index: 0;
+    position: absolute;
+    left: 0px;
+    bottom: 0px;
+    width: 800px;
+    height: 0px;
+    border: 1px solid #4987f277;
+    transform: translateX(-50%) rotate(45deg);
+    animation: lineMove 10s linear infinite;
+    animation-delay: var(--ani-delay);
+}
+
+#display .search-service .btn-group {
+    margin-left: 40px;
+    margin-top: 108px;
+    position: relative;
+}
+
+#display .search-service .progress {
+    position: absolute;
+    width: 80%;
+    height: 25px;
+    left: 0;
+    top: 0;
+    background-color: var(--darkBackgroundColor);
+    visibility: hidden;
+    --hacknetProp: 'darkBackgroundColor';
+}
+
+#display .search-service .progress .progress-bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 100%;
+    background-color: var(--defaultHighlightColor);
+    --hacknetProp: 'defaultHighlightColor';
+}
+
+#display .search-service .btn-group > .hacknet-btn:not(:first-child) {
+    margin-top: 10px;
+}
+
+/* 端口破解模块画面 */
+#display .detail {
+    flex: 1;
+    display: none;
+    flex-direction: column;
+    padding: 2px;
+    z-index: 1;
+}
+
+#display .detail .title {
+    font-size: 30px;
+}
+
+#display .detail .tip {
+    margin-top: 5px;
+    font-size: 16px;
+}
+
+#display .detail .tip {
+    display: flex;
+    justify-content: space-between;
+}
+
+#display .detail .tip .back {
+    user-select: none;
+    width: 25px;
+    height: 25px;
+    background-color: rgba(148, 142, 142, 0.2);
+    border: 1px solid rgb(100, 100, 100);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 20px;
+}
+
+#display .detail .tip .back:hover {
+    background-color: rgba(200, 200, 200, 0.4);
+}
+
+#display .detail .tip .back:active {
+    background-color: rgba(20, 20, 20, 0.78)
+}
+
+#display .detail .port-num-txt {
+    font-size: 17px;
+    color: var(--brightLockedColor);
+    margin-top: 5px;
+    --hacknetProp: 'brightLockedColor';
+}
+
+#display .detail .port-num-txt span {
+    margin-left: 10px;
+}
+
+#display .detail .invalid {
+    margin-top: 10px;
+    mask-image: url('img/invalid.png');
+    mask-size: 100% 100%;
+    mask-position: center;
+    mask-repeat: no-repeat;
+    background-color: var(--brightLockedColor);
+    width: 100%;
+    height: 110px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    --hacknetProp: 'brightLockedColor';
+}
+
+@keyframes jitter {
+    0% {
+        margin-left: 0%;
+    }
+
+    50% {
+        margin-left: 0%;
+    }
+
+    52% {
+        margin-left: -2px;
+    }
+
+    75% {
+        margin-left: 2px;
+    }
+    
+    87% {
+        margin-left: -2px;
+    }
+
+    100% {
+        margin-left: 0;
+    }
+}
+
+@keyframes damage {
+    0% {
+        margin-left: 0;
+        transform: skewX(-60deg) scaleX(1);
+    }
+
+    2% {
+        margin-left: 1px;
+        transform: skewX(-60deg) scaleX(1.02);
+    }
+
+    4% {
+        margin-left: 0;
+        transform: skewX(0) scaleX(1);
+    }
+
+    19.99% {
+        margin-left: 0;
+        transform: skewX(0) scaleX(1);
+    }
+
+    20% {
+        margin-left: 1px;
+        transform: skewX(60deg) scaleX(1.02);
+    }
+
+    22% {
+        margin-left: 0;
+        transform: skewX(0) scaleX(1);
+    }
+}
+
+#display .detail .inv-text {
+    position: relative;
+    font-size: 35px;
+    width: 100%;
+    color: white;
+    font-weight: bold;
+    margin-top: -62px;
+    transform: translateY(-50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: jitter .2s linear infinite;
+    color: transparent;
+}
+
+#display .detail .inv-text::before {
+    content: attr(data-text);
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    font-size: 42px;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    clip-path: polygon(0% 0%, 0% 48%, 99% 48%, 99% 50%, 0% 52%, 0% 100%, 100% 100%, 100% 0%);
+}
+
+#display .detail .inv-text::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    font-size: 42px;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    clip-path: inset(48% 0% 48% 0%);
+    animation: damage 5s linear infinite;
+}
+
+#display .detail .firewall {
+    margin-top: 25px;
+}
+
+#display .detail .hack {
+    height: 42px;
+    font-size: 16px;
+    background-color: #00000077;
+    position: relative;
+    overflow: hidden;
+    mix-blend-mode: lighten;
+}
+
+#display .detail .hack span {
+    display: block;
+    margin: 2px;
+    z-index: 1;
+    position: relative;
+}
+
+@keyframes lineMove2 {
+    0% {
+        left: -90px;
+    }
+
+    100% {
+        left: calc(100% + 42px);
+    }
+}
+
+#display .detail .hack .line {
+    background-color: var(--shellColor);
+    position: absolute;
+    left: -90px;
+    top: 0;
+    z-index: 0;
+    width: 150px;
+    height: 15px;
+    mix-blend-mode: hard-light;
+    transform: rotate(-45deg);
+    animation: lineMove2 20s linear infinite;
+    animation-delay: var(--ani-delay);
+    --hacknetProp: 'shellColor';
+}
+
+#display .detail .port-list {
+    margin-top: 25px;
+    width: 100%;
+}
+
+#display .detail .port-list .port-info:not(:first-child) {
+    margin-top: 5px;
+}
+
+#display .detail .port-list .port-info {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 420px;
+    height: 45px;
+}
+
+#display .detail .port-list .port-info[lock] {
+    background-color: var(--lockedColor);
+    --hacknetProp: 'lockedColor';
+}
+
+#display .detail .port-list .port-info[unlock] {
+    background-color: var(--unlockedColor);
+    --hacknetProp: 'unlockedColor';
+}
+
+#display .detail .port-list .port-info .info {
+    height: 100%;
+    display: flex;
+}
+
+#display .detail .port-list .port-info .info .port {
+    font-size: 25px;
+    margin-left: 10px;
+}
+
+#display .detail .port-list .port-info .info .type {
+    font-size: 16px;
+    margin-left: 5px;
+}
+
+#display .detail .port-list .port-info .icon {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 4px;
+}
+
+#display .detail-bg {
+    width: 100%;
+    height: calc(100% - 15px);
+    position: absolute;
+    left: 0;
+    top: 15px;
+    overflow: hidden;
+    z-index: 0;
+}
+
+@keyframes lineMove3 {
+    0% {
+        left: 0px;
+    }
+
+    100% {
+        left: calc(100% + var(--displayDetailBgHeight));
+    }
+}
+
+#display .detail-bg .line {
+    width: 4000px;
+    height: 15px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    background-color: var(--superLightWhite);
+    transform: translateX(-50%) rotate(-45deg);
+    animation: lineMove3 20s linear infinite;
+    animation-delay: var(--ani-delay);
+    z-index: 0;
+    --hacknetProp: 'superLightWhite';
+}
+
+/* ================================== 主题改变此处状态 ================================ */
+/* 聚合模块 */
+#double-colume {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.module {
+    height: calc(100% - 2px);
+}
+
+#right-module {
+    margin-right: 2px !important;
+}
+
+.layout:not(:first-child) {
+    margin-left: 2px;
+}
+
+#double-colume .module:last-child {
+    margin-top: 2px;
+}
+
+/* ========================================= blue类型布局 ======================================== */
+#module[themeLayoutName="blue"] #left-module {
+    /* 后续可能改变 */
+    width: fit-content;
+    height: 100%;
+}
+
+/* 中间模块*/
+#module[themeLayoutName="blue"] #mid-module {
+    flex: 11;
+    height: 100%;
+}
+
+/* 右侧模块 */
+#module[themeLayoutName="blue"] #right-module {
+    flex: 9;
+    height: 100%;
+}
+
+#module[themeLayoutName="blue"] #double-colume > .module{
+    width: 100%;
+}
+
+#module[themeLayoutName="blue"] #double-colume > .module:first-child{
+    height: calc(100% - 205px - 4px);
+}
+
+#module[themeLayoutName="blue"] #double-colume > .module:last-child{
+    height: 205px
+}
+
+/* ========================================= green类型布局 ======================================== */
+#module[themeLayoutName="green"] #left-module {
+    flex: 11;
+    height: 100%;
+}
+
+/* 中间模块*/
+#module[themeLayoutName="green"] #mid-module {
+    flex: 9;
+    height: 100%;
+}
+
+/* 右侧模块 */
+#module[themeLayoutName="green"] #right-module {
+    width: fit-content;
+    height: 100%;
+}
+
+#module[themeLayoutName="green"] #double-colume > .module{
+    width: 100%;
+}
+
+#module[themeLayoutName="green"] #double-colume > .module:first-child{
+    height: calc(100% - 205px - 4px);
+}
+
+#module[themeLayoutName="green"] #double-colume > .module:last-child{
+    height: 205px
+}
+
+#module[themeLayoutName="green"] .layout:not(:first-child) {
+    margin-left: 4px;
+}
+
+#module[themeLayoutName="green"] #double-colume .module:last-child {
+    margin-top: 4px;
+}
+
+/* ========================================= white类型布局 ======================================== */
+#module[themeLayoutName="white"] #left-module {
+    width: fit-content;
+    height: 100%;
+}
+
+/* 中间模块*/
+#module[themeLayoutName="white"] #mid-module {
+    flex: 11;
+    height: 100%;
+}
+
+/* 右侧模块 */
+#module[themeLayoutName="white"] #right-module {
+    flex: 9;
+    height: 100%;
+}
+
+#module[themeLayoutName="white"] #right-module > .module {
+    height:  100%;
+}
+
+#module[themeLayoutName="white"] #double-colume > .module{
+    width: 100%;
+}
+
+#module[themeLayoutName="white"] #double-colume > .module:first-child{
+    height: calc(100% - 205px - 4px);
+}
+
+#module[themeLayoutName="white"] #double-colume > .module:last-child{
+    height: 205px
+}
+
+/* ========================================= mint类型布局 ======================================== */
+#module[themeLayoutName="mint"] #left-module {
+    width: fit-content;
+    height: 100%;
+}
+
+/* 中间模块*/
+#module[themeLayoutName="mint"] #mid-module {
+    flex: 9;
+    height: 100%;
+}
+
+/* 右侧模块 */
+#module[themeLayoutName="mint"] #right-module {
+    flex: 11;
+    height: 100%;
+}
+
+#module[themeLayoutName="mint"] #right-module > .module {
+    height:  100%;
+}
+
+#module[themeLayoutName="mint"] #double-colume > .module{
+    width: 100%;
+}
+
+#module[themeLayoutName="mint"] #double-colume > .module:first-child{
+    height: calc(100% - 205px - 4px);
+}
+
+#module[themeLayoutName="mint"] #double-colume > .module:last-child{
+    height: 205px
+}
+
+/* ========================================= greencompact类型布局 ======================================== */
+#module[themeLayoutName="greencompact"] #left-module {
+    flex: 11;
+    height: 100%;
+}
+
+/* 中间模块*/
+#module[themeLayoutName="greencompact"] #mid-module {
+    flex: 9;
+    height: 100%;
+}
+
+/* 右侧模块 */
+#module[themeLayoutName="greencompact"] #right-module {
+    width: fit-content;
+    height: 100%;
+}
+
+#module[themeLayoutName="greencompact"] #right-module > .module {
+    height:  100%;
+}
+
+#module[themeLayoutName="greencompact"] #double-colume > .module{
+    width: 100%;
+}
+
+#module[themeLayoutName="greencompact"] #double-colume > .module:first-child{
+    height: calc(100% - 205px - 4px);
+}
+
+#module[themeLayoutName="greencompact"] #double-colume > .module:last-child{
+    height: 205px
+}
+
+/* ========================================= greencompact类型布局 ======================================== */
+#module[themeLayoutName="riptide"] #left-module {
+    flex: 11;
+    height: 100%;
+}
+
+/* 中间模块*/
+#module[themeLayoutName="riptide"] #mid-module {
+    flex: 9;
+    height: 100%;
+}
+
+/* 右侧模块 */
+#module[themeLayoutName="riptide"] #right-module {
+    width: fit-content;
+    height: 100%;
+}
+
+#module[themeLayoutName="riptide"] #right-module > .module {
+    height:  100%;
+}
+
+#module[themeLayoutName="riptide"] #double-colume > .module{
+    width: 100%;
+}
+
+#module[themeLayoutName="riptide"] #double-colume > .module:first-child{
+    height: 280px;
+}
+
+#module[themeLayoutName="riptide"] #double-colume > .module:last-child{
+    height: calc(100% - 280px - 4px);
+}
+
+/* ========================================= riptide2类型布局 ======================================== */
+#module[themeLayoutName="riptide2"] #left-module {
+    flex: 11;
+    height: 100%;
+}
+
+/* 中间模块*/
+#module[themeLayoutName="riptide2"] #mid-module {
+    flex: 9;
+    height: 100%;
+}
+
+/* 右侧模块 */
+#module[themeLayoutName="riptide2"] #right-module {
+    width: fit-content;
+    height: 100%;
+}
+
+#module[themeLayoutName="riptide2"] #right-module > .module {
+    height:  100%;
+}
+
+#module[themeLayoutName="riptide2"] #double-colume > .module{
+    width: 100%;
+}
+
+#module[themeLayoutName="riptide2"] #double-colume > .module:first-child{
+    height: 280px;
+}
+
+#module[themeLayoutName="riptide2"] #double-colume > .module:last-child{
+    height: calc(100% - 280px - 4px);
+}
+
+/* ========================================= colamaeleon类型布局 ======================================== */
+#module[themeLayoutName="colamaeleon"] #left-module {
+    flex: 7;
+    height: 100%;
+}
+
+/* 中间模块*/
+#module[themeLayoutName="colamaeleon"] #mid-module {
+    flex: 13;
+    height: 100%;
+}
+
+/* 右侧模块 */
+#module[themeLayoutName="colamaeleon"] #right-module {
+    width: fit-content;
+    height: 100%;
+}
+
+#module[themeLayoutName="colamaeleon"] #right-module > .module {
+    height:  100%;
+}
+
+#module[themeLayoutName="colamaeleon"] #double-colume > .module{
+    width: 100%;
+}
+
+#module[themeLayoutName="colamaeleon"] #double-colume > .module:first-child{
+    height: 280px;
+}
+
+#module[themeLayoutName="colamaeleon"] #double-colume > .module:last-child{
+    height: calc(100% - 280px - 4px);
+}
+
+/* ========================================= blue类型布局 ======================================== */
+#module[themeLayoutName="purple"] #left-module {
+    /* 后续可能改变 */
+    width: fit-content;
+    height: 100%;
+}
+
+/* 中间模块*/
+#module[themeLayoutName="purple"] #mid-module {
+    flex: 11;
+    height: 100%;
+}
+
+/* 右侧模块 */
+#module[themeLayoutName="purple"] #right-module {
+    flex: 9;
+    height: 100%;
+}
+
+#module[themeLayoutName="purple"] #double-colume > .module{
+    width: 100%;
+}
+
+#module[themeLayoutName="purple"] #double-colume > .module:first-child{
+    height: calc(100% - 205px - 4px);
+}
+
+#module[themeLayoutName="purple"] #double-colume > .module:last-child{
+    height: 205px
+}
+
+/* ================================================================================== */

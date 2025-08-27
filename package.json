@@ -2,7 +2,7 @@
   "name": "hacknetextensionhelper",
   "displayName": "HacknetExtensionHelper",
   "description": "hacknet extension write helper",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.103.0"
   },
@@ -18,11 +18,16 @@
   "repository": {
     "url": "https://github.com/fengxu-30338/HacknetExtensionEditor.git"
   },
+  "publisher": "fengxu30338",
   "contributes": {
     "commands": [
       {
         "command": "hacknetextensionhelper.createEditorHintFile",
         "title": "创建Hacknet编辑器提示文件"
+      },
+      {
+        "command": "hacknetextensionhelper.themeDebug",
+        "title": "调试Hacknet主题文件"
       },
       {
         "command": "hacknetextensionhelper.triggerHint",
@@ -57,6 +62,11 @@
         "command": "hacknetextensionhelper.createHackerScriptFile",
         "title": "创建HackerScript文件",
         "category": "创建Hacknet资源文件"
+      },
+      {
+        "command": "hacknetextensionhelper.createThemeFile",
+        "title": "创建Theme主题文件",
+        "category": "创建Hacknet资源文件"
       }
     ],
     "keybindings": [
@@ -88,7 +98,7 @@
         },
         {
           "command": "hacknetextensionhelper.createPeopleFile",
-          "group": "createHacknetResourceFile@6",
+          "group": "createHacknetResourceFile@7",
           "when": "explorerResourceIsFolder"
         },
         {
@@ -108,8 +118,43 @@
         },
         {
           "command": "hacknetextensionhelper.createHackerScriptFile",
+          "group": "createHacknetResourceFile@6",
+          "when": "explorerResourceIsFolder"
+        },
+        {
+          "command": "hacknetextensionhelper.createThemeFile",
           "group": "createHacknetResourceFile@5",
           "when": "explorerResourceIsFolder"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "hacknetextensionhelper.createComputerFile",
+          "when": "false"
+        },
+        {
+          "command": "hacknetextensionhelper.createPeopleFile",
+          "when": "false"
+        },
+        {
+          "command": "hacknetextensionhelper.createActionFile",
+          "when": "false"
+        },
+        {
+          "command": "hacknetextensionhelper.createFactionFile",
+          "when": "false"
+        },
+        {
+          "command": "hacknetextensionhelper.createMissionFile",
+          "when": "false"
+        },
+        {
+          "command": "hacknetextensionhelper.createThemeFile",
+          "when": "false"
+        },
+        {
+          "command": "hacknetextensionhelper.createHackerScriptFile",
+          "when": "false"
         }
       ]
     },

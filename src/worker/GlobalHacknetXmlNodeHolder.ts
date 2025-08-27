@@ -3,11 +3,12 @@ import { Worker } from 'worker_threads';
 import { XmlNodeParseResult } from './GlobalXmlScaner';
 import * as CommonUtils from '../utils/CommonUtils';
 import path from 'path';
+import { EventManager, EventType } from "../event/EventManager";
 
 let scanWorker:Worker | null = null;
 let watcher:vscode.FileSystemWatcher | null = null;
 
-enum HacknetNodeType {
+export enum HacknetNodeType {
     Computer,
     Mission,
     Action,
@@ -62,12 +63,22 @@ class HacknetNodeHolder {
         node[this.NodeTypeSymbol] = nodeType;
         node[this.FilePathSymbol] = fullpath;
         this.NodeMap[nodeType].set(fullpath, node);
+
+        EventManager.fireEvent(EventType.HacknetNodeFileChange,{
+            type: nodeType,
+            modify: 'add'
+        });
     }
 
     public RemoveNodeByFilepath(filepath: string) {
         for (const key in this.NodeMap) {
             const nodeMap:Map<string, any> = (this.NodeMap as any)[key];
-            nodeMap.delete(filepath);
+            if (nodeMap.delete(filepath)) {
+                EventManager.fireEvent(EventType.HacknetNodeFileChange,{
+                    type: parseInt(key),
+                    modify: 'remove'
+                });
+            }
         }
     }
 
@@ -76,6 +87,11 @@ class HacknetNodeHolder {
             const nodeMap:Map<string, any> = (this.NodeMap as any)[key];
             nodeMap.clear();
         }
+
+        EventManager.fireEvent(EventType.HacknetNodeFileChange,{
+            type: -1,
+            modify: 'clear'
+        });
     }
 
     public GetNodeType(node:any) : HacknetNodeType | undefined {
@@ -106,6 +122,27 @@ class HacknetNodeHolder {
         if ('Person' in node) {
             return HacknetNodeType.People;
         }
+    }
+
+    public GetNodeByFilepath(filepath: string):any {
+        for (const key in this.NodeMap) {
+            const nodeMap:Map<string, any> = (this.NodeMap as any)[key];
+            const node = nodeMap.get(filepath);
+            if (node) {
+                return node;
+            }
+        }
+    }
+
+    public GetNodeTypeByFilepath(filepath: string): HacknetNodeType | null {
+        for (const key in this.NodeMap) {
+            const nodeMap:Map<string, any> = (this.NodeMap as any)[key];
+            if (nodeMap.has(filepath)) {
+                return parseInt(key);
+            }
+        }
+
+        return null;
     }
 
     public GetNodeFilepath(node:any) : string | undefined {

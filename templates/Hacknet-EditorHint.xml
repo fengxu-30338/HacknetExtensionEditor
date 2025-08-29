@@ -1144,11 +1144,31 @@
                 });
             })
         </Attribute>
-        <Attribute name="AssignmentTag" required="true" desc="加载任务的位置" default="tail" hint="enum">
-            <Enums kind="value">
-                <Enum desc="加载任务到最上方">top</Enum>
-                <Enum desc="加载任务到最下方">tail</Enum>
-            </Enums>
+        <Attribute name="AssignmentTag" required="true" desc="加载任务的位置或任务领取人" default="" hint="js">
+            (function(actNode, hacknetNodeHolder) {
+                if (!actNode.node.attribute.has('TargetComp')) {
+                    return;
+                }
+
+                const targetCompId = actNode.node.attribute.get('TargetComp');
+                const comp = hacknetNodeHolder.GetComputers().find(comp =&gt; comp.id === targetCompId);
+                if (!comp) {
+                    return;
+                }
+
+                if (comp.DHSDaemon &amp;&amp; comp.DHSDaemon.agent) {
+                    return Array.isArray(comp.DHSDaemon.agent) ? 
+                        comp.DHSDaemon.agent.map(item =&gt; {
+                            return {value: item.name, kind: 'value'};
+                        }): 
+                        {value: comp.DHSDaemon.agent.name, kind: 'value'};
+                }
+
+                return [
+                    {value: 'top', desc: '加载任务到任务中心最上方', kind: 'enum'},
+                    {value: 'tail', desc: '加载任务到任务中心最下方', kind: 'enum'},
+                ];
+            });
         </Attribute>
     </Node>
 
@@ -2299,6 +2319,7 @@
         <Text label="closeCDTray" value="closeCDTray $#%#$" desc="关闭CD托盘" />
         <Text label="disconnect" value="closeCDTray $#%#$" desc="断开连接" />
         <Text label="reboot" value="reboot $#%#$" desc="重启计算机" />
+        <Text label="systakeover" value="systakeover $#%#$" desc="虚拟机级别攻击,被攻击后 抖动->蓝屏->启动->黑屏(慎用)" />
     </HackerScriptsHint>
 
 </HacknetEditorHint>

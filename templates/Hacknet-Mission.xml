@@ -19,7 +19,7 @@
         <sender>发送者</sender>
         <subject>主题</subject>
         <body>邮件内容</body>
-        <!-- 附件可填加任务细节，计算机链接、账户等 -->
+        <!-- 附件可添加任务细节，计算机链接、账户等 -->
         <attachments>
 
         </attachments>

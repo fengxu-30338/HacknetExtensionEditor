@@ -31,6 +31,7 @@ interface GlobalCodeHints {
     ReplaceTextSource: CodeHintItem[]
     CommonTextSource: CodeHintItem[]
     HackerScriptSource: FileCodeHint
+    IncludeFiles: string[]
 }
 
 const NodePathSplitChar = '.';
@@ -39,16 +40,9 @@ const standardXmlParser = new StandardXMLParser({
         attributeNamePrefix: '',
         parseAttributeValue: false,
 });
+let HintFileWatchers:vscode.FileSystemWatcher[] = [];
 
-export const CodeHints:GlobalCodeHints = {
-    NodeCodeHintSource: [],
-    ReplaceTextSource: [],
-    CommonTextSource: [],
-    HackerScriptSource: {
-        fileTriggerPattern: '**/*.txt',
-        codeHintItems: []
-    }
-};
+export const CodeHints:GlobalCodeHints = CreateEmptyHacknetCodeHint();
 
 export enum HintType {
     Enum,
@@ -114,6 +108,12 @@ interface NodeCodeHints {
     Multi: boolean
     Enable: boolean
     FileTriggerPattern: string | null
+}
+
+class FileSystemErrorWrapper extends Error {
+    constructor(public fileError: vscode.FileSystemError, public fileUri: vscode.Uri) {
+        super(fileError.message);
+    }
 }
 
 function getBool(obj:any, key:string, defaultVal: boolean) {
@@ -573,18 +573,107 @@ export function GetHackerScriptsCodeHints(xmlTip: string | any): FileCodeHint {
 }
 
 /**
+ * 创建一个空的代码提示结构
+ */
+function CreateEmptyHacknetCodeHint():GlobalCodeHints {
+    const codeHints:GlobalCodeHints = {
+        NodeCodeHintSource: [],
+        ReplaceTextSource: [],
+        CommonTextSource: [],
+        HackerScriptSource: {
+            fileTriggerPattern: '**/*.txt',
+            codeHintItems: []
+        },
+        IncludeFiles: []
+    };
+
+    return codeHints;
+}
+
+/**
  * 清空提示信息
  */
 function ClearHacknetCodeHint() {
     CodeHints.CommonTextSource = [];
     CodeHints.NodeCodeHintSource = [];
     CodeHints.ReplaceTextSource = [];
+    CodeHints.IncludeFiles = [];
     CodeHints.HackerScriptSource = {
         fileTriggerPattern: '**/*.txt',
         codeHintItems: []
     };
     EventManager.fireEvent(EventType.CodeHintSourceChange, CodeHints);
     vscode.commands.executeCommand('setContext', 'hacknetextensionhelper.HasCodeHintFile', false);
+}
+
+/**
+ * 获取提示文件中所有的include引用的其他文件
+ * @param xmlTip 
+ */
+function GetIncludeFileFromCodeHintFile(xmlTip: string | any):string[] {
+    const xmlJsObj  = typeof xmlTip === 'string' ? standardXmlParser.parse(xmlTip) : xmlTip;
+
+    if (!('HacknetEditorHint' in xmlJsObj)) {
+        return [];
+    }
+
+    const hacknetEditorHint = xmlJsObj['HacknetEditorHint'];
+    if (!hacknetEditorHint.Include) {
+        return [];
+    }
+
+    const inclideElements:any[] = [];
+    
+    if (Array.isArray(hacknetEditorHint.Include)) {
+        inclideElements.push(...hacknetEditorHint.Include);
+    } else {
+        inclideElements.push(hacknetEditorHint.Include);
+    }
+
+    return inclideElements.filter(item => typeof item === 'object' && item['path']).map(item => item['path']);
+}
+
+/**
+ * 从提示文件中获取提示信息
+ * @param fileUri 提示文件uri
+ * @returns 提示信息
+ */
+async function GetCodeHintFromCodeHintFile(fileUri: vscode.Uri):Promise<GlobalCodeHints>{
+    let codeHints:GlobalCodeHints | null = null;
+    try {
+        const res = await vscode.workspace.fs.readFile(fileUri);
+        const content = Buffer.from(res).toString('utf-8');
+        const xmlObj = standardXmlParser.parse(content);
+        codeHints = {
+            NodeCodeHintSource: GetNodeCodeHints(xmlObj),
+            ReplaceTextSource: GetReplaceTextCodeHints(xmlObj),
+            CommonTextSource: GetCommonTextCodeHints(xmlObj),
+            HackerScriptSource: GetHackerScriptsCodeHints(xmlObj),
+            IncludeFiles: GetIncludeFileFromCodeHintFile(xmlObj)
+        };
+    } catch (err) {
+        if (err instanceof vscode.FileSystemError) {
+            throw new FileSystemErrorWrapper(err, fileUri);
+        }
+    }
+
+    if (codeHints === null) {
+        codeHints = CreateEmptyHacknetCodeHint();
+    }
+
+    for (const otherFile of codeHints.IncludeFiles) {
+        const rootUri = vscode.workspace.workspaceFolders![0].uri;
+        const targetUri = vscode.Uri.joinPath(rootUri, otherFile);
+        const hints = await GetCodeHintFromCodeHintFile(targetUri);
+
+        codeHints.NodeCodeHintSource.push(...hints.NodeCodeHintSource);
+        codeHints.ReplaceTextSource.push(...hints.ReplaceTextSource);
+        codeHints.CommonTextSource.push(...hints.CommonTextSource);
+        codeHints.HackerScriptSource.codeHintItems.push(...hints.HackerScriptSource.codeHintItems);
+        codeHints.IncludeFiles.push(...hints.IncludeFiles);
+    }
+
+    return codeHints;
 }
 
 
@@ -596,22 +685,70 @@ async function GetCodeHintFromHacknetCodeHintFile() {
     if (!workspaceFolders || workspaceFolders.length === 0) {
         return;
     }
-    const rootPath = vscode.workspace.workspaceFolders![0].uri;
-    const targetPath = vscode.Uri.joinPath(rootPath, 'Hacknet-EditorHint.xml');
+    const rootUri = vscode.workspace.workspaceFolders![0].uri;
+    const targetUri = vscode.Uri.joinPath(rootUri, 'Hacknet-EditorHint.xml');
     try {
-        const res = await vscode.workspace.fs.readFile(targetPath);
-        const content = Buffer.from(res).toString('utf-8');
-        const xmlObj = standardXmlParser.parse(content);
-        CodeHints.NodeCodeHintSource = GetNodeCodeHints(xmlObj);
-        CodeHints.ReplaceTextSource = GetReplaceTextCodeHints(xmlObj);
-        CodeHints.CommonTextSource = GetCommonTextCodeHints(xmlObj);
-        CodeHints.HackerScriptSource = GetHackerScriptsCodeHints(xmlObj);
-        EventManager.fireEvent(EventType.CodeHintSourceChange, CodeHints);
+        const res = await GetCodeHintFromCodeHintFile(targetUri);
+        CodeHints.CommonTextSource = res.CommonTextSource;
+        CodeHints.HackerScriptSource = res.HackerScriptSource;
+        CodeHints.IncludeFiles = res.IncludeFiles;
+        CodeHints.NodeCodeHintSource = res.NodeCodeHintSource;
+        CodeHints.ReplaceTextSource = res.ReplaceTextSource;
         vscode.commands.executeCommand('setContext', 'hacknetextensionhelper.HasCodeHintFile', true);
-    } catch(err) {
-        // ignore
-        console.error(err);
+        WatchCodeHintFile(CommonUtils.GetExtensionContext(), CodeHints.IncludeFiles, true);
+    } catch (err) {
+        ClearHacknetCodeHint();
+        if (!(err instanceof FileSystemErrorWrapper) ||
+            err.fileError.code !== vscode.FileSystemError.FileNotFound().code ||
+            err.fileUri.fsPath !== targetUri.fsPath
+        ) {
+            console.error(err);
+            vscode.window.showErrorMessage('解析Hacknet提示文件出错: ' + err);
+        }
     }
+}
+
+/**
+ * 监控hacknet提示文件
+ */
+function WatchCodeHintFile(context: vscode.ExtensionContext, relativeIncludeFilePath: string[], canBeCancel:boolean) {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (workspaceFolders === undefined || workspaceFolders.length === 0) {
+        return;
+    }
+
+    // 清空旧的文件监控
+    HintFileWatchers.forEach(watch => {
+        const watchIdx = context.subscriptions.findIndex(item => item === watch);
+        if (watchIdx >= 0) {
+            context.subscriptions.splice(watchIdx, 1);
+        }
+    });
+    HintFileWatchers = [];
+
+    relativeIncludeFilePath.forEach(filepath => {
+        const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspaceFolders[0], filepath));
+        // 文件内容变更（磁盘层面）
+        watcher.onDidChange(_ => {
+            GetCodeHintFromHacknetCodeHintFile();
+        });
+
+        // 文件创建
+        watcher.onDidCreate(_ => {
+            GetCodeHintFromHacknetCodeHintFile();
+        });
+
+        // 文件删除
+        watcher.onDidDelete(_ => {
+            GetCodeHintFromHacknetCodeHintFile();
+        });
+
+        context.subscriptions.push(watcher);
+
+        if (canBeCancel) {
+            HintFileWatchers.push(watcher);
+        }
+    });
 }
 
 /**
@@ -622,24 +759,11 @@ function WatchHacknetCodeHintFile(context: vscode.ExtensionContext) {
     if (workspaceFolders === undefined || workspaceFolders.length === 0) {
         return;
     }
+
     vscode.commands.executeCommand('setContext', 'hacknetextensionhelper.HasCodeHintFile', false);
-    const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspaceFolders[0], "Hacknet-EditorHint.xml"));
-    // 文件内容变更（磁盘层面）
-    watcher.onDidChange(_ => {
-        GetCodeHintFromHacknetCodeHintFile();
-    });
 
-    // 文件创建
-    watcher.onDidCreate(_ => {
-        GetCodeHintFromHacknetCodeHintFile();
-    });
-
-    // 文件删除
-    watcher.onDidDelete(_ => {
-        ClearHacknetCodeHint();
-    });
-    
-    context.subscriptions.push(watcher);
+    // Hacknet-EditorHint.xml文件监控，必要项
+    WatchCodeHintFile(context, ["Hacknet-EditorHint.xml"], false);
 }
 
 /**

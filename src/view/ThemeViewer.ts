@@ -209,6 +209,9 @@ class ThemeWebView {
                             });
                         });
         lastTextEditor.setDecorations(infoDecoration, decorations);
+        if (decorations.length > 0) {
+            lastTextEditor.revealRange(decorations[0].range);
+        }
         this.editorDecDisposeMap.set(lastTextEditor, Date.now() + 3000);
     }
 

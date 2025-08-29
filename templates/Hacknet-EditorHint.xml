@@ -202,7 +202,7 @@
                 <Enum desc="图标样式为更高级的服务器样式">4</Enum>
             </Enums>
         </Attribute>
-        <Attribute name="allowsDefaultBootModule" default="true" required="false" desc="是否在导航到该电脑时显示定义的最后一个后台进程(daemo)" hint="enum" />
+        <Attribute name="allowsDefaultBootModule" default="true" required="false" desc="是否在导航到该电脑时显示定义的最后一个后台进程(daemon)" hint="enum" />
         <Attribute name="icon" required="false" desc="电脑图标" hint="enum">
             <Enums>
                 <Enum desc="笔记本图标">laptop</Enum>
@@ -297,7 +297,7 @@
                 <Enum>false</Enum>
             </Enums>
         </Attribute>
-        <Attribute name="isSuper" required="true" desc="是否时超级管理员，为true时配合type=fast可以在断开时立即重置密码" default="false" hint="enum">
+        <Attribute name="isSuper" required="true" desc="是否是超级管理员，为true时配合type=fast可以在断开时立即重置密码" default="false" hint="enum">
             <Enums>
                 <Enum>true</Enum>
                 <Enum>false</Enum>
@@ -321,7 +321,7 @@
                 使用|表示或运算，例如："Computer.id|Computer.eosDevice.id" 表示这两个属性存在一个匹配成功则整体匹配成功，但是第一层必须一样
             当前可用的有 Computer.* Mission.*  Action.*  Theme.* Faction.*  path(直接路径跳转)
         -->
-        <Attribute name="dlink" required="true" desc="计算机ID" default="id" hint="computer" linkBy="Computer.id|Computer.eosDevice.id" />
+        <Attribute name="target" required="true" desc="计算机ID" default="id" hint="computer" linkBy="Computer.id|Computer.eosDevice.id" />
     </Node>
 
     <!-- <positionNear target="advExamplePC2" position="1" total="3" extraDistance="0.1" force="false"/> -->
@@ -426,7 +426,7 @@
     <!-- <mail username="test@jmail.com" pass="thisIstheaccountpass" /> -->
     <Node name="Computer.eosDevice.mail" enable="true" multi="true" desc="生成一个邮箱账密">
         <Attribute name="username" required="true" desc="邮箱账号" default="test@jmail.com" hint="enum" />
-        <Attribute name="thisIstheaccountpass" required="true" desc="邮箱密码" default="pass" hint="enum" />
+        <Attribute name="pass" required="true" desc="邮箱密码" default="pass" hint="enum" />
     </Node>
 
     <Node name="Computer.eosDevice.file" enable="true" multi="true" desc="在eos设置里生成一个文件">

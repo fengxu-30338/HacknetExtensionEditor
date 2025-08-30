@@ -1,5 +1,159 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <HacknetEditorHint>
+    <!-- 提示文件本身 -->
+    <Node name="HacknetEditorHint" enable="true" multi="false" desc="定义Hacknet提示文件内容">
+        <Content />
+    </Node>
+    <Node name="HacknetEditorHint.Node" enable="true" multi="true" desc="定义一个标签的提示内容">
+        <Content />
+        <Attribute name="name" required="true" default="" desc="是否启用该标签对应的提示，多级用'.'隔开，多个用'|'隔开" />
+        <Attribute name="enable" required="true" default="true" desc="是否启用该标签" />
+        <Attribute name="multi" required="true" default="false" desc="该标签在父标签下是否可以定义多个" />
+        <Attribute name="desc" required="true" default="false" desc="该标签的描述信息" />
+        <Attribute name="fileTriggerPattern" required="false" default="false" desc="该标签在哪些文件里可以进行提示" />
+    </Node>
+    <Node name="HacknetEditorHint.Node.Content" enable="true" multi="false" desc="定义标签的内容信息，不写则表示该标签没有内容或子标签">
+        <Content />
+        <Attribute name="default" required="true" default="" desc="属性默认值" />
+        <Attribute name="desc" required="true" default="" desc="属性描述" />
+        <Attribute name="hint" required="true" default="enum" desc="提示类型">
+            <Enums>
+                <Enum desc="枚举类型">Enum</Enum>
+                <Enum desc="在枚举的基础上，增加一些预定义的字符串，在代码提示文件中的CommonTextHint标签中定义">EnumWithCommonString</Enum>
+                <Enum desc="自定义js代码段">js</Enum>
+                <Enum desc="当前工作空间的所有计算机id">Computer</Enum>
+                <Enum desc="在Computer的基础上增加了eos设备id的提供">ComputerOrEos</Enum>
+                <Enum desc="action文件路径">ActionFile</Enum>
+                <Enum desc="主题文件路径">ThemeFile</Enum>
+                <Enum desc="任务文件路径">MisisonFile</Enum>
+                <Enum desc="自定义派系文件路径">FactionFile</Enum>
+                <Enum desc="People文件路径">PeopleFile</Enum>
+                <Enum desc="一个颜色，会提供5种随机生成的颜色供选择">Color</Enum>
+                <Enum desc="需要在content中提供路径匹配表达式">Path</Enum>
+                <Enum desc="用法同Path，返回表达式的匹配文件的路径">Folder</Enum>
+                <Enum desc="分步匹配，将字符串分成多段，每一段提供不同的匹配，非最后一段只能用hint=step类型，最后一段可以用所有hint类型">Step</Enum>
+            </Enums>
+        </Attribute>
+        <Attribute name="linkby" required="false" default="path" desc="根据匹配后的标签的实际(属性/内容)跳转到目标文件，更多用法请查阅插件安装界面的自定义提示规则章节">
+            <Enums>
+                <Enum desc="直接路径跳转">path</Enum>
+                <Enum desc="根据计算机ID进行跳转">Computer.id</Enum>
+                <Enum desc="根据计算机ID或eos设备id进行跳转">Computer.id|Computer.eosDevice.id</Enum>
+            </Enums>
+        </Attribute>
+    </Node>
+    <Node name="HacknetEditorHint.Node.Attribute|HacknetEditorHint.Node.ConditionAttributes.Attribute" enable="true" multi="true" desc="定义标签的一个属性信息">
+        <Content />
+        <Attribute name="name" required="true" default="" desc="属性名" />
+        <Attribute name="required" required="true" default="true" desc="属性是否必选">
+            <Enums>
+                <Enum desc="必选">true</Enum>
+                <Enum desc="非必选">false</Enum>
+            </Enums>
+        </Attribute>
+        <Attribute name="default" required="true" default="" desc="属性默认值" />
+        <Attribute name="desc" required="true" default="" desc="属性描述" />
+        <Attribute name="hint" required="true" default="enum" desc="提示类型">
+            <Enums>
+                <Enum desc="枚举类型">Enum</Enum>
+                <Enum desc="在枚举的基础上，增加一些预定义的字符串，在代码提示文件中的CommonTextHint标签中定义">EnumWithCommonString</Enum>
+                <Enum desc="自定义js代码段">js</Enum>
+                <Enum desc="当前工作空间的所有计算机id">Computer</Enum>
+                <Enum desc="在Computer的基础上增加了eos设备id的提供">ComputerOrEos</Enum>
+                <Enum desc="action文件路径">ActionFile</Enum>
+                <Enum desc="主题文件路径">ThemeFile</Enum>
+                <Enum desc="任务文件路径">MisisonFile</Enum>
+                <Enum desc="自定义派系文件路径">FactionFile</Enum>
+                <Enum desc="People文件路径">PeopleFile</Enum>
+                <Enum desc="一个颜色，会提供5种随机生成的颜色供选择">Color</Enum>
+                <Enum desc="需要在content中提供路径匹配表达式">Path</Enum>
+                <Enum desc="用法同Path，返回表达式的匹配文件的路径">Folder</Enum>
+                <Enum desc="分步匹配，将字符串分成多段，每一段提供不同的匹配，非最后一段只能用hint=step类型，最后一段可以用所有hint类型">Step</Enum>
+            </Enums>
+        </Attribute>
+        <Attribute name="linkby" required="false" default="path" desc="根据匹配后的标签的实际(属性/内容)跳转到目标文件，更多用法请查阅插件安装界面的自定义提示规则章节">
+            <Enums>
+                <Enum desc="直接路径跳转">path</Enum>
+                <Enum desc="根据计算机ID进行跳转">Computer.id</Enum>
+                <Enum desc="根据计算机ID或eos设备id进行跳转">Computer.id|Computer.eosDevice.id</Enum>
+            </Enums>
+        </Attribute>
+    </Node>
+    <Node name="HacknetEditorHint.Node.Content.Enums|HacknetEditorHint.Node.Attribute.Enums" enable="true" multi="false" desc="定义一个枚举组，需要hint=enum类型">
+        <Content />
+    </Node>
+    <Node name="HacknetEditorHint.Node.Content.Enums.Enum|HacknetEditorHint.Node.Attribute.Enums.Enum" enable="true" multi="true" desc="定义一个枚举">
+        <Content default="枚举实际值" />
+        <Attribute name="desc" required="true" default="" desc="枚举值描述" />
+    </Node>
+    <Node name="HacknetEditorHint.Node.Content.LinkByCollection|HacknetEditorHint.Node.Attribute.LinkByCollection" enable="true" multi="false" desc="定义一个linkby组合，根据匹配成功的进行跳转">
+        <Content />
+    </Node>
+    <Node name="HacknetEditorHint.Node.Content.LinkByCollection.Item|HacknetEditorHint.Node.Attribute.LinkByCollection.Item" enable="true" multi="true" desc="定义一个linkby匹配项">
+        <Attribute name="linkBy" required="true" default="path" desc="根据匹配后的标签的实际(属性/内容)跳转到目标文件，更多用法请查阅插件安装界面的自定义提示规则章节">
+            <Enums>
+                <Enum desc="直接路径跳转">path</Enum>
+                <Enum desc="根据计算机ID进行跳转">Computer.id</Enum>
+                <Enum desc="根据计算机ID或eos设备id进行跳转">Computer.id|Computer.eosDevice.id</Enum>
+            </Enums>
+        </Attribute>
+        <Attribute name="linkByValuePattern" required="true" default="(.*)" desc="使用第一个捕获组的内容进行linkby跳转" />
+    </Node>
+    <Node name="HacknetEditorHint.Node.Content.Step|HacknetEditorHint.Node.Attribute.Step" enable="true" multi="true" desc="定义一个或多个分段提示，更多用法请查阅插件安装界面的自定义提示规则章节">
+        <Attribute name="value" required="true" default="" desc="用于匹配的字符串" />
+        <Attribute name="desc" required="true" default="描述" desc="描述信息" />
+    </Node>
+    <Node name="HacknetEditorHint.Node.Content.Step.Next|HacknetEditorHint.Node.Attribute.Step.Next" enable="true" multi="false" desc="定义一个或多个分段提示，更多用法请查阅插件安装界面的自定义提示规则章节">
+        <Content />
+        <Attribute name="hint" required="true" default="enum" desc="下一阶段的提示类型">
+            <Enums>
+                <Enum desc="枚举类型">Enum</Enum>
+                <Enum desc="在枚举的基础上，增加一些预定义的字符串，在代码提示文件中的CommonTextHint标签中定义">EnumWithCommonString</Enum>
+                <Enum desc="自定义js代码段">js</Enum>
+                <Enum desc="当前工作空间的所有计算机id">Computer</Enum>
+                <Enum desc="在Computer的基础上增加了eos设备id的提供">ComputerOrEos</Enum>
+                <Enum desc="action文件路径">ActionFile</Enum>
+                <Enum desc="主题文件路径">ThemeFile</Enum>
+                <Enum desc="任务文件路径">MisisonFile</Enum>
+                <Enum desc="自定义派系文件路径">FactionFile</Enum>
+                <Enum desc="People文件路径">PeopleFile</Enum>
+                <Enum desc="一个颜色，会提供5种随机生成的颜色供选择">Color</Enum>
+                <Enum desc="需要在content中提供路径匹配表达式">Path</Enum>
+                <Enum desc="用法同Path，返回表达式的匹配文件的路径">Folder</Enum>
+                <Enum desc="分步匹配，将字符串分成多段，每一段提供不同的匹配，非最后一段只能用hint=step类型，最后一段可以用所有hint类型">Step</Enum>
+            </Enums>
+        </Attribute>
+    </Node>
+    <Node name="HacknetEditorHint.Node.ConditionAttributes" enable="true" multi="true" desc="当实际标签的属性满足不同条件进行不同的属性提示">
+        <Content />
+        <Attribute name="attr" required="true" default="" desc="实际标签的属性名" />
+        <Attribute name="match" required="true" default="" desc="实际标签属性值的匹配正则，匹配成功则加入内部定义的属性进行提示" />
+    </Node>
+    <Node name="HacknetEditorHint.Include" enable="true" multi="true" desc="包含其他的提示文件">
+        <Attribute name="path" required="true" default="" desc="其他提示文件的相对路径,请勿递归包含" linkBy="path" hint="path">**/*.xml</Attribute>
+    </Node>
+    <Node name="HacknetEditorHint.ReplaceTextHint" enable="true" multi="false" desc="定义游戏中可替换文本:#xxx# 提示">
+        <Content />
+    </Node>
+    <Node name="HacknetEditorHint.CommonTextHint" enable="true" multi="false" desc="定义一个通用文本提示，在hint=enumWithCommonString时进行提示">
+        <Content />
+    </Node>
+    <Node name="HacknetEditorHint.ReplaceTextHint.Text|HacknetEditorHint.CommonTextHint.Text" enable="true" multi="true" desc="定义游戏中可替换文本:#xxx# 提示">
+        <Attribute name="value" required="true" default="" desc="提示值" />
+        <Attribute name="desc" required="true" default="" desc="描述信息" />
+        <Attribute name="filterText" required="false" default="" desc="过滤文本" />
+    </Node>
+    <Node name="HacknetEditorHint.HackerScriptsHint" enable="true" multi="false" desc="定义HackerScripts命令提示">
+        <Content />
+    </Node>
+    <Node name="HacknetEditorHint.HackerScriptsHint.Text" enable="true" multi="true" desc="定义HackerScripts命令提示">
+        <Attribute name="label" required="true" default="" desc="命令名称" />
+        <Attribute name="value" required="true" default="" desc="实际插入的命令行" />
+        <Attribute name="desc" required="true" default="" desc="描述信息" />
+        <Attribute name="doc" required="false" default="" desc="命令详情描述" />
+        <Attribute name="filterText" required="false" default="" desc="过滤文本" />
+    </Node>
+
     <!-- HacknetExtension -->
     <Node name="HacknetExtension" enable="true" multi="false" desc="定义Hacknet扩展相关信息" fileTriggerPattern="ExtensionInfo.xml">
         <Content />

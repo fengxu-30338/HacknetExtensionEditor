@@ -2,7 +2,7 @@
   "name": "hacknetextensionhelper",
   "displayName": "HacknetExtensionHelper",
   "description": "hacknet extension write helper",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "engines": {
     "vscode": "^1.103.0"
   },
@@ -24,6 +24,10 @@
       {
         "command": "hacknetextensionhelper.createEditorHintFile",
         "title": "创建Hacknet编辑器提示文件"
+      },
+      {
+        "command": "hacknetextensionhelper.refreshHintFile",
+        "title": "重新读取Hacknet提示文件内容"
       },
       {
         "command": "hacknetextensionhelper.themeDebug",
@@ -75,6 +79,18 @@
         "key": "ctrl+enter",
         "mac": "cmd+enter",
         "when": "editorTextFocus"
+      }
+    ],
+    "configuration":[
+      {
+        "title": "Hacknet提示文件监控设置",
+        "properties":{
+          "hacknetextensionhelperconfig.hintFile.autoRefresh": {
+            "type": "boolean",
+            "default": "true",
+            "description": "监听提示文件改变后自动刷新提示内容"
+          }
+        }
       }
     ],
     "webview": {

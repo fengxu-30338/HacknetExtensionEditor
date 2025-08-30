@@ -40,7 +40,7 @@ const standardXmlParser = new StandardXMLParser({
         attributeNamePrefix: '',
         parseAttributeValue: false,
 });
-let HintFileWatchers:vscode.FileSystemWatcher[] = [];
+const HintFileWatchers:vscode.FileSystemWatcher[] = [];
 
 export const CodeHints:GlobalCodeHints = CreateEmptyHacknetCodeHint();
 
@@ -695,7 +695,7 @@ async function GetCodeHintFromHacknetCodeHintFile() {
         CodeHints.NodeCodeHintSource = res.NodeCodeHintSource;
         CodeHints.ReplaceTextSource = res.ReplaceTextSource;
         vscode.commands.executeCommand('setContext', 'hacknetextensionhelper.HasCodeHintFile', true);
-        WatchCodeHintFile(CommonUtils.GetExtensionContext(), CodeHints.IncludeFiles, true);
+        WatchCodeHintFile(CommonUtils.GetExtensionContext(), CodeHints.IncludeFiles, false);
     } catch (err) {
         ClearHacknetCodeHint();
         if (!(err instanceof FileSystemErrorWrapper) ||
@@ -711,45 +711,70 @@ async function GetCodeHintFromHacknetCodeHintFile() {
 /**
  * 监控hacknet提示文件
  */
-function WatchCodeHintFile(context: vscode.ExtensionContext, relativeIncludeFilePath: string[], canBeCancel:boolean) {
+function WatchCodeHintFile(context: vscode.ExtensionContext, relativeIncludeFilePath: string[], isRootHintFile:boolean) {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (workspaceFolders === undefined || workspaceFolders.length === 0) {
         return;
     }
 
+    const config = vscode.workspace.getConfiguration('hacknetextensionhelperconfig.hintFile');
+    if (!config.get<boolean>("autoRefresh")) {return;}
+
     // 清空旧的文件监控
+    const [_, ...includeFileWatchers] = HintFileWatchers;
+    includeFileWatchers.forEach(watch => {
+        const watchIdx = context.subscriptions.findIndex(item => item === watch);
+        if (watchIdx >= 0) {
+            context.subscriptions.splice(watchIdx, 1);
+        }
+        watch.dispose();
+    });
+    HintFileWatchers.splice(1, HintFileWatchers.length - 1);
+
+    const debounceGetCodeHintFromHacknetCodeHintFile = lodash.debounce(GetCodeHintFromHacknetCodeHintFile, 3000);
+    relativeIncludeFilePath.forEach(filepath => {
+        const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspaceFolders[0], filepath));
+        // 文件内容变更（磁盘层面）
+        watcher.onDidChange(_ => {
+            debounceGetCodeHintFromHacknetCodeHintFile();
+        });
+
+        // 文件创建
+        watcher.onDidCreate(_ => {
+            debounceGetCodeHintFromHacknetCodeHintFile();
+        });
+
+        // 文件删除
+        watcher.onDidDelete(_ => {
+            debounceGetCodeHintFromHacknetCodeHintFile();
+        });
+
+        context.subscriptions.push(watcher);
+
+        if (isRootHintFile) {
+            HintFileWatchers.unshift(watcher);
+        } else {
+            HintFileWatchers.push(watcher);
+        }
+    });
+}
+
+/**
+ * 释放所有提示文件监控
+ */
+function DisposeAllHintFileWatcher() {
+    const context = CommonUtils.GetExtensionContext();
+
     HintFileWatchers.forEach(watch => {
         const watchIdx = context.subscriptions.findIndex(item => item === watch);
         if (watchIdx >= 0) {
             context.subscriptions.splice(watchIdx, 1);
         }
+        watch.dispose();
     });
-    HintFileWatchers = [];
-
-    relativeIncludeFilePath.forEach(filepath => {
-        const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workspaceFolders[0], filepath));
-        // 文件内容变更（磁盘层面）
-        watcher.onDidChange(_ => {
-            GetCodeHintFromHacknetCodeHintFile();
-        });
-
-        // 文件创建
-        watcher.onDidCreate(_ => {
-            GetCodeHintFromHacknetCodeHintFile();
-        });
-
-        // 文件删除
-        watcher.onDidDelete(_ => {
-            GetCodeHintFromHacknetCodeHintFile();
-        });
-
-        context.subscriptions.push(watcher);
-
-        if (canBeCancel) {
-            HintFileWatchers.push(watcher);
-        }
-    });
+    HintFileWatchers.splice(0, HintFileWatchers.length);
 }
+
 
 /**
  * 监听Hacknet-EditorHint.xml文件改变
@@ -763,7 +788,7 @@ function WatchHacknetCodeHintFile(context: vscode.ExtensionContext) {
     vscode.commands.executeCommand('setContext', 'hacknetextensionhelper.HasCodeHintFile', false);
 
     // Hacknet-EditorHint.xml文件监控，必要项
-    WatchCodeHintFile(context, ["Hacknet-EditorHint.xml"], false);
+    WatchCodeHintFile(context, ["Hacknet-EditorHint.xml"], true);
 }
 
 /**
@@ -1427,13 +1452,36 @@ function GetLocationLinkByActiveNode(actNode: ActiveNode, document: vscode.TextD
     return ParseAttrValueLinkByToGetDefinitionLink(actNode, codeHint, document);
 }
 
+/**
+ * 监听配置文件改变
+ */
+function WatchConfigFileChange(context: vscode.ExtensionContext) {
+    context.subscriptions.push(vscode.workspace.onDidChangeConfiguration(e => {
+        if (e.affectsConfiguration('hacknetextensionhelperconfig.hintFile.autoRefresh'))
+        {
+            const config = vscode.workspace.getConfiguration('hacknetextensionhelperconfig.hintFile');
+            const autoRefrehHintFile = config.get<boolean>('autoRefresh');
+            DisposeAllHintFileWatcher();
+            if (autoRefrehHintFile) {
+                // 重新添加根提示文件监控
+                WatchHacknetCodeHintFile(context);
+                // 解析提示文件内容
+                GetCodeHintFromHacknetCodeHintFile();
+            }
+        }
+    }));
+}
+
 export function RegisterHacknetXmlCodeHint(context: vscode.ExtensionContext) {
     const xmlParser = new XmlParser();
+
+    // 监听配置文件改变
+    WatchConfigFileChange(context);
 
     // 获取提示信息
     GetCodeHintFromHacknetCodeHintFile();
 
-    // 监听提示文件变动
+    // 监听根提示文件变动
 	WatchHacknetCodeHintFile(context);
 
     // 注册xml文档提供器
@@ -1546,4 +1594,9 @@ export function RegisterHacknetXmlCodeHint(context: vscode.ExtensionContext) {
             }
         },' ')
     );
+
+    // 注册重新读取提示文件内容命令
+    context.subscriptions.push(vscode.commands.registerCommand('hacknetextensionhelper.refreshHintFile', _ => {
+        GetCodeHintFromHacknetCodeHintFile();
+    }));
 }

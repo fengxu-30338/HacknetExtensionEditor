@@ -12,7 +12,7 @@ hacknetextensionhelperconfig.hintFile.autoRefresh （是否监听配置文件改
 
 windows下按下快捷键 `ctrl + shift + p `输入hacknet后选择**重新读取Hacknet提示文件内容并执行**即可重新解析
 
-![](imgs\img11.jpg)
+![](imgs/img11.jpg)
 
 > 新增提示文件本身内容提示
 
@@ -62,7 +62,7 @@ xml提示文件`Hacknet-EditorHint.xml`新增Include标签可引用其他提示�
 
 您可以在主题的xml文件右下角点击调试主题按钮来在线调试主题
 
-![](imgs\img10.jpg)
+![](imgs/img10.jpg)
 
 点击后会在侧边栏弹出网页模拟的界面，您更改xml后可立即在网页看到效果。
 

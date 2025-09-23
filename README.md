@@ -8,11 +8,17 @@
 
 创建完毕后会在项目根目录生成一个Hacknet-EditorHint.xml文件，内部提供了编辑器的提示信息，您可以在使用Pathfinder定义了新的Action等标签后可自定义该文件以获得编辑器提示，自定义功能将在后续介绍。
 
-现在您就可以开始愉快的编写Hacknet Extension文件了，下面介绍其功能。
+现在您就可以开始愉快的编写Hacknet Extension文件了，可以通过`空格`或按下快捷键`ctrl + enter`触发提示。值得注意的是您在写标签时请尽量不要输入`'<xxx'`，这样会导致提示效果不好，您可以按照如下步骤输入以此获得更好的提示效果:
+
+```xml
+<!-- 
+如果您需要添加一个admin标签您不应该输入<adxxx 这种类型，
+您只需要输入ad不需要带开头的'<'符号将会获得更好的提示效果
+或者您直接在想要提示的地方按下ctrl + enter快捷键将会获得更好的提示效果
+-->
+```
 
 注意：**项目的根目录必须是hacknet扩展的根目录，不要一次性包含多个扩展，否则可能导致提示有误**
-
-
 
 # 功能介绍
 
@@ -20,7 +26,7 @@
 
 - 创建模板
 - xml文件提示
-- #xx#文本高亮
+- \#xx#文本高亮
 - HackerScript文件提示及高亮
 - 在线调试主题`(v0.0.2新增)`
 
@@ -29,8 +35,6 @@
 您在文件夹右击后，可以看到如下选项，选择一个可以帮助您快速创建各类模板文件
 
 ![](imgs/img2.jpg)
-
-
 
 ## 2.代码提示
 
@@ -45,8 +49,6 @@
 - HackerScript
 
 您在需要提示的地方可以通过按下"Ctrl + 回车键"或按下`空格`来触发代码提示功能
-
-
 
 > 代码提示示例
 
@@ -70,17 +72,11 @@ Action文件的RunFunction分段提示
 
 ![](imgs/img7.jpg)
 
-
-
 HackerScript文件提示及高亮
 
 ![](imgs/img8.jpg)
 
-
-
 插件会根据您当前光标的位置给予您最准确的提示信息，包括属性名(**部分属性非必选的不会直接出现，您可以通过快捷键触发完整提示**)、属性值、以及子标签提示。
-
-
 
 ## 3.查看标签详情
 
@@ -88,16 +84,12 @@ HackerScript文件提示及高亮
 
 ![](imgs/img9.jpg)
 
-
-
 ## 4.符号跳转
 
 您可以在以下地方，按住`Ctrl+鼠标左键`进行目标文件跳转
 
 - 计算机ID
 - 任意文件路径处（Action文件，Mission文件，音乐文件、图片文件等）
-
-
 
 ## 5.编写自定义提示规则
 
@@ -127,18 +119,14 @@ HackerScript文件提示及高亮
 上面标示定义了一个Computer标签的提示，他将会在最外层给出提示Computer的提示
 
 - name： 属性名
-
 - enable：是否启用该标签的提示
-
 - multi：该标签是否可以定义多个
-
 - desc：标签的作用描述
-
 - fileTriggerPattern：只在特定路径的文件上给出提示，比如此处就是所有Nodes文件夹下的xml文件才有Computer标签的提示
 
 `Content`表示该标签存在子标签，只能定义一个,其**用法与Attribute完全一样**，唯一的限制就是只能定义一个
 
- ` Attribute`定义该标签的属性，可以存在多个，属性如下
+` Attribute`定义该标签的属性，可以存在多个，属性如下
 
 - name: 属性名
 - required： 该属性是否必选，否则不会生成在代码片段中，但任然会给用户提示
@@ -164,8 +152,6 @@ HackerScript文件提示及高亮
 13. Folder （文件夹选择，需要提供匹配路径的表达式）
 14. Step（分步匹配，将字符串分成多段，每一段提供不同的匹配，非最后一段只能用hint="step"类型，最后一段可以用所有hint类型）
 
-
-
 > js类型的hint用法
 
 ```xml
@@ -180,15 +166,13 @@ hacknetNodeHolder: 可以获取当前工作空间下的各种阶段信息，如c
 <Attribute name="ip" required="true" desc="加密所在计算机的IP" default="ip" hint="js" linkBy="Computer.ip">
     (function(node, hacknetNodeHolder){
         return hacknetNodeHolder.GetComputers()
-            .filter(comp =&gt; comp.ip)
-            .map(comp =&gt; {
+            .filter(comp => comp.ip)
+            .map(comp => {
             return {value: comp.ip, desc: comp.name, filterText: comp.id, kind: "reference"};
         });
     })
 </Attribute>
 ```
-
-
 
 > path/folder类型的hint用法
 
@@ -203,8 +187,6 @@ hacknetNodeHolder: 可以获取当前工作空间下的各种阶段信息，如c
     <Content desc="歌曲文件路径(必须是.ogg格式)" hint="path" linkBy="path">**/*.ogg</Content>
 </Node>
 ```
-
-
 
 > Step类型的hint用法
 
@@ -224,7 +206,7 @@ hacknetNodeHolder: 可以获取当前工作空间下的各种阶段信息，如c
         <Step value="addRankFaction:" desc="增加玩家在指定组织的等级" kind="function">
             <Next hint="js">
                 (function(actNode, hacknetNodeHolder){
-                    return hacknetNodeHolder.GetFactions().map(node =&gt; {
+                    return hacknetNodeHolder.GetFactions().map(node => {
                         return {value: node.id, kind: "enum"};
                     });
                 })
@@ -235,8 +217,6 @@ hacknetNodeHolder: 可以获取当前工作空间下的各种阶段信息，如c
 ```
 
 上面的示例展示了Step的用法，其基础用法类型于enum，对在初始给出用户Step中定义的value的提示，当用户选择某一项后再次进行提示时则进入Next标签定义的规则,Next标签用法与`Attribute标签一样`
-
-
 
 ### **子标签示例**
 
@@ -260,17 +240,21 @@ hacknetNodeHolder: 可以获取当前工作空间下的各种阶段信息，如c
 <Node name="ConditionalActions.*.ChangeNetmapSortMethod|CustomFaction.Action.ChangeNetmapSortMethod" enable="true" multi="true" desc="更改网络图节点排序方式" />
 ```
 
-
-
 **linkBy**属性表示根据匹配后的标签的实际属性/内容跳转到目标文件
 
-​      例：Computer.id表示查找当前工作目录下所有计算机的id属性，如果与实际属性相等则跳转到具有该属性的目标文件，使用*可以匹配当前层级的任何属性名
+```
+例：Computer.id表示查找当前工作目录下所有计算机的id属性，如果与实际属性相等则跳转到具有该属性的目标文件，使用*可以匹配当前层级的任何属性名
+```
 
-​        使用|表示或运算，例如："Computer.id|Computer.eosDevice.id" 表示这两个属性存在一个匹配成功则整体匹配成功，但是第一层**必须一样**此处就是必须都以`Computer.`开头
+```
+使用|表示或运算，例如："Computer.id|Computer.eosDevice.id" 表示这两个属性存在一个匹配成功则整体匹配成功，但是第一层
+```
 
-​      当前可用的有 Computer.* Mission.*  Action.*  Theme.* Faction.*  People.*  path(直接路径跳转)
+**必须一样**此处就是必须都以`Computer.`开头
 
-
+```
+当前可用的有 Computer.* Mission.*  Action.*  Theme.* Faction.*  People.*  path(直接路径跳转)
+```
 
 ### **多级linkBy**
 
@@ -290,7 +274,7 @@ hacknetNodeHolder: 可以获取当前工作空间下的各种阶段信息，如c
         <Step value="addRankFaction:" desc="增加玩家在指定组织的等级" kind="function">
             <Next hint="js">
                 (function(actNode, hacknetNodeHolder){
-                    return hacknetNodeHolder.GetFactions().map(node =&gt; {
+                    return hacknetNodeHolder.GetFactions().map(node => {
                         return {value: node.id, kind: "enum"};
                     });
                 })
@@ -309,8 +293,6 @@ LinkByCollection表示同时定义一组linkBy的跳转规则，存在一条匹�
 ```
 
 用实际属性与linkByValuePattern中定义的正则进行匹配`(取捕获组的最后一个值)`，如果匹配成功则按Faction.id规则进行跳转，不成功则继续尝试下一条linkBy规则。
-
-
 
 ### 条件属性
 
@@ -341,8 +323,6 @@ LinkByCollection表示同时定义一组linkBy的跳转规则，存在一条匹�
 
 使用ConditionAttributes定义一个条件属性，上述的意思是当实际标签的type属性满足match定义的正则表达式后，其内部定义的子属性才会被用于提示。
 
-
-
 ### 包含其他提示文件
 
 版本>=`0.0.3`可用
@@ -367,10 +347,6 @@ xml提示文件`Hacknet-EditorHint.xml`新增Include标签可引用其他提示�
 	<Include path="Test/Test.xml" />
 </HacknetEditorHint>
 ```
-
-
-
-
 
 ## 6.在线调试主题功能
 

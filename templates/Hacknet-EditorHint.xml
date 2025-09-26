@@ -1242,7 +1242,7 @@
 
     <!-- <LoadMission MissionName="Missions/ExampleMission.xml" /> -->
     <Node name="ConditionalActions.*.LoadMission|CustomFaction.Action.LoadMission" enable="true" multi="true" desc="立即加载一个任务并取代当前任务">
-        <Attribute name="MissionName" required="true" desc="任务文件路径" default="true" hint="MisisonFile" linkBy="path" />
+        <Attribute name="MissionName" required="true" desc="任务文件路径" default="" hint="MisisonFile" linkBy="path" />
     </Node>
 
     <!-- 
@@ -1356,6 +1356,59 @@
 
     <!-- <AddIRCMessage Author="HA0" TargetComp="advExamplePC" Delay="3.0">Hey @#PLAYERNAME# -xxx </AddIRCMessage> -->
      <Node name="ConditionalActions.*.AddIRCMessage|CustomFaction.Action.AddIRCMessage" enable="true" multi="true" desc="添加一条消息到IRC聊天服务面板上">
+        <Content default="消息内容" hint="js">
+            <LinkByCollection>
+                <Item linkBy="Computer.ip" linkByValuePattern="link#%#.*#%#(\d+(?:\.\d+){3})" />
+                <Item linkBy="Computer.id|Computer.eosDevice.id" linkByValuePattern="link#%#.*#%#(.*)" />
+                <Item linkBy="Computer.ip" linkByValuePattern="account#%#.*?#%#(\d+(?:\.\d+){3})#%#" />
+                <Item linkBy="Computer.id|Computer.eosDevice.id" linkByValuePattern="account#%#.*?#%#(.*?)#%#" />
+            </LinkByCollection>
+            (function(actNode, hacknetNodeHolder){
+                const accouts = [];
+                for (const comp of hacknetNodeHolder.GetComputers()) {
+                    if (comp.adminPass) {
+                        accouts.push({comp, user: 'admin', pass: comp.adminPass.pass})
+                    }
+
+                    if (comp.account) {
+                        if (Array.isArray(comp.account)) {
+                            comp.account.forEach(account =&gt; {
+                                accouts.push({comp, user: account.username, pass: account.password})
+                            })
+                        } else {
+                            const account = comp.account;
+                            accouts.push({comp, user: account.username, pass: account.password})
+                        }
+                    }
+                }
+
+                const compSet = new Set();
+                const res = []
+                accouts.forEach(account =&gt; {
+                    const comp = account.comp;
+                    if (!compSet.has(comp)) {
+                        res.push({
+                            label: `link ${comp.name}`,
+                            value: `!ATTACHMENT:link#%#${comp.name}#%#${comp.ip || comp.id}`,
+                            desc: '添加任务附件链接计算机样式消息',
+                            kind: 'value',
+                            filterText: comp.name
+                        })
+                        compSet.add(comp);
+                    }
+                    
+                    res.push({
+                        label: `account ${comp.name} [${account.user}]`,
+                        value: `!ATTACHMENT:account#%#${comp.name}#%#${comp.ip || comp.id}#%#${account.user}#%#${account.pass}`,
+                        desc: '添加任务附件计算机账户样式消息',
+                        kind: 'value',
+                        filterText: comp.name
+                    })
+                });
+
+                return res;
+            })
+        </Content>
         <Attribute name="TargetComp" required="true" desc="具有IRC聊天服务的计算机ID" default="computer" hint="js" linkBy="Computer.id|Computer.eosDevice.id">
             (function(node, hacknetNodeHolder){
                 return hacknetNodeHolder.GetComputers()

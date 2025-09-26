@@ -14,10 +14,10 @@ interface CodeHintItem {
     desc: string
     filterText: string | undefined
     kind: string | undefined
+    label?: string
 }
 
 interface CommonTextHintItem extends CodeHintItem {
-    label?: string
     document?: string
 }
 
@@ -1068,7 +1068,7 @@ async function GetHacknetNodeContentHint(actNode: ActiveNode) : Promise<vscode.C
     const codeHintItems = await GetCodeHintItems(actNode, nodeHint.ContentHint);
 
     codeHintItems.forEach((item, idx) => {
-            const completionItem = new vscode.CompletionItem(item.value);
+            const completionItem = new vscode.CompletionItem(item.label ?? item.value);
             completionItem.detail = item.desc;
             completionItem.insertText = item.value;
             completionItem.sortText = idx.toString().padStart(3, '0');
@@ -1177,7 +1177,7 @@ async function GetHacknetNodeAttributeHint(actNode: ActiveNode) : Promise<vscode
         const codeHintItems = await GetCodeHintItems(actNode, attrCodeHint);
         
         codeHintItems.forEach((item, idx) => {
-            const completionItem = new vscode.CompletionItem(item.value);
+            const completionItem = new vscode.CompletionItem(item.label ?? item.value);
             completionItem.detail = item.desc;
             completionItem.insertText = item.value;
             completionItem.sortText = idx.toString().padStart(3, '0');

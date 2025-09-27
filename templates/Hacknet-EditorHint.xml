@@ -1365,49 +1365,45 @@
             </LinkByCollection>
             (function(actNode, hacknetNodeHolder){
                 const accouts = [];
+                const res = [];
                 for (const comp of hacknetNodeHolder.GetComputers()) {
+                    res.push({
+                        label: `link ${comp.name}`,
+                        value: `!ATTACHMENT:link#%#${comp.name}#%#${comp.ip || comp.id}`,
+                        desc: '添加任务附件链接计算机样式消息',
+                        kind: 'value',
+                        filterText: `link ${comp.name}`
+                    });
+
                     if (comp.adminPass) {
-                        accouts.push({comp, user: 'admin', pass: comp.adminPass.pass})
+                        accouts.push({comp, user: 'admin', pass: comp.adminPass.pass});
                     }
 
                     if (comp.account) {
                         if (Array.isArray(comp.account)) {
                             comp.account.forEach(account =&gt; {
-                                accouts.push({comp, user: account.username, pass: account.password})
-                            })
+                                accouts.push({comp, user: account.username, pass: account.password});
+                            });
                         } else {
                             const account = comp.account;
-                            accouts.push({comp, user: account.username, pass: account.password})
+                            accouts.push({comp, user: account.username, pass: account.password});
                         }
                     }
                 }
 
-                const compSet = new Set();
-                const res = []
                 accouts.forEach(account =&gt; {
                     const comp = account.comp;
-                    if (!compSet.has(comp)) {
-                        res.push({
-                            label: `link ${comp.name}`,
-                            value: `!ATTACHMENT:link#%#${comp.name}#%#${comp.ip || comp.id}`,
-                            desc: '添加任务附件链接计算机样式消息',
-                            kind: 'value',
-                            filterText: comp.name
-                        })
-                        compSet.add(comp);
-                    }
-                    
                     res.push({
                         label: `account ${comp.name} [${account.user}]`,
                         value: `!ATTACHMENT:account#%#${comp.name}#%#${comp.ip || comp.id}#%#${account.user}#%#${account.pass}`,
                         desc: '添加任务附件计算机账户样式消息',
                         kind: 'value',
-                        filterText: comp.name
-                    })
+                        filterText: `account ${comp.name} [${account.user}]`
+                    });
                 });
 
                 return res;
-            })
+            });
         </Content>
         <Attribute name="TargetComp" required="true" desc="具有IRC聊天服务的计算机ID" default="computer" hint="js" linkBy="Computer.id|Computer.eosDevice.id">
             (function(node, hacknetNodeHolder){

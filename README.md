@@ -26,7 +26,7 @@
 
 - 创建模板
 - xml文件提示
-- \#xx#文本高亮
+- #xx#文本高亮
 - HackerScript文件提示及高亮
 - 在线调试主题`(v0.0.2新增)`
 
@@ -137,15 +137,16 @@ HackerScript文件提示及高亮
 
 当前支持的hint类型有
 
-1. Enum (枚举类型，用法如上图)
-2. EnumWithCommonString （在枚举的基础上，增加一些预定义的字符串，在代码提示文件中的CommonTextHint标签中定义）
-3. JavaScript （指定自定义js代码以获取提示，自由度最高）
-4. Computer （提供当前工作空间下的所有计算机ID供用户选择）
-5. ComputerOrEos （在Computer的基础上增加了eos设备id的提供）
-6. ActionFile (action文件路径)
-7. ThemeFile（主题文件路径）
-8. MisisonFile（任务文件路径）
-9. FactionFile（自定义派系文件路径）
+
+ 1. Enum (枚举类型，用法如上图)
+ 2. EnumWithCommonString （在枚举的基础上，增加一些预定义的字符串，在代码提示文件中的CommonTextHint标签中定义）
+ 3. JavaScript （指定自定义js代码以获取提示，自由度最高）
+ 4. Computer （提供当前工作空间下的所有计算机ID供用户选择）
+ 5. ComputerOrEos （在Computer的基础上增加了eos设备id的提供）
+ 6. ActionFile (action文件路径)
+ 7. ThemeFile（主题文件路径）
+ 8. MisisonFile（任务文件路径）
+ 9. FactionFile（自定义派系文件路径）
 10. PeopleFile （People文件路径）
 11. Color （一个颜色，会提供5种随机生成的颜色供选择）
 12. Path （路径选择，需要提供匹配路径的表达式）

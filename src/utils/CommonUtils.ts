@@ -14,7 +14,7 @@ export function GetWorkspaceRootUri(): vscode.Uri | undefined {
   // 获取当前工作区根目录
   const workspaceFolders = vscode.workspace.workspaceFolders;
   if (!workspaceFolders || workspaceFolders.length === 0) {
-    vscode.window.showErrorMessage('No workspace is opened.');
+    // vscode.window.showErrorMessage('No workspace is opened.');
     return;
   }
 

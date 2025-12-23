@@ -1419,7 +1419,7 @@
                 });
             })
         </Attribute>
-        <Attribute name="Author" required="true" desc="消息发送者" hint="js" diag="W">
+        <Attribute name="Author" required="true" desc="消息发送者" hint="js" diag="H">
             (function(actNode, hacknetNodeHolder){
                 if (!actNode.node.attribute.has('TargetComp')) {
                     return;
@@ -1523,7 +1523,7 @@
                     return {value: theme, desc: '内置主题', kind: 'enum'};
                 });
                 hacknetNodeHolder.GetThemes().forEach(themeNode =&gt; {
-                    res.push({value: themeNode.GetRelativePath(), desc: '主题路径' ,kind: "file"});
+                    res.push({value: themeNode['__RelativePath__'], desc: '主题路径' ,kind: "file"});
                 });
 
                 return res;
@@ -1614,11 +1614,12 @@
                 if (!comp) {
                     return;
                 }
+                
+                const res = [
+                    {value: 'admin', desc: '管理员账户', kind: 'value'}
+                ];
 
                 if (comp.account) {
-                    const res = [
-                        {value: 'admin', desc: '管理员账户', kind: 'value'}
-                    ];
                     if (Array.isArray(comp.account)) {
                         comp.account.forEach(item =&gt; {
                             res.push({value: item.username, desc: '用户自定义账户', kind: 'value'});
@@ -1626,9 +1627,8 @@
                     } else {
                         res.push({value: comp.account.username, kind: 'value'});
                     }
-                    
-                    return res;
                 }
+                return res;
             });
         </Attribute>
         <Attribute name="DelayHost" required="false" desc="具有daemon服务的计算机ID,否则无法触发延时效果" default="computer" hint="computer" linkBy="Computer.id|Computer.eosDevice.id" diag="E" />
@@ -1747,8 +1747,8 @@
                     })
                 </Next>
             </Step>
-            <Step value="addFlags:flag1" desc="添加一个flag,多个用逗号隔开" kind="function" />
-            <Step value="removeFlags:flag1" desc="移除一个flag,多个用逗号隔开" kind="function" />
+            <Step value="addFlags:" desc="添加一个flag,多个用逗号隔开" kind="function" />
+            <Step value="removeFlags:" desc="移除一个flag,多个用逗号隔开" kind="function" />
             <Step value="setFaction:" desc="设置玩家当前的组织ID" kind="function">
                 <Next hint="js">
                     (function(actNode, hacknetNodeHolder){
@@ -1865,7 +1865,7 @@
             </Attribute>
         </ConditionAttributes>
         <ConditionAttributes attr="type" match="^clearfolder$">
-            <Attribute name="target" required="true" desc="目标计算机ID" default="" hint="computer" linkBy="Computer.id|Computer.eosDevice.id" diag="E" />
+            <Attribute name="target" required="true" desc="目标计算机ID" default="" hint="ComputerOrEos" linkBy="Computer.id|Computer.eosDevice.id" diag="E" />
             <Attribute name="path" required="true" desc="待清空路径" default="home" hint="enum">
                 <Enums kind="value">
                     <Enum desc="home目录">home</Enum>
@@ -1925,7 +1925,7 @@
             <Attribute name="target" required="true" desc="flag值，不支持多个" default="flag1" hint="enum" />
         </ConditionAttributes>
         <ConditionAttributes attr="type" match="^fileupload$">
-            <Attribute name="target" required="true" desc="待上传文件所处的计算机ID" default="" hint="computer" linkBy="Computer.id|Computer.eosDevice.id" diag="E" />
+            <Attribute name="target" required="true" desc="待上传文件所处的计算机ID" default="" hint="ComputerOrEos" linkBy="Computer.id|Computer.eosDevice.id" diag="E" />
             <Attribute name="file" required="true" desc="待上传文件名" default="file.txt" hint="enum" />
             <Attribute name="path" required="true" desc="待上传文件所在路径" default="home" hint="enum">
                 <Enums kind="value">
@@ -1935,7 +1935,7 @@
                     <Enum desc="系统文件目录">sys</Enum>
                 </Enums>
             </Attribute>
-            <Attribute name="destTarget" required="true" desc="文件上传到的目标的计算机ID" default="" hint="computer" linkBy="Computer.id|Computer.eosDevice.id" diag="E" />
+            <Attribute name="destTarget" required="true" desc="文件上传到的目标的计算机ID" default="" hint="ComputerOrEos" linkBy="Computer.id|Computer.eosDevice.id" diag="E" />
             <Attribute name="destPath" required="true" desc="文件上传到的目录" default="home" hint="enum">
                 <Enums kind="value">
                     <Enum desc="home目录">home</Enum>
@@ -2022,8 +2022,8 @@
                     })
                 </Next>
             </Step>
-            <Step value="addFlags:flag1" desc="添加一个flag,多个用逗号隔开" kind="function" />
-            <Step value="removeFlags:flag1" desc="移除一个flag,多个用逗号隔开" kind="function" />
+            <Step value="addFlags:" desc="添加一个flag,多个用逗号隔开" kind="function" />
+            <Step value="removeFlags:" desc="移除一个flag,多个用逗号隔开" kind="function" />
             <Step value="setFaction:" desc="设置玩家当前的组织ID" kind="function">
                 <Next hint="js">
                     (function(actNode, hacknetNodeHolder){
@@ -2081,8 +2081,8 @@
                     })
                 </Next>
             </Step>
-            <Step value="addFlags:flag1" desc="添加一个flag,多个用逗号隔开" kind="function" />
-            <Step value="removeFlags:flag1" desc="移除一个flag,多个用逗号隔开" kind="function" />
+            <Step value="addFlags:" desc="添加一个flag,多个用逗号隔开" kind="function" />
+            <Step value="removeFlags:" desc="移除一个flag,多个用逗号隔开" kind="function" />
             <Step value="setFaction:" desc="设置玩家当前的组织ID" kind="function">
                 <Next hint="js">
                     (function(actNode, hacknetNodeHolder){

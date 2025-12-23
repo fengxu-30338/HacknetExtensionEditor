@@ -295,7 +295,11 @@ async function DiagnosticNodeContent(node:Node, hint:NodeCodeHints, req:Diagnost
         return [];
     }
 
-    // console.log("parse content", node.nodePath);
+    // 处理一些特殊情况
+    if (node.nodePath === 'mission.nextMission' && node.content.trim().toLowerCase() === 'none') {
+        return [];
+    }
+    
     const items = await DiagnosticByCodeHint(node, node.content.trim(), hint.ContentHint, req);
 
     return items.map(item => {
@@ -308,7 +312,6 @@ async function DiagnosticNodeContent(node:Node, hint:NodeCodeHints, req:Diagnost
         return item as Diagnostic;
     });
 }
-
 
 // 开始根据定义诊断
 async function DiagnosticByCodeHint(node:Node, checkVal:string, codeHint:CodeHint, req:DiagnosticRequest):Promise<PartialBy<Diagnostic, 'range'>[]> {

@@ -160,8 +160,8 @@ HackerScript文件提示及高亮
 此处通过js获取当前工作空间下的所有计算机的ip属性提供给用户选择
 node: 当前鼠标光标处的节点信息，可以获取的节点的属性名-属性值等关系
 hacknetNodeHolder: 可以获取当前工作空间下的各种阶段信息，如computer,action,mission,faction,people,themes
-	如：hacknetNodeHolder.GetComputers() 获取的是工作空间下的所有计算机信息，返回的是计算机数组，您可以通过调用其中子元素的
-	GetRelativePath()方法获取到该元素所在文件的相对路径，您也可以通过调用其中子元素的属性来获取其在xml文件中定义的细节
+	如：hacknetNodeHolder.GetComputers() 获取的是工作空间下的所有计算机信息，返回的是计算机数组，您可以通过其中子元素的
+	'__RelativePath__'属性获取到该元素所在文件的相对路径，您也可以通过调用其中子元素的属性来获取其在xml文件中定义的细节
 [注意<>&等字符的转义]
 -->
 <Attribute name="ip" required="true" desc="加密所在计算机的IP" default="ip" hint="js" linkBy="Computer.ip">

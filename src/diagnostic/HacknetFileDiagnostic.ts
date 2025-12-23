@@ -6,6 +6,7 @@ import lodash from "lodash";
 import { Diagnostic, DiagnosticRequest, DiagnosticResult, DiagnosticWorkerMsg, DiagnosticWorkerMsgType, QueryRelativeFileReq, QueryRelativeFileResp } from './HacknetFileDiagnosticWorker';
 import { CodeHints, GetHacknetEditorHintFileUri, HintFileExist } from '../code-hint/CodeHint';
 import { hacknetNodeHolder } from "../worker/GlobalHacknetXmlNodeHolder";
+import { EventManager, EventType } from '../event/EventManager';
 
 // 诊断集合
 let diagnosticCollection!: vscode.DiagnosticCollection;
@@ -37,6 +38,21 @@ export function StartDiagnostic() {
         }
         debounceStartDiagnosticFile(editor.document.uri, worker);
     });
+    vscode.window.onDidChangeVisibleTextEditors(e => {
+        e.forEach(editor => {
+            debounceStartDiagnosticFile(editor.document.uri, worker);
+        });
+    });
+
+
+    // 解析完编辑器提示文件后获取所有xml文件执行诊断一次
+    EventManager.onEvent(EventType.CodeHintParseCompleted, async () => {
+        const xmlFiles = await vscode.workspace.findFiles('**/*.xml');
+        xmlFiles.forEach(uri => {
+            StartDiagnosticFile(uri, worker);
+        });
+    });
+    
 }
 
 // 处理worker发送过来的消息

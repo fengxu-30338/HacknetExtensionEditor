@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { XmlParser } from '../parser/XmlParser';
-import { hacknetNodeHolder, HacknetNodeType } from "../worker/GlobalHacknetXmlNodeHolder";
+import { hacknetNodeHolder } from "../worker/GlobalHacknetXmlNodeHolder";
+import { HacknetNodeType } from "../worker/GlobalHacknetXmlNodeHolderDefine";
 import { EventManager, EventType } from "../event/EventManager";
 import * as CommonUtils from '../utils/CommonUtils';
 import path from 'path';

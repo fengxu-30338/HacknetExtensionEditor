@@ -1,3 +1,4 @@
+import {AttributeHint, AttributeHintItem, CodeHint, CodeHintItem, CommonTextHintItem, ConditionAttributeHint, FileCodeHint, GlobalCodeHints, HintType, LinkBy, NodeCodeHintItem, NodeCodeHints} from './CodeHintDefine';
 import { XMLParser as StandardXMLParser } from 'fast-xml-parser';
 import {ActiveNode, CursorPosition, XmlParser} from '../parser/XmlParser';
 import XmlPathUtil from '../utils/XmlPathUtil';
@@ -9,30 +10,7 @@ import lodash from 'lodash';
 import { minimatch } from "minimatch";
 import { EventManager, EventType } from "../event/EventManager";
 
-interface CodeHintItem {
-    value: string
-    desc: string
-    filterText: string | undefined
-    kind: string | undefined
-    label?: string
-}
 
-interface CommonTextHintItem extends CodeHintItem {
-    document?: string
-}
-
-interface FileCodeHint {
-    fileTriggerPattern: string
-    codeHintItems: CommonTextHintItem[];
-}
-
-interface GlobalCodeHints {
-    NodeCodeHintSource: NodeCodeHints[]
-    ReplaceTextSource: CodeHintItem[]
-    CommonTextSource: CodeHintItem[]
-    HackerScriptSource: FileCodeHint
-    IncludeFiles: string[]
-}
 
 const NodePathSplitChar = '.';
 const standardXmlParser = new StandardXMLParser({ 
@@ -43,71 +21,9 @@ const standardXmlParser = new StandardXMLParser({
 const HintFileWatchers:vscode.FileSystemWatcher[] = [];
 
 export const CodeHints:GlobalCodeHints = CreateEmptyHacknetCodeHint();
-
-export enum HintType {
-    Enum,
-    EnumWithCommonString,
-    JavaScript,
-    Computer,
-    ComputerOrEos,
-    ActionFile,
-    ThemeFile,
-    MisisonFile,
-    FactionFile,
-    PeopleFile,
-    Color,  // 只用来标识不做提示，由hover触发colorPicker
-    Path,
-    Folder,
-    Step
-}
-
-interface NodeCodeHintItem extends CodeHintItem {
-    nextStep?: CodeHint
-}
-
-interface LinkBy {
-    linkBy: string
-    linkByValuePattern: string | null
-}
-
-interface CodeHint {
-    type: HintType
-    content: string
-    items: NodeCodeHintItem[]
-    required: boolean
-    desc: string
-    codeSnippets: string
-    default: string
-    linkByCollection: LinkBy[]
-}
-
-interface AttributeHint {
-    [key: string] : CodeHint
-}
-
-interface AttributeHintItem {
-    attrName: string
-    codeHint: CodeHint
-}
-
-interface ConditionAttributeHint {
-    attrName: string
-    match: string
-    attributes: AttributeHint
-}
-
-interface NodeCodeHints {
-    Name: string
-    NodePath: string
-    Leval: number
-    Desc: string
-    AttributeNodeHint: AttributeHint
-    ConditionAttributeHints: ConditionAttributeHint[]
-    ContentHint: CodeHint | null
-    CodeSnippets: string
-    Multi: boolean
-    Enable: boolean
-    FileTriggerPattern: string | null
+let HasHintFile = false;
+export function HintFileExist() : boolean {
+    return HasHintFile;
 }
 
 class FileSystemErrorWrapper extends Error {
@@ -122,6 +38,27 @@ function getBool(obj:any, key:string, defaultVal: boolean) {
     }
 
     return obj[key].toLowerCase() === 'true' ? true : false;
+}
+
+function getDiagLevel(obj:any, key:string): vscode.DiagnosticSeverity | null {
+    const diag = obj[key] as string;
+    if (!diag) {
+        return null;
+    }
+
+    if (diag.toUpperCase().startsWith('E')) {
+        return vscode.DiagnosticSeverity.Error;
+    }
+
+    if (diag.toUpperCase().startsWith('I')) {
+        return vscode.DiagnosticSeverity.Information;
+    }
+
+    if (diag.toUpperCase().startsWith('W')) {
+        return vscode.DiagnosticSeverity.Warning;
+    }
+
+    return vscode.DiagnosticSeverity.Hint;
 }
 
 function parseEnumAttrCodeHint(codeHint: CodeHint, attrNode: any) {
@@ -254,6 +191,11 @@ function generateCodeHintFromXmlNode(node:any):CodeHint {
         default: node['default'] ?? '',
         linkByCollection: parseLinkByCollectionFromNode(node)
     };
+
+    const diag = getDiagLevel(node, 'diag');
+    if (diag !== null) {
+        codeHint.diag = diag;
+    }
 
     if (codeHint.type === HintType.Enum) {
         parseEnumAttrCodeHint(codeHint, node);
@@ -604,6 +546,7 @@ function ClearHacknetCodeHint() {
     };
     EventManager.fireEvent(EventType.CodeHintSourceChange, CodeHints);
     vscode.commands.executeCommand('setContext', 'hacknetextensionhelper.HasCodeHintFile', false);
+    HasHintFile = false;
 }
 
 /**
@@ -676,6 +619,14 @@ async function GetCodeHintFromCodeHintFile(fileUri: vscode.Uri):Promise<GlobalCo
     return codeHints;
 }
 
+/**
+ * 获取更提示文件的uri
+ */
+export function GetHacknetEditorHintFileUri():vscode.Uri { 
+    const rootUri = vscode.workspace.workspaceFolders![0].uri;
+    return vscode.Uri.joinPath(rootUri, 'Hacknet-EditorHint.xml');
+}
+
 
 /**
  * 从提示文件中获取提示信息
@@ -685,8 +636,8 @@ async function GetCodeHintFromHacknetCodeHintFile() {
     if (!workspaceFolders || workspaceFolders.length === 0) {
         return;
     }
-    const rootUri = vscode.workspace.workspaceFolders![0].uri;
-    const targetUri = vscode.Uri.joinPath(rootUri, 'Hacknet-EditorHint.xml');
+
+    const targetUri = GetHacknetEditorHintFileUri();
     try {
         const res = await GetCodeHintFromCodeHintFile(targetUri);
         CodeHints.CommonTextSource = res.CommonTextSource;
@@ -695,6 +646,8 @@ async function GetCodeHintFromHacknetCodeHintFile() {
         CodeHints.NodeCodeHintSource = res.NodeCodeHintSource;
         CodeHints.ReplaceTextSource = res.ReplaceTextSource;
         vscode.commands.executeCommand('setContext', 'hacknetextensionhelper.HasCodeHintFile', true);
+        HasHintFile = true;
+        EventManager.fireEvent(EventType.CodeHintParseCompleted, CodeHints);
         WatchCodeHintFile(CommonUtils.GetExtensionContext(), CodeHints.IncludeFiles, false);
     } catch (err) {
         ClearHacknetCodeHint();
@@ -786,6 +739,7 @@ function WatchHacknetCodeHintFile(context: vscode.ExtensionContext) {
     }
 
     vscode.commands.executeCommand('setContext', 'hacknetextensionhelper.HasCodeHintFile', false);
+    HasHintFile = false;
 
     // Hacknet-EditorHint.xml文件监控，必要项
     WatchCodeHintFile(context, ["Hacknet-EditorHint.xml"], true);
@@ -989,31 +943,31 @@ async function GetCodeHintItems(actNode: ActiveNode, codeHint: CodeHint): Promis
 
     if (codeHint.type === HintType.ActionFile) {
         return hacknetNodeHolder.GetActions().map(item => {
-            return {value: item.GetRelativePath() ?? '', desc: '', filterText: undefined, kind: 'file'};
+            return {value: item['__RelativePath__'] ?? '', desc: '', filterText: undefined, kind: 'file'};
         });
     }
 
     if (codeHint.type === HintType.ThemeFile) {
         return hacknetNodeHolder.GetThemes().map(item => {
-            return {value: item.GetRelativePath() ?? '', desc: '', filterText: undefined, kind: 'file'};
+            return {value: item['__RelativePath__'] ?? '', desc: '', filterText: undefined, kind: 'file'};
         });
     }
 
     if (codeHint.type === HintType.MisisonFile) {
         return hacknetNodeHolder.GetMissions().map(item => {
-            return {value: item.GetRelativePath() ?? '', desc: '', filterText: undefined, kind: 'file'};
+            return {value: item['__RelativePath__'] ?? '', desc: '', filterText: undefined, kind: 'file'};
         });
     }
 
     if (codeHint.type === HintType.FactionFile) {
         return hacknetNodeHolder.GetFactions().map(item => {
-            return {value: item.GetRelativePath() ?? '', desc: '', filterText: undefined, kind: 'file'};
+            return {value: item['__RelativePath__'] ?? '', desc: '', filterText: undefined, kind: 'file'};
         });
     }
 
     if (codeHint.type === HintType.PeopleFile) {
         return hacknetNodeHolder.GetPeoples().map(item => {
-            return {value: item.GetRelativePath() ?? '', desc: '', filterText: undefined, kind: 'file'};
+            return {value: item['__RelativePath__'] ?? '', desc: '', filterText: undefined, kind: 'file'};
         });
     }
 
@@ -1329,27 +1283,27 @@ async function ParseNodeLinkToUri(codeHint: CodeHint, linkValue:string): Promise
 
     if (linkBy.startsWith('Computer.')) {
         return CommonUtils.filterObjectByExpression(hacknetNodeHolder.GetComputers(), linkBy, matchedValue)
-            .map(comp => vscode.Uri.joinPath(rootUri, comp.GetRelativePath()!));
+            .map(comp => vscode.Uri.joinPath(rootUri, comp['__RelativePath__']));
     }
 
     if (linkBy.startsWith('Mission.')) {
         return CommonUtils.filterObjectByExpression(hacknetNodeHolder.GetMissions(), linkBy, matchedValue)
-            .map(mission => vscode.Uri.joinPath(rootUri, mission.GetRelativePath()!));
+            .map(mission => vscode.Uri.joinPath(rootUri, mission['__RelativePath__']));
     }
 
     if (linkBy.startsWith('Action.')) {
         return CommonUtils.filterObjectByExpression(hacknetNodeHolder.GetActions(), linkBy, matchedValue)
-            .map(action => vscode.Uri.joinPath(rootUri, action.GetRelativePath()!));
+            .map(action => vscode.Uri.joinPath(rootUri, action['__RelativePath__']));
     }
 
     if (linkBy.startsWith('Theme.')) {
         return CommonUtils.filterObjectByExpression(hacknetNodeHolder.GetThemes(), linkBy, matchedValue)
-            .map(theme => vscode.Uri.joinPath(rootUri, theme.GetRelativePath()!));
+            .map(theme => vscode.Uri.joinPath(rootUri, theme['__RelativePath__']));
     }
 
     if (linkBy.startsWith('Faction.')) {
         return CommonUtils.filterObjectByExpression(hacknetNodeHolder.GetFactions(), linkBy, matchedValue)
-            .map(faction => vscode.Uri.joinPath(rootUri, faction.GetRelativePath()!));
+            .map(faction => vscode.Uri.joinPath(rootUri, faction['__RelativePath__']));
     }
 
     if (linkBy === "path") {

@@ -37,6 +37,8 @@ export class Node {
     public content:string = '';
     public contentToken: MooToken | null = null;
     public parent: Node | null;
+    public nodePath: string;
+    public level: number;
 
     constructor(name:string, parent: Node | null = null) {
         this.name = name;
@@ -45,6 +47,20 @@ export class Node {
         this.attributeValueToken = new Map();
         this.children = [];
         this.parent = parent;
+        this.level = 1;
+        this.nodePath =  this.GetNodePath();
+    }
+
+    private GetNodePath(): string {
+        let path = this.name;
+        let node = this.parent;
+        while (node !== null) {
+            path = node.name + '.' + path;
+            node = node.parent;
+            this.level++;
+        }
+
+        return path;
     }
 }
 
@@ -64,20 +80,8 @@ export class ActiveNode {
         public activeAttributeNameToken: MooToken | null = null,
         public activeAttributeValueToken: MooToken | null = null
         ) {
-            this.Level = 1;
-            this.Path = this.GetPath();
-    }
-
-    private GetPath():string {
-        let path = this.node.name;
-        let node = this.node.parent;
-        while (node !== null) {
-            path = node.name + '.' + path;
-            node = node.parent;
-            this.Level++;
-        }
-
-        return path;
+            this.Level = node.level;
+            this.Path = node.nodePath;
     }
 }
 

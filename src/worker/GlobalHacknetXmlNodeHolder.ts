@@ -4,34 +4,10 @@ import { XmlNodeParseResult } from './GlobalXmlScaner';
 import * as CommonUtils from '../utils/CommonUtils';
 import path from 'path';
 import { EventManager, EventType } from "../event/EventManager";
+import { ComputerInfo, HacknetNodeInfo, HacknetNodeType, HacknetXmlNodeMap } from './GlobalHacknetXmlNodeHolderDefine';
 
 let scanWorker:Worker | null = null;
 let watcher:vscode.FileSystemWatcher | null = null;
-
-export enum HacknetNodeType {
-    Computer,
-    Mission,
-    Action,
-    Theme,
-    Faction,
-    People
-}
-
-type HacknetXmlNodeMap = {
-    [key in HacknetNodeType] : Map<string, any>
-}
-
-interface HacknetNodeInfo {
-    [key: string]: any
-    GetRelativePath: () => string | undefined
-    GetFullPath: () => string
-}
-
-interface ComputerInfo extends HacknetNodeInfo {
-    id: string
-    name: string
-    ip: string
-}
 
 class HacknetNodeHolder {
     // 节点类型 -> 节点
@@ -44,11 +20,14 @@ class HacknetNodeHolder {
         [HacknetNodeType.People]: new Map<string, any>()
     };
 
-    // 附加节点的路径属性
-    public readonly FilePathSymbol = Symbol("FilePath");
+    // 附加节点的绝对路径属性
+    public readonly FilePathSymbol = "__FilePath__";
+
+    // 附加节点的相对路径属性
+    public readonly RelativePathSymbol = "__RelativePath__";
 
     // 附加节点类型的属性
-    public readonly NodeTypeSymbol = Symbol("NodeType");
+    public readonly NodeTypeSymbol = "__NodeType__";
 
     public AddNode(fullpath: string, node: any) {
         if (node === null || node === undefined) {
@@ -62,6 +41,13 @@ class HacknetNodeHolder {
 
         node[this.NodeTypeSymbol] = nodeType;
         node[this.FilePathSymbol] = fullpath;
+
+        const rootUri = CommonUtils.GetWorkspaceRootUri();
+        if (rootUri !== undefined) {
+            const relativePath = path.relative(rootUri.fsPath, fullpath).replaceAll('\\', '/');
+            node[this.RelativePathSymbol] = relativePath;
+        }
+
         this.NodeMap[nodeType].set(fullpath, node);
 
         EventManager.fireEvent(EventType.HacknetNodeFileChange,{
@@ -150,14 +136,8 @@ class HacknetNodeHolder {
     }
 
     private attachNodeFunc(rootNode: any, realNode: any) {
-        realNode['GetFullPath'] = () => rootNode[this.FilePathSymbol];
-        realNode['GetRelativePath'] = () => {
-            const rootUri = CommonUtils.GetWorkspaceRootUri();
-            if (rootUri === undefined) {
-                return;
-            }
-            return path.relative(rootUri.fsPath, rootNode[this.FilePathSymbol]).replaceAll('\\', '/');
-        };
+        realNode['__FullPath__'] = rootNode[this.FilePathSymbol];
+        realNode['__RelativePath__'] = rootNode[this.RelativePathSymbol];
     }
 
     /**

@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { promises as fs } from 'fs';
 import * as CommonUtils from '../utils/CommonUtils';
-
+import { GetHacknetEditorHintFileUri } from "../code-hint/CodeHint";
 async function readHacknetDefaultEditorHintFile(context: vscode.ExtensionContext) {
     const filePath = path.join(context.extensionPath, 'templates', 'Hacknet-EditorHint.xml');
     const text = await fs.readFile(filePath, 'utf-8');
@@ -15,7 +15,7 @@ export default async function createHacknetEditorHintFileInWorkspaceRoot(context
     if (workspaceRoot === undefined) {
         return;
     }
-    const filePath = vscode.Uri.joinPath(workspaceRoot, 'Hacknet-EditorHint.xml');
+    const filePath = GetHacknetEditorHintFileUri();
 
     let fileExists = false;
     try {

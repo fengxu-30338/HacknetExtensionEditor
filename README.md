@@ -132,21 +132,21 @@ HackerScript文件提示及高亮
 - required： 该属性是否必选，否则不会生成在代码片段中，但任然会给用户提示
 - desc：属性/内容的用途
 - hint：提示类型，默认enum
+- diag: 诊断等级，值为"E、I、W、H"，设置了该属性后编辑器会对错误的属性值给出提示。
 
 > Hint提示类型介绍
 
 当前支持的hint类型有
 
-
- 1. Enum (枚举类型，用法如上图)
- 2. EnumWithCommonString （在枚举的基础上，增加一些预定义的字符串，在代码提示文件中的CommonTextHint标签中定义）
- 3. JavaScript （指定自定义js代码以获取提示，自由度最高）
- 4. Computer （提供当前工作空间下的所有计算机ID供用户选择）
- 5. ComputerOrEos （在Computer的基础上增加了eos设备id的提供）
- 6. ActionFile (action文件路径)
- 7. ThemeFile（主题文件路径）
- 8. MisisonFile（任务文件路径）
- 9. FactionFile（自定义派系文件路径）
+1. Enum (枚举类型，用法如上图)
+2. EnumWithCommonString （在枚举的基础上，增加一些预定义的字符串，在代码提示文件中的CommonTextHint标签中定义）
+3. JavaScript （指定自定义js代码以获取提示，自由度最高）
+4. Computer （提供当前工作空间下的所有计算机ID供用户选择）
+5. ComputerOrEos （在Computer的基础上增加了eos设备id的提供）
+6. ActionFile (action文件路径)
+7. ThemeFile（主题文件路径）
+8. MisisonFile（任务文件路径）
+9. FactionFile（自定义派系文件路径）
 10. PeopleFile （People文件路径）
 11. Color （一个颜色，会提供5种随机生成的颜色供选择）
 12. Path （路径选择，需要提供匹配路径的表达式）

@@ -119,12 +119,12 @@ function matchObject(
 
     // 递归检查所有子属性
     return Object.values(obj).some(childVal => {
-      if (!childVal) {return false;}
+      if (!childVal) { return false; }
       if (Array.isArray(childVal) && childVal.some(item => typeof item === 'object' && matchObject(item, remainingKeys, targetValue))) {
         return true;
       }
       if (childVal === 'object' && matchObject(childVal, remainingKeys, targetValue)) {
-          return true;
+        return true;
       }
       return false;
     });
@@ -165,39 +165,64 @@ function matchObject(
 
 export function GetRandStr(length: number) {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-    
-    for (let i = 0; i < length; i++) {
-        const randomIndex = Math.floor(Math.random() * characters.length);
-        result += characters.charAt(randomIndex);
-    }
-    
-    return result;
+  let result = '';
+
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    result += characters.charAt(randomIndex);
+  }
+
+  return result;
 }
 
 export interface Range {
-    startOffset: number
-    endOffset: number
-    match: string
+  startOffset: number
+  endOffset: number
+  match: string
 }
 
-export function SearchKeywordInDocument(pattern: RegExp, text: string, filter:((matchTtem:string) => boolean) | null = null):Range[] {
-    const ranges:Range[]  = [];
-    let match;
-    while ((match = pattern.exec(text)) !== null) {
-        const startPos = match.index;
-        const endPos = startPos + match[0].length;
-        const item = match[0];
-        if (filter !== null && !filter(item)) {
-          continue;
-        }
-        
-        ranges.push({
-            startOffset: startPos,
-            endOffset: endPos,
-            match: item
-        });
+export function SearchKeywordInDocument(pattern: RegExp, text: string, filter: ((matchTtem: string) => boolean) | null = null): Range[] {
+  const ranges: Range[] = [];
+  let match;
+  while ((match = pattern.exec(text)) !== null) {
+    const startPos = match.index;
+    const endPos = startPos + match[0].length;
+    const item = match[0];
+    if (filter !== null && !filter(item)) {
+      continue;
     }
 
-    return ranges;
+    ranges.push({
+      startOffset: startPos,
+      endOffset: endPos,
+      match: item
+    });
+  }
+
+  return ranges;
+}
+
+export interface DebouncedFunction<T extends (...args: any[]) => any> {
+  (...args: Parameters<T>): ReturnType<T> | undefined;
+}
+
+export function debounce<T extends (...args: any) => any>(func: T, wait: number, key: ((...args: Parameters<T>) => string) | number): DebouncedFunction<T> {
+  const keyMap = new Map<any, NodeJS.Timeout>();
+
+  return function (this: any, ...args: Parameters<T>) {
+    const keyVal = typeof key === 'number' ? args[key] : key.apply(this, args);
+    let timer = keyMap.get(keyVal);
+    if (timer !== undefined) {
+      clearTimeout(timer);
+    }
+
+    let res: ReturnType<T> | undefined;
+    timer = setTimeout(() => {
+      res = func.apply(this, args);
+      keyMap.delete(keyVal);
+    }, wait);
+    keyMap.set(keyVal, timer);
+
+    return res;
+  };
 }

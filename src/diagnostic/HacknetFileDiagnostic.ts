@@ -3,10 +3,11 @@ import * as CommonUtils from '../utils/CommonUtils';
 import path from 'path';
 import { Worker } from 'worker_threads';
 import lodash from "lodash";
-import { Diagnostic, DiagnosticRequest, DiagnosticResult, DiagnosticWorkerMsg, DiagnosticWorkerMsgType, QueryRelativeFileReq, QueryRelativeFileResp } from './HacknetFileDiagnosticWorker';
+import { Diagnostic, DiagnosticRequest, DiagnosticResult, DiagnosticWorkerDataType, DiagnosticWorkerMsg, DiagnosticWorkerMsgType, QueryRelativeFileReq, QueryRelativeFileResp } from './HacknetFileDiagnosticWorker';
 import { CodeHints, GetHacknetEditorHintFileUri, HintFileExist } from '../code-hint/CodeHint';
 import { hacknetNodeHolder } from "../worker/GlobalHacknetXmlNodeHolder";
 import { EventManager, EventType } from '../event/EventManager';
+
 
 // 诊断集合
 let diagnosticCollection!: vscode.DiagnosticCollection;
@@ -23,35 +24,44 @@ export function StartDiagnostic() {
 
     // 创建诊断worker
     const workerPath = path.join(__dirname, 'HacknetFileDiagnosticWorker.js');
-    console.log(workerPath);
-    const worker = new Worker(workerPath);
+    const workerData: DiagnosticWorkerDataType = {
+        workspacePath: CommonUtils.GetWorkspaceRootUri()!.fsPath
+    };
+    const worker = new Worker(workerPath, {workerData});
     context.subscriptions.push({ dispose: () => worker.terminate() });
     worker.on('message', msg => HandleDiagnosticWorkerMsg(msg, worker));
 
     // 创建诊断监听
-    const debounceStartDiagnosticFile = lodash.debounce(StartDiagnosticFile, 1000);
-    vscode.workspace.onDidChangeTextDocument(e => debounceStartDiagnosticFile(e.document.uri, worker));
-    vscode.window.onDidChangeActiveTextEditor(e => {
-        const editor = vscode.window.activeTextEditor;
-        if (!editor) {
-            return;
-        }
-        debounceStartDiagnosticFile(editor.document.uri, worker);
+    const debounceStartDiagnosticFile = CommonUtils.debounce(StartDiagnosticFile, 1000, 0);
+    const watcher = vscode.workspace.createFileSystemWatcher('**/*');
+    // 文件内容变更（磁盘层面）
+    watcher.onDidChange(uri => {
+        // console.log('文件变更', uri.fsPath);
+        debounceStartDiagnosticFile(uri.fsPath, true, false, worker);
     });
-    vscode.window.onDidChangeVisibleTextEditors(e => {
-        e.forEach(editor => {
-            debounceStartDiagnosticFile(editor.document.uri, worker);
-        });
+
+    // 文件创建
+    watcher.onDidCreate(uri => {
+        // console.log('文件创建', uri.fsPath);
+        debounceStartDiagnosticFile(uri.fsPath, true, false, worker);
     });
+
+    // 文件删除
+    watcher.onDidDelete(uri => {
+        // console.log('文件删除', uri.fsPath);
+        debounceStartDiagnosticFile(uri.fsPath, true, false, worker);
+    });
+    context.subscriptions.push(watcher);
+
+    // 每隔10分钟全部扫描一次，清理可能改变的文件依赖关系
+    const timer = setInterval(() => {
+        ScanAllXmlFileForDiagnostic(worker);
+    }, 10 * 60 * 1000);
+    context.subscriptions.push({ dispose: () => clearInterval(timer) });
 
 
     // 解析完编辑器提示文件后获取所有xml文件执行诊断一次
-    EventManager.onEvent(EventType.CodeHintParseCompleted, async () => {
-        const xmlFiles = await vscode.workspace.findFiles('**/*.xml');
-        xmlFiles.forEach(uri => {
-            StartDiagnosticFile(uri, worker);
-        });
-    });
+    EventManager.onEvent(EventType.CodeHintParseCompleted, () => ScanAllXmlFileForDiagnostic(worker));
     
 }
 
@@ -100,23 +110,22 @@ function HandleDiagnosticResult(result:DiagnosticResult) {
     }
 }
 
+// 扫描所有的xml文件诊断
+async function ScanAllXmlFileForDiagnostic(worker:Worker) { 
+    const xmlFiles = await vscode.workspace.findFiles('**/*.xml');
+    StartDiagnosticFile(xmlFiles.map(uri => uri.fsPath), false, true, worker);
+}
 
 // 开始诊断文件
-async function StartDiagnosticFile(fileUri: vscode.Uri, worker:Worker) {
+async function StartDiagnosticFile(filepath:string | string[], scanDepedencyFile:boolean, reset:boolean, worker:Worker) {
     if (!HintFileExist()) {
         return;
     }
 
-    if (!fileUri.fsPath.toLocaleLowerCase().endsWith('.xml')) {
-        return;
-    }
-
-    if (fileUri.fsPath === GetHacknetEditorHintFileUri().fsPath) {
-        return;
-    }
-    
     const req:DiagnosticRequest = {
-        filepath: fileUri.fsPath, 
+        filepath,
+        scanDepedencyFile,
+        resetDepedencyTable: reset,
         nodeHints: [...CodeHints.NodeCodeHintSource], 
         nodeHolder: hacknetNodeHolder
     };

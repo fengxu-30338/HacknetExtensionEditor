@@ -542,11 +542,6 @@ async function DiagnosticNodeContent(node:Node, hint:NodeCodeHints, req:Diagnost
         return result;
     }
 
-    // 处理一些特殊情况
-    if (node.nodePath === 'mission.nextMission' && node.content.trim().toLowerCase() === 'none') {
-        return result;
-    }
-    
     const items = await DiagnosticByCodeHint(node, node.content.trim(), hint.ContentHint, req);
 
     result.depdendencyInfo[identifier] = items.depdendencyPath;
@@ -591,6 +586,11 @@ async function DiagnosticByCodeHint(node:Node, checkVal:string, codeHint:CodeHin
 
 // 获取提示信息
 async function GetHintItems(node: Node, codeHint: CodeHint, req:DiagnosticRequest): Promise<CheckItem | null> {
+    const enumCheckFunc = (checkVal:string) => {
+        const values = codeHint.items.map(item => item.value);
+        return values.includes(checkVal);
+    };
+
     // 枚举
     if (codeHint.type === HintType.Enum) {
         return {
@@ -613,7 +613,7 @@ async function GetHintItems(node: Node, codeHint: CodeHint, req:DiagnosticReques
                 const comp = comps.find(item => item.id === checkVal);
                 const validate = comp !== undefined;
                 return {
-                    validate,
+                    validate: validate || enumCheckFunc(checkVal),
                     depdendencyPath: validate ? [comp[req.nodeHolder.RelativePathSymbol]] : [DependencyFileType.ComputerFile],
                     diagMsg:`未在当前工作空间中找到该计算机`
                 };
@@ -651,7 +651,7 @@ async function GetHintItems(node: Node, codeHint: CodeHint, req:DiagnosticReques
                 const comp = res.find(item => item.item === checkVal);
                 const validate = comp !== undefined;
                 return {
-                    validate,
+                    validate: validate || enumCheckFunc(checkVal),
                     depdendencyPath: validate ? [comp.path] : [DependencyFileType.ComputerFile],
                     diagMsg: '未在当前工作空间中找到该计算机或eos设备'
                 };
@@ -667,7 +667,7 @@ async function GetHintItems(node: Node, codeHint: CodeHint, req:DiagnosticReques
                 const filepath = req.nodeHolder.GetActions().map(item => item[req.nodeHolder.RelativePathSymbol] ?? '').find(item => item === checkVal);
                 const validate = filepath !== undefined;
                 return {
-                    validate,
+                    validate: validate || enumCheckFunc(checkVal),
                     depdendencyPath: [checkVal],
                     diagMsg: '未在当前工作空间中找到该Action文件路径'
                 };
@@ -683,7 +683,7 @@ async function GetHintItems(node: Node, codeHint: CodeHint, req:DiagnosticReques
                 const filepath = req.nodeHolder.GetThemes().map(item => item[req.nodeHolder.RelativePathSymbol] ?? '').find(item => item === checkVal);
                 const validate = filepath !== undefined;
                 return {
-                    validate,
+                    validate: validate || enumCheckFunc(checkVal),
                     depdendencyPath: [checkVal],
                     diagMsg: '未在当前工作空间中找到该Theme文件路径'
                 };
@@ -699,7 +699,7 @@ async function GetHintItems(node: Node, codeHint: CodeHint, req:DiagnosticReques
                 const filepath = req.nodeHolder.GetMissions().map(item => item[req.nodeHolder.RelativePathSymbol] ?? '').find(item => item === checkVal);
                 const validate = filepath !== undefined;
                 return {
-                    validate,
+                    validate: validate || enumCheckFunc(checkVal),
                     depdendencyPath: [checkVal],
                     diagMsg: '未在当前工作空间中找到该Misison文件路径'
                 };
@@ -715,7 +715,7 @@ async function GetHintItems(node: Node, codeHint: CodeHint, req:DiagnosticReques
                 const filepath = req.nodeHolder.GetFactions().map(item => item[req.nodeHolder.RelativePathSymbol] ?? '').find(item => item === checkVal);
                 const validate = filepath !== undefined;
                 return {
-                    validate,
+                    validate: validate || enumCheckFunc(checkVal),
                     depdendencyPath: [checkVal],
                     diagMsg: '未在当前工作空间中找到该Faction文件路径'
                 };
@@ -731,7 +731,7 @@ async function GetHintItems(node: Node, codeHint: CodeHint, req:DiagnosticReques
                 const filepath = req.nodeHolder.GetPeoples().map(item => item[req.nodeHolder.RelativePathSymbol] ?? '').find(item => item === checkVal);
                 const validate = filepath !== undefined;
                 return {
-                    validate,
+                    validate: validate || enumCheckFunc(checkVal),
                     depdendencyPath: [checkVal],
                     diagMsg: '未在当前工作空间中找到该Person文件路径'
                 };
@@ -744,7 +744,7 @@ async function GetHintItems(node: Node, codeHint: CodeHint, req:DiagnosticReques
         return {
             checkFunc: (checkVal: string) => {
                 return {
-                    validate: checkVal.match(/^\s*\d+(?:\s*\,\s*\d+){2,3}$/) !== null,
+                    validate: checkVal.match(/^\s*\d+(?:\s*\,\s*\d+){2,3}$/) !== null || enumCheckFunc(checkVal),
                     depdendencyPath: [],
                     diagMsg: '当前颜色的格式不正确'
                 };
@@ -767,7 +767,7 @@ async function GetHintItems(node: Node, codeHint: CodeHint, req:DiagnosticReques
                 const validate = filepath !== undefined;
 
                 return {
-                    validate,
+                    validate: validate || enumCheckFunc(checkVal),
                     depdendencyPath: [checkVal],
                     diagMsg: '未在当前工作空间中找到该路径'
                 };

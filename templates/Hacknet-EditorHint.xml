@@ -354,6 +354,7 @@
                 <Enum desc="图标样式为办公电脑样式">2</Enum>
                 <Enum desc="图标样式为服务器样式">3</Enum>
                 <Enum desc="图标样式为更高级的服务器样式">4</Enum>
+                <Enum desc="trace加100s,随机防火墙与代理">5</Enum>
             </Enums>
         </Attribute>
         <Attribute name="allowsDefaultBootModule" default="true" required="false" desc="是否在导航到该电脑时显示定义的最后一个后台进程(daemon)" hint="enum" diag="E">
@@ -362,7 +363,7 @@
                 <Enum>false</Enum>
             </Enums>
         </Attribute>
-        <Attribute name="icon" required="false" desc="电脑图标" hint="enum" diag="W">
+        <Attribute name="icon" required="false" desc="电脑图标" hint="enum" diag="I">
             <Enums>
                 <Enum desc="笔记本图标">laptop</Enum>
                 <Enum desc="芯片图标">chip</Enum>
@@ -377,6 +378,12 @@
                 <Enum desc="主机样式(DLC添加)">DLCPC1</Enum>
                 <Enum desc="主机样式(DLC添加)">DLCPC2</Enum>
                 <Enum desc="服务器样式(DLC添加)">DLCServer</Enum>
+                <Enum desc="图标样式为旧台式电脑">0</Enum>
+                <Enum desc="图标样式为一体机样式">1</Enum>
+                <Enum desc="图标样式为办公电脑样式">2</Enum>
+                <Enum desc="图标样式为服务器样式">3</Enum>
+                <Enum desc="图标样式为更高级的服务器样式">4</Enum>
+                <Enum desc="图标样式为更高级的服务器样式">5</Enum>
             </Enums>
         </Attribute>
         <Attribute name="type" default="empty" required="true" desc="电脑的类型" hint="enum" diag="W">
@@ -1494,8 +1501,8 @@
     -->
     <Node name="ConditionalActions.*.LaunchHackScript|CustomFaction.Action.LaunchHackScript" enable="true" multi="true" desc="执行一个hack脚本">
         <Attribute name="Filepath" required="true" desc="黑客脚本文件路径" hint="path" linkBy="path" diag="H">HackerScripts/**/*.txt</Attribute>
-        <Attribute name="SourceComp" required="true" desc="发起攻击的计算机ID" default="computer" hint="computer" linkBy="Computer.id|Computer.eosDevice.id" diag="E" />
-        <Attribute name="TargetComp" required="true" desc="被攻击的计算机ID" default="computer" hint="computer" linkBy="Computer.id|Computer.eosDevice.id" diag="E" />
+        <Attribute name="SourceComp" required="true" desc="发起攻击的计算机ID" default="computer" hint="ComputerOrEos" linkBy="Computer.id|Computer.eosDevice.id" diag="E" />
+        <Attribute name="TargetComp" required="true" desc="被攻击的计算机ID" default="computer" hint="ComputerOrEos" linkBy="Computer.id|Computer.eosDevice.id" diag="E" />
         <Attribute name="RequireLogsOnSource" required="true" desc="当被攻击电脑日志中存在删除、移动或者复制文件日志才会触发" default="false" diag="E">
             <Enums>
                 <Enum>true</Enum>
@@ -1716,8 +1723,11 @@
             <Enums>
                 <Enum desc="散点图">scatter</Enum>
                 <Enum desc="网格图">grid</Enum>
-                <Enum desc="扫描序列">scangrid</Enum>
                 <Enum desc="混乱效果">chaos</Enum>
+                <Enum desc="扫描序列">scangrid</Enum>
+                <Enum desc="扫描序列">seqgrid</Enum>
+                <Enum desc="扫描序列">sequencegrid</Enum>
+                <Enum desc="扫描序列">sequence grid</Enum>
             </Enums>
         </Attribute>
         <Attribute name="DelayHost" required="false" desc="具有daemon服务的计算机ID,否则无法触发延时效果" default="computer" hint="computer" linkBy="Computer.id|Computer.eosDevice.id" diag="E" />
@@ -1850,6 +1860,9 @@
                 <Enum desc="在学术数据库移除信息(使用前请确保您的机器里存在id为academic的计算机且存在academicDatabase服务)">wipedegrees</Enum>
                 <Enum desc="发送邮件(医疗数据库)">sendemail</Enum>
                 <Enum desc="邮件发送指定机器的管理员密码(DLC)">getadminpasswordstring</Enum>
+                <Enum desc="数据库服务字段修改">databaseentrychange</Enum>
+                <Enum desc="删除死亡数据库记录(使用前请确保您的机器里存在id为deathRow的计算机且存在deathRowDatabase服务)">removeDeathRowRecord</Enum>
+                <Enum desc="修改死亡数据库记录(使用前请确保您的机器里存在id为deathRow的计算机且存在deathRowDatabase服务)，该标签修改后的内容需要写到标签内容处而非属性处">modifyDeathRowRecord</Enum>
             </Enums>
         </Attribute>
         <ConditionAttributes attr="type" match="^filedeletion$">
@@ -2000,6 +2013,38 @@
         <ConditionAttributes attr="type" match="^getadminpasswordstring$">
             <Attribute name="target" required="true" desc="目标计算机ID" default="" hint="ComputerOrEos" linkBy="Computer.id|Computer.eosDevice.id" diag="E" />
         </ConditionAttributes>
+        <ConditionAttributes attr="type" match="^databaseentrychange$">
+            <Attribute name="comp" required="true" desc="具有DatabaseDaemon的计算机ID" default="" hint="js" linkBy="Computer.id|Computer.eosDevice.id" diag="E">
+                (function(node, hacknetNodeHolder){
+                    return hacknetNodeHolder.GetComputers()
+                        .filter(comp =&gt; comp.DatabaseDaemon)
+                        .map(comp =&gt; {
+                        return {value: comp.id, desc: comp.name, filterText: comp.id, kind: "reference"};
+                    });
+                })
+            </Attribute>
+            <Attribute name="operation" required="true" desc="比较类型" default="" hint="enum" diag="E">
+                <Enums>
+                    <Enum desc="字段值 &gt; targetValue">greater</Enum>
+                    <Enum desc="字段值 &lt; targetValue">less</Enum>
+                    <Enum desc="字段值 = targetValue">=</Enum>
+                    <Enum desc="字段值 = targetValue">equals</Enum>
+                </Enums>
+            </Attribute>
+            <Attribute name="recordName" required="true" desc="记录名" default="" hint="enum" />
+            <Attribute name="fieldName" required="true" desc="待比较字段名" default="" hint="enum" />
+            <Attribute name="targetValue" required="true" desc="目标值" default="" hint="enum" />
+        </ConditionAttributes>
+        <ConditionAttributes attr="type" match="^removeDeathRowRecord$">
+            <Attribute name="name" required="true" desc="待删除人员的名字：firstName lastname" default="firstName lastname" hint="enum" />
+            <Attribute name="fname" required="false" desc="待删除人员的firstName" default="firstName" hint="enum" />
+            <Attribute name="lname" required="false" desc="待删除人员的lastname" default="lastname" hint="enum" />
+        </ConditionAttributes>
+        <ConditionAttributes attr="type" match="^modifyDeathRowRecord$">
+            <Attribute name="name" required="true" desc="待修改人员的名字：firstName lastname" default="firstName lastname" hint="enum" />
+            <Attribute name="fname" required="false" desc="待修改人员的firstName" default="firstName" hint="enum" />
+            <Attribute name="lname" required="false" desc="待修改人员的lastname" default="lastname" hint="enum" />
+        </ConditionAttributes>
     </Node>
     <Node name="mission.missionStart" enable="true" multi="false" desc="定义任务开始执行的方法,同action的RunFunction用法">
         <Content desc="方法名同action的RunFunction的FunctionName" default="loadConditionalActions:" hint="step" diag="E">
@@ -2011,6 +2056,7 @@
                 <Item linkBy="path" linkByValuePattern="playCustomSong:(.*)" />
                 <Item linkBy="path" linkByValuePattern="playCustomSongImmediatley:(.*)" />
             </LinkByCollection>
+            <Step value="NONE" desc="不做任何事" kind="value" />
             <Step value="addRank" desc="增加玩家在当前组织的等级并发送邮件通知" kind="function" />
             <Step value="addRankSilent" desc="增加玩家在当前组织的等级不发送邮件通知" kind="function" />
             <Step value="addRankFaction:" desc="增加玩家在指定组织的等级" kind="function">
@@ -2070,6 +2116,7 @@
                 <Item linkBy="path" linkByValuePattern="playCustomSong:(.*)" />
                 <Item linkBy="path" linkByValuePattern="playCustomSongImmediatley:(.*)" />
             </LinkByCollection>
+            <Step value="NONE" desc="不做任何事" kind="value" />
             <Step value="addRank" desc="增加玩家在当前组织的等级并发送邮件通知" kind="function" />
             <Step value="addRankSilent" desc="增加玩家在当前组织的等级不发送邮件通知" kind="function" />
             <Step value="addRankFaction:" desc="增加玩家在指定组织的等级" kind="function">
@@ -2113,7 +2160,11 @@
         <Attribute name="val" required="true" desc="执行方法的参数，同action的RunFunction的FunctionValue属性" default="0" hint="enum"/>
     </Node>
     <Node name="mission.nextMission" enable="true" multi="false" desc="定义任务完成后加载的下一个任务">
-        <Content desc="任务文件路径" default="NONE" hint="MisisonFile" linkBy="path" diag="E" />
+        <Content desc="任务文件路径" default="NONE" hint="MisisonFile" linkBy="path" diag="E">
+            <Enums>
+                <Enum desc="无下一任务">NONE</Enum>
+            </Enums>
+        </Content>
         <Attribute name="IsSilent" required="true" desc="是否静默加载当前任务即不发送邮件通知" default="false" hint="enum" diag="E">
             <Enums>
                 <Enum desc="静默加载任务">true</Enum>
@@ -2237,10 +2288,14 @@
                 <Enum desc="布局样式: ram|display|terminal,netmap">white</Enum>
                 <Enum desc="布局样式: ram|terminal,netmap|display">mint</Enum>
                 <Enum desc="布局样式: display,netmap|terminal|ram">greencompact</Enum>
+                <Enum desc="布局样式: display,netmap|terminal|ram">GreenCompact</Enum>
                 <Enum desc="布局样式: netmap,display|terminal|ram">riptide</Enum>
                 <Enum desc="布局样式: display,netmap|terminal|ram">riptide2</Enum>
                 <Enum desc="布局样式: netmap,display|terminal|ram">colamaeleon</Enum>
                 <Enum desc="布局样式: ram|display,netmap|terminal">purple</Enum>
+                <Enum desc="布局样式: ram|display,netmap|terminal">yellow</Enum>
+                <Enum desc="布局样式: ram|display,netmap|terminal">space</Enum>
+                <Enum desc="布局样式: ram|display,netmap|terminal">miamiLight</Enum>
             </Enums>
        </Content>
     </Node>

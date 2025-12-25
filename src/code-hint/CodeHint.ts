@@ -62,10 +62,6 @@ function getDiagLevel(obj:any, key:string): vscode.DiagnosticSeverity | null {
 }
 
 function parseEnumAttrCodeHint(codeHint: CodeHint, attrNode: any) {
-    if (codeHint.type !== HintType.Enum) {
-        return;
-    }
-
     if (!('Enums' in attrNode)) {
         return;
     }
@@ -196,13 +192,11 @@ function generateCodeHintFromXmlNode(node:any):CodeHint {
     if (diag !== null) {
         codeHint.diag = diag;
     }
-
-    if (codeHint.type === HintType.Enum) {
-        parseEnumAttrCodeHint(codeHint, node);
-    }
-
+    
     if (codeHint.type === HintType.Step) {
         codeHint.items = parseStepNodeHint(node);
+    } else {
+        parseEnumAttrCodeHint(codeHint, node);
     }
 
     // console.log(codeHint);
@@ -866,8 +860,20 @@ async function GetPathToGetCodeHintItems(codeHint: CodeHint):Promise<CodeHintIte
     }
     
     // 返回folder路径
-    const folders = uriArr.map(uri => path.relative(rootUri.fsPath, vscode.Uri.joinPath(uri, '..').fsPath).replaceAll('\\', '/'));
-    return [...new Set<string>(folders)].map(relativePath => {
+    const folders = new Set(uriArr.map(uri => path.relative(rootUri.fsPath, vscode.Uri.joinPath(uri, '..').fsPath).replaceAll('\\', '/')));
+    const resFolder = new Set<string>();
+    for (const folder of folders) {
+        let parentPath = path.resolve(rootUri.fsPath, folder);
+        while (true) {
+            const relaPath = path.relative(rootUri.fsPath, parentPath).replaceAll('\\', '/');
+            resFolder.add(relaPath === '' ? './' : relaPath);
+            if (parentPath === rootUri.fsPath) {
+                break;
+            }
+            parentPath = path.resolve(rootUri.fsPath, parentPath, '..');
+        }
+    }
+    return [...resFolder].map(relativePath => {
         return {
                 value: relativePath, 
                 desc: '',
@@ -933,42 +939,42 @@ async function GetCodeHintItems(actNode: ActiveNode, codeHint: CodeHint): Promis
 
     if (codeHint.type === HintType.Computer) {
         return hacknetNodeHolder.GetComputers().map(item => {
-            return {value: item.id, desc: item.name, filterText: item.id, kind: 'Reference'};
-        });
+            return {value: item.id, desc: item.name, filterText: item.id, kind: 'Reference'} as CodeHintItem;
+        }).concat(codeHint.items);
     }
 
     if (codeHint.type === HintType.ComputerOrEos) {
-        return GetComputerOrEosIdToGetCodeHintItems(codeHint);
+        return GetComputerOrEosIdToGetCodeHintItems(codeHint).concat(codeHint.items);
     }
 
     if (codeHint.type === HintType.ActionFile) {
         return hacknetNodeHolder.GetActions().map(item => {
-            return {value: item['__RelativePath__'] ?? '', desc: '', filterText: undefined, kind: 'file'};
-        });
+            return {value: item['__RelativePath__'] ?? '', desc: '', filterText: undefined, kind: 'file'} as CodeHintItem;
+        }).concat(codeHint.items);
     }
 
     if (codeHint.type === HintType.ThemeFile) {
         return hacknetNodeHolder.GetThemes().map(item => {
-            return {value: item['__RelativePath__'] ?? '', desc: '', filterText: undefined, kind: 'file'};
-        });
+            return {value: item['__RelativePath__'] ?? '', desc: '', filterText: undefined, kind: 'file'} as CodeHintItem;
+        }).concat(codeHint.items);
     }
 
     if (codeHint.type === HintType.MisisonFile) {
         return hacknetNodeHolder.GetMissions().map(item => {
-            return {value: item['__RelativePath__'] ?? '', desc: '', filterText: undefined, kind: 'file'};
-        });
+            return {value: item['__RelativePath__'] ?? '', desc: '', filterText: undefined, kind: 'file'} as CodeHintItem;
+        }).concat(codeHint.items);
     }
 
     if (codeHint.type === HintType.FactionFile) {
         return hacknetNodeHolder.GetFactions().map(item => {
-            return {value: item['__RelativePath__'] ?? '', desc: '', filterText: undefined, kind: 'file'};
-        });
+            return {value: item['__RelativePath__'] ?? '', desc: '', filterText: undefined, kind: 'file'} as CodeHintItem;
+        }).concat(codeHint.items);
     }
 
     if (codeHint.type === HintType.PeopleFile) {
         return hacknetNodeHolder.GetPeoples().map(item => {
-            return {value: item['__RelativePath__'] ?? '', desc: '', filterText: undefined, kind: 'file'};
-        });
+            return {value: item['__RelativePath__'] ?? '', desc: '', filterText: undefined, kind: 'file'} as CodeHintItem;
+        }).concat(codeHint.items);
     }
 
     if (codeHint.type === HintType.Step) {
@@ -980,12 +986,12 @@ async function GetCodeHintItems(actNode: ActiveNode, codeHint: CodeHint): Promis
             const r = Math.floor(Math.random() * 256).toString();
             const g = Math.floor(Math.random() * 256).toString();
             const b = Math.floor(Math.random() * 256).toString();
-            return {value: `${r},${g},${b}`, desc: '随机生成的颜色',filterText: undefined, kind: 'color' };
-        });
+            return {value: `${r},${g},${b}`, desc: '随机生成的颜色',filterText: undefined, kind: 'color' } as CodeHintItem;
+        }).concat(codeHint.items);
     }
 
     if (codeHint.type === HintType.Path || codeHint.type === HintType.Folder) {
-        return GetPathToGetCodeHintItems(codeHint);
+        return (await GetPathToGetCodeHintItems(codeHint)).concat(codeHint.items);
     }
 
     return [];

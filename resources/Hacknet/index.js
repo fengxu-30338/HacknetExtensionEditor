@@ -78,8 +78,8 @@ function SwitchLayout(layoutName) {
     const netmapModule = moduleRoot.querySelector('#netmap');
     const terminalModule = moduleRoot.querySelector('#terminal');
 
-    if (layoutName === 'blue' || layoutName === 'purple') {
-        moduleRoot.setAttribute('themeLayoutName', layoutName);
+    if (layoutName === 'blue' || layoutName === 'purple' || layoutName === 'yellow' || layoutName === 'space' || layoutName === 'miamiLight') {
+        moduleRoot.setAttribute('themeLayoutName', 'purple');
         leftModule.innerHTML = '';
         midModule.innerHTML = '';
         rightModule.innerHTML = '';
@@ -94,8 +94,8 @@ function SwitchLayout(layoutName) {
         return;
     }
 
-    if (layoutName === 'green' || layoutName === 'greencompact') {
-        moduleRoot.setAttribute('themeLayoutName', layoutName);
+    if (layoutName === 'green' || layoutName === 'greencompact' || layoutName === 'GreenCompact') {
+        moduleRoot.setAttribute('themeLayoutName', layoutName.toLowerCase());
         leftModule.innerHTML = '';
         midModule.innerHTML = '';
         rightModule.innerHTML = '';

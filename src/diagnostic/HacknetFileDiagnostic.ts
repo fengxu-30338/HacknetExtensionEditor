@@ -98,8 +98,21 @@ async function HandleQueryRelativeFileResp(req: QueryRelativeFileReq, worker: Wo
     const uriArr = await vscode.workspace.findFiles(req.queryStr);
 
     if (req.queryFolder) {
-        const folders = uriArr.map(uri => path.relative(rootUri.fsPath, vscode.Uri.joinPath(uri, '..').fsPath).replaceAll('\\', '/'));
-        resp.result.push(...new Set<string>(folders));
+        const folders = new Set(uriArr.map(uri => path.relative(rootUri.fsPath, vscode.Uri.joinPath(uri, '..').fsPath).replaceAll('\\', '/')));
+        const resFolder = new Set<string>();
+        for (const folder of folders) {
+            let parentPath = path.resolve(rootUri.fsPath, folder);
+            while (true) {
+                const relaPath = path.relative(rootUri.fsPath, parentPath).replaceAll('\\', '/');
+                resFolder.add(relaPath === '' ? './' : relaPath);
+                if (parentPath === rootUri.fsPath) {
+                    break;
+                }
+                parentPath = path.resolve(rootUri.fsPath, parentPath, '..');
+            }
+        }
+
+        resp.result.push(...resFolder);
     } else {
         resp.result.push(...uriArr.map(uri => path.relative(rootUri.fsPath, uri.fsPath).replaceAll('\\', '/')));
     }

@@ -2,13 +2,26 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { promises as fs } from 'fs';
 import * as CommonUtils from '../utils/CommonUtils';
-import { GetHacknetEditorHintFileUri } from "../code-hint/CodeHint";
+import { GetHacknetEditorHintFileUri, CodeHints } from "../code-hint/CodeHint";
 async function readHacknetDefaultEditorHintFile(context: vscode.ExtensionContext) {
     const filePath = path.join(context.extensionPath, 'templates', 'Hacknet-EditorHint.xml');
     const text = await fs.readFile(filePath, 'utf-8');
     return text;
 }
 
+function GetIncludeNodeToXmlContent():string {
+    const incFiles = CodeHints.IncludeFiles;
+    if (incFiles.length === 0) {
+        return '';
+    }
+
+    let res = '';
+    incFiles.forEach(inc => {
+        res += `<Include path="${inc}" />\n\t`;
+    });
+
+    return res.trimEnd();
+}
 
 export default async function createHacknetEditorHintFileInWorkspaceRoot(context: vscode.ExtensionContext) {
     const workspaceRoot = CommonUtils.GetWorkspaceRootUri();
@@ -44,7 +57,7 @@ export default async function createHacknetEditorHintFileInWorkspaceRoot(context
     try {
         // 创建文件并写入内容
         const text = await readHacknetDefaultEditorHintFile(context);
-        await vscode.workspace.fs.writeFile(filePath, Buffer.from(text));
+        await vscode.workspace.fs.writeFile(filePath, Buffer.from(text.replace("<!-- %placeholder% -->", GetIncludeNodeToXmlContent())));
 
         const document = await vscode.workspace.openTextDocument(filePath);
         await vscode.window.showTextDocument(document, {

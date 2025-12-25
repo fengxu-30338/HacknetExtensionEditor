@@ -334,7 +334,8 @@ function parseNodeToNodeCodeHints(node: any): NodeCodeHints[]{
 
     parseNodeHintAttributes(node).forEach(item => nodeCodeHint.AttributeNodeHint[item.attrName] = item.codeHint);
     parseNodeHintContent(nodeCodeHint, node);
-    generateNodeCodeSnippets(nodeCodeHint);
+    // 代码片段在最后合并完成的时候生成
+    // generateNodeCodeSnippets(nodeCodeHint);
 
     // 路径存在|则分隔后复制
     if (nodeCodeHint.NodePath.includes('|')) {
@@ -360,7 +361,7 @@ function parseNodeToNodeCodeHints(node: any): NodeCodeHints[]{
  * @param xmlTipText  xml文件内容或解析后的js对象
  * @returns 所有可用的编辑器提示信息
  */
-export function GetNodeCodeHints(xmlTip: string | any): NodeCodeHints[] {
+function GetNodeCodeHints(xmlTip: string | any): NodeCodeHints[] {
     const nodeCodeHints: NodeCodeHints[] = [];
     const xmlJsObj  = typeof xmlTip === 'string' ? standardXmlParser.parse(xmlTip) : xmlTip;
     if (!('HacknetEditorHint' in xmlJsObj)) {
@@ -571,6 +572,42 @@ function GetIncludeFileFromCodeHintFile(xmlTip: string | any):string[] {
 }
 
 /**
+ * 合并相同提示节点
+ */
+function CombineSameNode(nodeHints: NodeCodeHints[]) {
+    let idx = 0;
+    while (idx < nodeHints.length) { 
+        const curNode = nodeHints[idx];
+        const sameNodeIdx = nodeHints.findIndex(item => item.NodePath === curNode.NodePath && item !== curNode);
+        if (sameNodeIdx < 0) {
+            idx++;
+            continue;
+        }
+        // 存在相同的节点
+        const sameNode = nodeHints[sameNodeIdx];
+        if (sameNode.Desc.length > 0) {
+            curNode.Desc = sameNode.Desc;
+        }
+        for (const attrName in sameNode.AttributeNodeHint) {
+            curNode.AttributeNodeHint[attrName] = sameNode.AttributeNodeHint[attrName];
+        }
+        if (sameNode.ConditionAttributeHints.length > 0) {
+            curNode.ConditionAttributeHints = sameNode.ConditionAttributeHints;
+        }
+        if (sameNode.ContentHint !== null) {
+            curNode.ContentHint = sameNode.ContentHint;
+        }
+        if (sameNode.FileTriggerPattern !== null) {
+            curNode.FileTriggerPattern = sameNode.FileTriggerPattern;
+        }
+        nodeHints.splice(sameNodeIdx, 1);
+    }
+
+    // 全部重新生成代码片段
+    nodeHints.forEach(node => generateNodeCodeSnippets(node));
+}
+
+/**
  * 从提示文件中获取提示信息
  * @param fileUri 提示文件uri
  * @returns 提示信息
@@ -609,6 +646,8 @@ async function GetCodeHintFromCodeHintFile(fileUri: vscode.Uri):Promise<GlobalCo
         codeHints.HackerScriptSource.codeHintItems.push(...hints.HackerScriptSource.codeHintItems);
         codeHints.IncludeFiles.push(...hints.IncludeFiles);
     }
+
+    CombineSameNode(codeHints.NodeCodeHintSource);
 
     return codeHints;
 }

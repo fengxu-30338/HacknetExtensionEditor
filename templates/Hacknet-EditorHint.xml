@@ -2589,4 +2589,6 @@
         <Text label="systakeover" value="systakeover $#%#$" desc="虚拟机级别攻击,被攻击后 抖动->蓝屏->启动->黑屏(慎用)" />
     </HackerScriptsHint>
 
+    <!-- %placeholder% -->
+
 </HacknetEditorHint>

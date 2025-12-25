@@ -2,9 +2,8 @@ import * as vscode from 'vscode';
 import * as CommonUtils from '../utils/CommonUtils';
 import path from 'path';
 import { Worker } from 'worker_threads';
-import lodash from "lodash";
 import { Diagnostic, DiagnosticRequest, DiagnosticResult, DiagnosticWorkerDataType, DiagnosticWorkerMsg, DiagnosticWorkerMsgType, QueryRelativeFileReq, QueryRelativeFileResp } from './HacknetFileDiagnosticWorker';
-import { CodeHints, GetHacknetEditorHintFileUri, HintFileExist } from '../code-hint/CodeHint';
+import { CodeHints, HintFileExist } from '../code-hint/CodeHint';
 import { hacknetNodeHolder } from "../worker/GlobalHacknetXmlNodeHolder";
 import { EventManager, EventType } from '../event/EventManager';
 
@@ -30,8 +29,9 @@ export function StartDiagnostic() {
     const worker = new Worker(workerPath, {workerData});
     context.subscriptions.push({ dispose: () => worker.terminate() });
     worker.on('message', msg => HandleDiagnosticWorkerMsg(msg, worker));
+    worker.on('error', error => console.error('DiagnosticWorker error:', error));
 
-    // 创建诊断监听
+    // 创建诊断监听(使用filepath做防抖，相同的filepath 1秒内只执行一次)
     const debounceStartDiagnosticFile = CommonUtils.debounce(StartDiagnosticFile, 1000, 0);
     const watcher = vscode.workspace.createFileSystemWatcher('**/*');
     // 文件内容变更（磁盘层面）
@@ -53,15 +53,23 @@ export function StartDiagnostic() {
     });
     context.subscriptions.push(watcher);
 
+    // 监听xml节点变动
+    EventManager.onEvent(EventType.HacknetNodeFileChange, (e) => {
+        // console.log('xml节点变动');
+        if (e.filepath) {
+            debounceStartDiagnosticFile(e.filepath, true, false, worker);
+        }
+    });
+
+
+    // 解析完编辑器提示文件后获取所有xml文件执行诊断一次
+    EventManager.onEvent(EventType.CodeHintParseCompleted, () => ScanAllXmlFileForDiagnostic(worker));
+
     // 每隔10分钟全部扫描一次，清理可能改变的文件依赖关系
     const timer = setInterval(() => {
         ScanAllXmlFileForDiagnostic(worker);
     }, 10 * 60 * 1000);
     context.subscriptions.push({ dispose: () => clearInterval(timer) });
-
-
-    // 解析完编辑器提示文件后获取所有xml文件执行诊断一次
-    EventManager.onEvent(EventType.CodeHintParseCompleted, () => ScanAllXmlFileForDiagnostic(worker));
     
 }
 

@@ -52,7 +52,8 @@ class HacknetNodeHolder {
 
         EventManager.fireEvent(EventType.HacknetNodeFileChange,{
             type: nodeType,
-            modify: 'add'
+            modify: 'add',
+            filepath: fullpath
         });
     }
 
@@ -62,7 +63,8 @@ class HacknetNodeHolder {
             if (nodeMap.delete(filepath)) {
                 EventManager.fireEvent(EventType.HacknetNodeFileChange,{
                     type: parseInt(key),
-                    modify: 'remove'
+                    modify: 'remove',
+                    filepath
                 });
             }
         }

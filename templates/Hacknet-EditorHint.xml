@@ -41,6 +41,14 @@
                 <Enum desc="根据计算机ID或eos设备id进行跳转">Computer.id|Computer.eosDevice.id</Enum>
             </Enums>
         </Attribute>
+        <Attribute name="diag" required="false" default="E" desc="是否启用该属性/内容的编辑器诊断">
+            <Enums>
+                <Enum desc="错误等级">E</Enum>
+                <Enum desc="警告等级">W</Enum>
+                <Enum desc="消息等级">I</Enum>
+                <Enum desc="提示等级">H</Enum>
+            </Enums>
+        </Attribute>
     </Node>
     <Node name="HacknetEditorHint.Node.Attribute|HacknetEditorHint.Node.ConditionAttributes.Attribute" enable="true" multi="true" desc="定义标签的一个属性信息">
         <Content />
@@ -76,6 +84,14 @@
                 <Enum desc="直接路径跳转">path</Enum>
                 <Enum desc="根据计算机ID进行跳转">Computer.id</Enum>
                 <Enum desc="根据计算机ID或eos设备id进行跳转">Computer.id|Computer.eosDevice.id</Enum>
+            </Enums>
+        </Attribute>
+        <Attribute name="diag" required="false" default="E" desc="是否启用该属性/内容的编辑器诊断">
+            <Enums>
+                <Enum desc="错误等级">E</Enum>
+                <Enum desc="警告等级">W</Enum>
+                <Enum desc="消息等级">I</Enum>
+                <Enum desc="提示等级">H</Enum>
             </Enums>
         </Attribute>
     </Node>

@@ -49,6 +49,14 @@ export interface LinkBy {
     linkByValuePattern: string | null
 }
 
+export const RepeatRuleDef = {
+    OverrideOrAppend: "override",
+    Remove: "remove",
+    OverrideOrAppendItem: "overrideItem",
+    RemoveItem: "removeItem",
+} as const;
+export type RepeatRule = (typeof RepeatRuleDef)[keyof typeof RepeatRuleDef];
+
 export interface CodeHint {
     type: HintType
     content: string
@@ -59,6 +67,7 @@ export interface CodeHint {
     default: string
     linkByCollection: LinkBy[]
     diag?: number // 诊断等级
+    repeatRule: RepeatRule // 标签的重复合并规则
 }
 
 export interface AttributeHint {
@@ -74,6 +83,7 @@ export interface ConditionAttributeHint {
     attrName: string
     match: string
     attributes: AttributeHint
+    repeatRule: RepeatRule // 标签的重复合并规则
 }
 
 export interface NodeCodeHints {

@@ -17,7 +17,8 @@ class HacknetNodeHolder {
         [HacknetNodeType.Action]: new Map<string, any>(),
         [HacknetNodeType.Theme]: new Map<string, any>(),
         [HacknetNodeType.Faction]: new Map<string, any>(),
-        [HacknetNodeType.People]: new Map<string, any>()
+        [HacknetNodeType.People]: new Map<string, any>(),
+        [HacknetNodeType.Other]: new Map<string, any>()
     };
 
     // 附加节点的绝对路径属性
@@ -31,6 +32,11 @@ class HacknetNodeHolder {
 
     public AddNode(fullpath: string, node: any) {
         if (node === null || node === undefined) {
+            return;
+        }
+
+        // 忽略编辑器提示文件
+        if (node["HacknetEditorHint"]) {
             return;
         }
 
@@ -82,7 +88,7 @@ class HacknetNodeHolder {
         });
     }
 
-    public GetNodeType(node:any) : HacknetNodeType | undefined {
+    public GetNodeType(node:any) : HacknetNodeType {
         if (this.NodeTypeSymbol in node) {
             return node[this.NodeTypeSymbol] as HacknetNodeType;
         }
@@ -110,6 +116,8 @@ class HacknetNodeHolder {
         if ('Person' in node) {
             return HacknetNodeType.People;
         }
+
+        return HacknetNodeType.Other;
     }
 
     public GetNodeByFilepath(filepath: string):any {
@@ -222,6 +230,18 @@ class HacknetNodeHolder {
         factionNodes.forEach(node => {
             this.attachNodeFunc(node, node.Person);
             res.push(node.Person);
+        });
+        return res;
+    }
+
+    /**
+     * 获取当前工作空间下其他未识别的xml节点信心
+     */
+    public GetOtherNodes(): HacknetNodeInfo[] {
+        const otherNodes = this.NodeMap[HacknetNodeType.Other];
+        const res:HacknetNodeInfo[] = [];
+        otherNodes.forEach(node => {
+            res.push(node);
         });
         return res;
     }

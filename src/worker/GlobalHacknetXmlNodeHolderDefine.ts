@@ -4,7 +4,8 @@ export enum HacknetNodeType {
     Action,
     Theme,
     Faction,
-    People
+    People,
+    Other
 }
 
 export type HacknetXmlNodeMap = {

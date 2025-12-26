@@ -2,25 +2,26 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { promises as fs } from 'fs';
 import * as CommonUtils from '../utils/CommonUtils';
-import { GetHacknetEditorHintFileUri, CodeHints } from "../code-hint/CodeHint";
+import { GetHacknetEditorHintFileUri } from "../code-hint/CodeHint";
 async function readHacknetDefaultEditorHintFile(context: vscode.ExtensionContext) {
     const filePath = path.join(context.extensionPath, 'templates', 'Hacknet-EditorHint.xml');
     const text = await fs.readFile(filePath, 'utf-8');
     return text;
 }
 
-function GetIncludeNodeToXmlContent():string {
-    const incFiles = CodeHints.IncludeFiles;
-    if (incFiles.length === 0) {
+function GetIncludeNodeFromXmlContent(content:string):string {
+    if (content.length === 0) {
         return '';
     }
-
-    let res = '';
-    incFiles.forEach(inc => {
-        res += `<Include path="${inc}" />\n\t`;
-    });
-
-    return res.trimEnd();
+    const pattern = /<Include\s+([\s\S]*?)(\/>|>([\s\S]*?)<\/Include>)/g;
+    let match;
+    const includes:string[] = [];
+    while ((match = pattern.exec(content)) !== null) {
+        const include = match[0];
+        includes.push(include);
+    }
+    // console.log("搜索到的Include节点:", includes);
+    return includes.join('\n\t');
 }
 
 export default async function createHacknetEditorHintFileInWorkspaceRoot(context: vscode.ExtensionContext) {
@@ -31,9 +32,11 @@ export default async function createHacknetEditorHintFileInWorkspaceRoot(context
     const filePath = GetHacknetEditorHintFileUri();
 
     let fileExists = false;
+    let oldFileContent = '';
     try {
         await vscode.workspace.fs.stat(filePath);
         fileExists = true;
+        oldFileContent = Buffer.from(await vscode.workspace.fs.readFile(filePath)).toString('utf-8'); ;
     } catch (error) {
         if (error instanceof vscode.FileSystemError && error.code !== vscode.FileSystemError.FileNotFound().code) {
             throw error;
@@ -57,7 +60,7 @@ export default async function createHacknetEditorHintFileInWorkspaceRoot(context
     try {
         // 创建文件并写入内容
         const text = await readHacknetDefaultEditorHintFile(context);
-        await vscode.workspace.fs.writeFile(filePath, Buffer.from(text.replace("<!-- %placeholder% -->", GetIncludeNodeToXmlContent())));
+        await vscode.workspace.fs.writeFile(filePath, Buffer.from(text.replace("<!-- %placeholder% -->", GetIncludeNodeFromXmlContent(oldFileContent))));
 
         const document = await vscode.workspace.openTextDocument(filePath);
         await vscode.window.showTextDocument(document, {

@@ -226,3 +226,31 @@ export function debounce<T extends (...args: any) => any>(func: T, wait: number,
     return res;
   };
 }
+
+export enum CombineType {
+  OverrideOrAppend,
+  Remove
+}
+
+export function CombineSameElementFromArray<T>(arr: T[], type:CombineType, sameCheck:((a:T, b:T) => boolean), combineFunc:((saveNode:T, otherNode:T) => boolean | void)) {
+  let idx = 0;
+  while (idx < arr.length) {
+    const curNode = arr[idx];
+    const sameNodeIdx = arr.findIndex(item => sameCheck(curNode, item) && item !== curNode);
+    if (sameNodeIdx < 0) {
+        idx++;
+        continue;
+    }
+
+    if (type === CombineType.OverrideOrAppend) {
+      const res = combineFunc(curNode, arr[sameNodeIdx]);
+      if (res === true) {
+        arr[idx] = arr[sameNodeIdx];
+      }
+      arr.splice(sameNodeIdx, 1);
+    } else if (type === CombineType.Remove) {
+      arr.splice(sameNodeIdx, 1);
+      arr.splice(idx, 1);
+    }
+  }
+}

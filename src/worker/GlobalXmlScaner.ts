@@ -13,6 +13,8 @@ const {
     scanFolder  // 扫描目录
 } = workerData;
 
+console.log("GlobalXmlScanerWorker: 开始扫描目录==================", workerData);
+
 const xmlParser = new StandardXMLParser({ ignoreAttributes: false, attributeNamePrefix: '' });
 
 export async function ScanDirectory(dirPath:string) {

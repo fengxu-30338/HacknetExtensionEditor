@@ -1,4 +1,4 @@
-import {AttributeHint, AttributeHintItem, CodeHint, CodeHintItem, CommonTextHintItem, ConditionAttributeHint, FileCodeHint, GlobalCodeHints, HintType, LinkBy, NodeCodeHintItem, NodeCodeHints} from './CodeHintDefine';
+import {AttributeHint, AttributeHintItem, CodeHint, CodeHintItem, CommonTextHintItem, ConditionAttributeHint, FileCodeHint, GlobalCodeHints, HintType, LinkBy, NodeCodeHintItem, NodeCodeHints, RepeatRule, RepeatRuleDef} from './CodeHintDefine';
 import { XMLParser as StandardXMLParser } from 'fast-xml-parser';
 import {ActiveNode, CursorPosition, XmlParser} from '../parser/XmlParser';
 import XmlPathUtil from '../utils/XmlPathUtil';
@@ -176,6 +176,19 @@ function parseLinkByCollectionFromNode(node:any):LinkBy[] {
     return res;
 }
 
+function GetRepeatRule(rule:string | undefined):RepeatRule {
+    if (rule === undefined) {
+        return RepeatRuleDef.OverrideOrAppend;
+    }
+
+    const value = Object.values(RepeatRuleDef).find(key => key.toLocaleLowerCase() === rule.toLocaleLowerCase());
+    if (value !== undefined) {
+        return value;
+    }
+
+    return RepeatRuleDef.OverrideOrAppend;
+}
+
 function generateCodeHintFromXmlNode(node:any):CodeHint {
     const codeHint: CodeHint = {
         required: getBool(node, 'required', false),
@@ -185,7 +198,8 @@ function generateCodeHintFromXmlNode(node:any):CodeHint {
         content: node['#text'] ?? '',
         codeSnippets: '',
         default: node['default'] ?? '',
-        linkByCollection: parseLinkByCollectionFromNode(node)
+        linkByCollection: parseLinkByCollectionFromNode(node),
+        repeatRule: GetRepeatRule(node['repeatRule'])
     };
 
     const diag = getDiagLevel(node, 'diag');
@@ -243,7 +257,8 @@ function parseNodeHintConditionAttributes(node: any):ConditionAttributeHint[] {
             const conditionAttributeHint:ConditionAttributeHint = {
                 attrName: conditionNode['attr'],
                 match: conditionNode['match'] ?? '',
-                attributes: {}
+                attributes: {},
+                repeatRule: GetRepeatRule(conditionNode['repeatRule'])
             };
             parseNodeHintAttributes(conditionNode).forEach(item => conditionAttributeHint.attributes[item.attrName] = item.codeHint);
 
@@ -575,33 +590,77 @@ function GetIncludeFileFromCodeHintFile(xmlTip: string | any):string[] {
  * 合并相同提示节点
  */
 function CombineSameNode(nodeHints: NodeCodeHints[]) {
-    let idx = 0;
-    while (idx < nodeHints.length) { 
-        const curNode = nodeHints[idx];
-        const sameNodeIdx = nodeHints.findIndex(item => item.NodePath === curNode.NodePath && item !== curNode);
-        if (sameNodeIdx < 0) {
-            idx++;
-            continue;
-        }
-        // 存在相同的节点
-        const sameNode = nodeHints[sameNodeIdx];
+    CommonUtils.CombineSameElementFromArray(nodeHints, CommonUtils.CombineType.OverrideOrAppend, (a, b) => a.NodePath === b.NodePath, (curNode, sameNode) => {
         if (sameNode.Desc.length > 0) {
             curNode.Desc = sameNode.Desc;
         }
-        for (const attrName in sameNode.AttributeNodeHint) {
-            curNode.AttributeNodeHint[attrName] = sameNode.AttributeNodeHint[attrName];
-        }
-        if (sameNode.ConditionAttributeHints.length > 0) {
-            curNode.ConditionAttributeHints = sameNode.ConditionAttributeHints;
-        }
-        if (sameNode.ContentHint !== null) {
-            curNode.ContentHint = sameNode.ContentHint;
-        }
+
         if (sameNode.FileTriggerPattern !== null) {
             curNode.FileTriggerPattern = sameNode.FileTriggerPattern;
         }
-        nodeHints.splice(sameNodeIdx, 1);
-    }
+
+        if (sameNode.ContentHint !== null) {
+            if (sameNode.ContentHint.repeatRule === RepeatRuleDef.OverrideOrAppend) {
+                curNode.ContentHint = sameNode.ContentHint;
+            } else if (sameNode.ContentHint.repeatRule === RepeatRuleDef.Remove) {
+                curNode.ContentHint = null;
+            }
+        }
+
+        for (const attrName in sameNode.AttributeNodeHint) {
+            const sameAttrHint = sameNode.AttributeNodeHint[attrName];
+            if (sameAttrHint.repeatRule === RepeatRuleDef.OverrideOrAppend) {
+                curNode.AttributeNodeHint[attrName] = sameAttrHint;
+            } else if (sameAttrHint.repeatRule === RepeatRuleDef.Remove) {
+                delete curNode.AttributeNodeHint[attrName];
+            } else {
+                const curAttrHint = curNode.AttributeNodeHint[attrName];
+                if (curAttrHint === undefined) {
+                    curNode.AttributeNodeHint[attrName] = sameAttrHint;
+                    continue;
+                }
+                curAttrHint.items.push(...sameAttrHint.items);
+                CommonUtils.CombineSameElementFromArray(curAttrHint.items, 
+                    sameAttrHint.repeatRule === RepeatRuleDef.OverrideOrAppendItem ? CommonUtils.CombineType.OverrideOrAppend : CommonUtils.CombineType.Remove,
+                    (i1, i2) => i1.value === i2.value,
+                    (i1, i2) => {
+                        i1.desc = i2.desc;
+                        i1.filterText = i2.filterText;
+                        i1.kind = i2.kind;
+                        i1.label = i2.label;
+                        i1.nextStep = i2.nextStep;
+                    }
+                );
+            }
+        }
+
+        for (const condAttrHint of sameNode.ConditionAttributeHints) {
+            curNode.ConditionAttributeHints.push(condAttrHint);
+            CommonUtils.CombineSameElementFromArray(curNode.ConditionAttributeHints,
+                condAttrHint.repeatRule === RepeatRuleDef.Remove ? CommonUtils.CombineType.Remove : CommonUtils.CombineType.OverrideOrAppend,
+               (c1, c2) => c1.attrName === c2.attrName && c1.match === c2.match,
+               (c1, c2) => {
+                    if (condAttrHint.repeatRule === RepeatRuleDef.OverrideOrAppend) {
+                        return true;
+                    }
+
+                    if (condAttrHint.repeatRule === RepeatRuleDef.OverrideOrAppendItem) {
+                        for (const attrName in c2.attributes) {
+                            c1.attributes[attrName] = c2.attributes[attrName];
+                        }
+                        return;
+                    }
+
+                    if (condAttrHint.repeatRule === RepeatRuleDef.RemoveItem) {
+                        for (const attrName in c2.attributes) {
+                            delete c1.attributes[attrName];
+                        }
+                        return;
+                    }
+               }
+            );
+        }
+    });
 
     // 全部重新生成代码片段
     nodeHints.forEach(node => generateNodeCodeSnippets(node));
@@ -1354,12 +1413,9 @@ async function ParseNodeLinkToUri(codeHint: CodeHint, linkValue:string): Promise
     if (linkBy === "path") {
         try {
             const uri = vscode.Uri.joinPath(rootUri, matchedValue);
-            const fileInfo = await vscode.workspace.fs.stat(uri);
-            if (fileInfo.type === vscode.FileType.File) {
-                uriList.push(uri);
-            } else {
-                vscode.commands.executeCommand('revealInExplorer', uri);
-            }
+            // 测试文件是否存在
+            await vscode.workspace.fs.stat(uri);
+            uriList.push(uri);
         } catch (error) {
             console.error('hint:path link跳转出错:' + error);
         }

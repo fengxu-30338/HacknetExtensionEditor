@@ -1,5 +1,18 @@
 # 更新日志
 
+## v0.1.7更新日志-2025-12-26
+
+提示文件标签新增 `repeatRule`属性，描述多个相同的Node如何覆写规则
+
+* `override`      覆写/追加 相同name的属性到node下
+* `remove`         移除相同属性名称对应的Attribute定义
+* `overrideItem`  合并相同属性名称定义的枚举类型
+* `removeItem`     从上一个相同属性名称定义的枚举提示中移除相同定义
+
+`AddIRCMessage`标签的 `Author`属性新增Channel提示
+
+部分邮件属性标签中新增默认jmail提示以及默认admin账户提示。
+
 ## v0.1.5更新日志-2025-12-25
 
 1. **Hacknet-EditorHint.xml中的Include标签在重新创建提示文件后会保留下来**

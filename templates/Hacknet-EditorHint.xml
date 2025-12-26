@@ -49,6 +49,12 @@
                 <Enum desc="提示等级">H</Enum>
             </Enums>
         </Attribute>
+        <Attribute name="repeatRule" required="false" default="" desc="重复标签覆盖规则">
+            <Enums>
+                <Enum desc="覆盖上一处定义的content规则">override</Enum>
+                <Enum desc="使指定Node不在具有content">remove</Enum>
+            </Enums>
+        </Attribute>
     </Node>
     <Node name="HacknetEditorHint.Node.Attribute|HacknetEditorHint.Node.ConditionAttributes.Attribute" enable="true" multi="true" desc="定义标签的一个属性信息">
         <Content />
@@ -92,6 +98,14 @@
                 <Enum desc="警告等级">W</Enum>
                 <Enum desc="消息等级">I</Enum>
                 <Enum desc="提示等级">H</Enum>
+            </Enums>
+        </Attribute>
+        <Attribute name="repeatRule" required="false" default="" desc="重复标签覆盖规则">
+            <Enums>
+                <Enum desc="覆盖或追加到Node下">override</Enum>
+                <Enum desc="移除与本标签匹配规则相同的标签">remove</Enum>
+                <Enum desc="覆盖或追加子标签">overrideItem</Enum>
+                <Enum desc="删除具有相同名称的子标签">removeItem</Enum>
             </Enums>
         </Attribute>
     </Node>
@@ -144,6 +158,14 @@
         <Content />
         <Attribute name="attr" required="true" default="" desc="实际标签的属性名" />
         <Attribute name="match" required="true" default="" desc="实际标签属性值的匹配正则，匹配成功则加入内部定义的属性进行提示" />
+        <Attribute name="repeatRule" required="false" default="" desc="重复标签覆盖规则">
+            <Enums>
+                <Enum desc="覆盖或追加到Node下">override</Enum>
+                <Enum desc="移除与本标签匹配规则相同的标签">remove</Enum>
+                <Enum desc="覆盖或追加子标签">overrideItem</Enum>
+                <Enum desc="删除具有相同名称的子标签">removeItem</Enum>
+            </Enums>
+        </Attribute>
     </Node>
     <Node name="HacknetEditorHint.Include" enable="true" multi="true" desc="包含其他的提示文件">
         <Attribute name="path" required="true" default="" desc="其他提示文件的相对路径,请勿递归包含" linkBy="path" hint="path">**/*.xml</Attribute>
@@ -337,7 +359,7 @@
             (function(node, hacknetNodeHolder){
                 let ipArr = [];
                 // 获取当前工作空间定义的所有计算机节点信息，与之类似的还有：
-                // GetMissions(), GetActions(), GetThemes(), GetFactions()
+                // GetComputers(), GetMissions(), GetActions(), GetThemes(), GetFactions(), GetPeoples(), GetOtherNodes()
                 // 在获取的节点中您可以通过调用"__FullPath__"属性获取节点所在文件的绝对路径， "__RelativePath__"属性获取相对路径
                 const computers = hacknetNodeHolder.GetComputers();
                 while(ipArr.length &lt; 5) {
@@ -408,6 +430,7 @@
                 <Enum desc="Home(家)">2</Enum>
                 <Enum desc="server(服务器)">3</Enum>
                 <Enum desc="empty(空，不会生成垃圾文件)">4</Enum>
+                <Enum desc="生成 eos 设备的文件">5</Enum>
                 <Enum desc="empty(空，不会生成垃圾文件)">empty</Enum>
             </Enums>
         </Attribute>
@@ -428,6 +451,10 @@
                 <Enum desc="可删文件">ALL</Enum>
                 <Enum desc="邮件账户">MAIL</Enum>
                 <Enum desc="任务监听服务的账户(mission listing server)">MISSIONLIST</Enum>
+                <Enum desc="管理员">0</Enum>
+                <Enum desc="可删文件">1</Enum>
+                <Enum desc="邮件账户">2</Enum>
+                <Enum desc="任务监听服务的账户(mission listing server)">3</Enum>
             </Enums>
         </Attribute>
     </Node>
@@ -556,7 +583,7 @@
         </Attribute>
         <Attribute name="name" required="true" desc="文件名" default="xxx.dec" hint="enumWithCommonString" />
         <Attribute name="extension" required="true" desc="解密后的文件扩展名" default=".txt"/>
-        <Attribute name="ip" required="true" desc="加密所在计算机的IP" default="ip" hint="js" linkBy="Computer.ip" diag="E">
+        <Attribute name="ip" required="true" desc="加密所在计算机的IP" default="ip" hint="js" linkBy="Computer.ip" diag="W">
             (function(node, hacknetNodeHolder){
                 return hacknetNodeHolder.GetComputers()
                     .filter(comp =&gt; comp.ip)
@@ -1453,21 +1480,25 @@
                     return;
                 }
 
+                const res = [{value: 'Channel', kind: 'value', desc: '公屏广播'}];
+
                 if (comp.IRCDaemon &amp;&amp; comp.IRCDaemon.user) {
-                    return Array.isArray(comp.IRCDaemon.user) ? 
+                    res.push(...(Array.isArray(comp.IRCDaemon.user) ? 
                         comp.IRCDaemon.user.map(item =&gt; {
                             return {value: item.name, kind: 'value'};
                         }): 
-                        {value: comp.IRCDaemon.user.name, kind: 'value'};
+                        [{value: comp.IRCDaemon.user.name, kind: 'value'}]));
                 }
 
                 if (comp.DHSDaemon &amp;&amp; comp.DHSDaemon.agent) {
-                    return Array.isArray(comp.DHSDaemon.agent) ? 
+                    res.push(...(Array.isArray(comp.DHSDaemon.agent) ? 
                         comp.DHSDaemon.agent.map(item =&gt; {
                             return {value: item.name, kind: 'value'};
                         }): 
-                        {value: comp.DHSDaemon.agent.name, kind: 'value'};
+                        [{value: comp.DHSDaemon.agent.name, kind: 'value'}]));
                 }
+
+                return res;
             });
         </Attribute>
         <Attribute name="Delay" required="false" desc="延迟触发(秒)" default="0.0" hint="enum"/>
@@ -1993,11 +2024,16 @@
         <ConditionAttributes attr="type" match="^sendemail$">
             <Attribute name="mailServer" required="true" desc="存在邮件服务的计算机ID" default="" hint="js" linkBy="Computer.id|Computer.eosDevice.id" diag="E">
                 (function(node, hacknetNodeHolder){
-                    return hacknetNodeHolder.GetComputers()
+                    const res = hacknetNodeHolder.GetComputers()
                         .filter(comp =&gt; comp.mailServer)
                         .map(comp =&gt; {
                         return {value: comp.id, desc: comp.name, filterText: comp.id, kind: "reference"};
                     });
+                    if (!res.find(item =&gt; item.value === 'jmail')) {
+                        res.push({value: 'jmail', desc: 'jmail邮件服务', kind: 'value'});
+                    }
+
+                    return res;
                 })
             </Attribute>
             <Attribute name="recipient" required="true" desc="收件人" default="" hint="js" diag="W">
@@ -2008,20 +2044,28 @@
                     const targetCompId = actNode.node.attribute.get('mailServer');
                     const comp = hacknetNodeHolder.GetComputers().find(comp =&gt; comp.id === targetCompId);
                     if (!comp) {
-                        return;
+                        return {value: 'admin', desc: '邮件管理员账户', kind: 'value'};
                     }
+
+                    const res = [];
 
                     if (comp.account) {
                         if (Array.isArray(comp.account)) {
-                            return comp.account.filter(account =&gt; {
+                            res.push(...comp.account.filter(account =&gt; {
                                 return account.type.toString() === '2' || account.type.toString().toLocaleLowerCase() === 'mail';
                             }).map(account =&gt; {
                                 return {value: account.username, desc: '定义的邮件账户', kind: 'value'};
-                            });
+                            }));
                         } else if (comp.account.type.toString() === '2' || comp.account.type.toString().toLocaleLowerCase() === 'mail') {
-                            return {value: comp.account.username, desc: '定义的邮件账户', kind: 'value'};
+                            res.push({value: comp.account.username, desc: '定义的邮件账户', kind: 'value'});
                         }
                     }
+
+                    if (!res.find(item =&gt; item.value === 'admin')) {
+                        res.push({value: 'admin', desc: '邮件管理员账户', kind: 'value'});
+                    }
+
+                    return res;
                 });
             </Attribute>
             <Attribute name="subject" required="true" desc="邮件主题" default="Email Subject" hint="enum" />

@@ -42,6 +42,7 @@ export interface NodeHolder {
     GetThemes: () => HacknetNodeInfo[]
     GetFactions: () => HacknetNodeInfo[]
     GetPeoples: () => HacknetNodeInfo[]
+    GetOtherNodes: () => HacknetNodeInfo[]
 }
 
 
@@ -184,7 +185,8 @@ const DependencyFileType = {
     ActionFile: '|ACT|',
     ThemeFile: '|THM|',
     FactionFile: '|FAC|',
-    PeopleFile: '|PEO|'
+    PeopleFile: '|PEO|',
+    OtherFile: '|OTHER|'
 } as const;
 
 // 维护hn的xml文件的相互依赖关系: (文件路径、DependencyFileType) -> 引用到该文件的所有资源标识符（xx.xml|computer.mial->file）
@@ -295,14 +297,22 @@ async function ScanFileFromDiagnostic(filepath:string, req:DiagnosticRequest, sc
 
 // 获取当前文件变动后哪些文件依赖了该文件
 function GetDependencyFilePath(filepath: string, req:DiagnosticRequest,):Iterable<string> {
-    const depResourceArray = [...(HacknetFileRelationMap.get(filepath) ?? []), ...(HacknetFileRelationMap.get(DependencyFileType.AllFile) ?? [])];
+    const depResourceArray = [...(HacknetFileRelationMap.get(DependencyFileType.AllFile) ?? [])];
 
     const fileNodeType = GetFileNodeType(filepath, req);
 
+    // 提取一类的文件类型
     if (fileNodeType !== null) {
         const depFileType = GetDependencyFileType(fileNodeType);
         depResourceArray.push(...(HacknetFileRelationMap.get(depFileType) ?? []));
     }
+
+    // 单一文件或文件夹
+    HacknetFileRelationMap.forEach((resourceSet, defPath) => {
+        if (filepath.startsWith(defPath)) {
+            depResourceArray.push(...resourceSet);
+        }
+    });
 
     return new Set<string>(depResourceArray.map(resourceIdentifier => resourceIdentifier.split('|')[0]));
 }
@@ -760,16 +770,28 @@ async function GetHintItems(node: Node, codeHint: CodeHint, req:DiagnosticReques
         };
         const resp = await QueryAllRelativeFile(req);
 
+        const pathCompareFunc = (path1:string, path2:string) => {
+            path1 = path1.replaceAll('\\', '/');
+            path2 = path2.replaceAll('\\', '/');
+            while (path1.endsWith('/')) {
+                path1 = path1.slice(0, -1);
+            }
+            while (path2.endsWith('/')) {
+                path2 = path2.slice(0, -1);
+            }
+            return path1 === path2;
+        };
+
         return {
             checkFunc: (checkVal: string) => {
                 checkVal = checkVal.replaceAll('\\', '/');
-                const filepath = resp.result.find(item => item === checkVal);
+                const filepath = resp.result.find(item => pathCompareFunc(item, checkVal));
                 const validate = filepath !== undefined;
 
                 return {
                     validate: validate || enumCheckFunc(checkVal),
                     depdendencyPath: [checkVal],
-                    diagMsg: '未在当前工作空间中找到该路径'
+                    diagMsg: codeHint.type === HintType.Path ? '未在当前工作空间中找到该文件路径(注意大小写)' : '未在当前工作空间中找到该文件夹路径(注意大小写)或文件夹下没有文件该路径无意义'
                 };
             }
         };
@@ -905,6 +927,8 @@ function GetDependencyFileType(nodeType: HacknetNodeType) {
             return DependencyFileType.PeopleFile;
         case HacknetNodeType.Theme:
             return DependencyFileType.ThemeFile;
+        case HacknetNodeType.Other:
+            return DependencyFileType.OtherFile;
     }
 }
 
@@ -986,6 +1010,17 @@ function AttachFuncToNodeHolder(req:DiagnosticRequest) {
             res.push(node.Person);
         });
         NodeHolderHook.TriggerHook(HacknetNodeType.People);
+
+        return res;
+    };
+
+    nodeHolder.GetOtherNodes = () => {
+        const actionNodes = req.nodeHolder.NodeMap[HacknetNodeType.Other];
+        const res:HacknetNodeInfo[] = [];
+        actionNodes.forEach(node => {
+            res.push(node);
+        });
+        NodeHolderHook.TriggerHook(HacknetNodeType.Other);
 
         return res;
     };

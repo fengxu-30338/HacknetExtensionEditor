@@ -168,7 +168,7 @@
         </Attribute>
     </Node>
     <Node name="HacknetEditorHint.Include" enable="true" multi="true" desc="包含其他的提示文件">
-        <Attribute name="path" required="true" default="" desc="其他提示文件的相对路径,请勿递归包含" linkBy="path" hint="path">**/*.xml</Attribute>
+        <Attribute name="path" required="true" default="" desc="其他提示文件相对于根目录的相对路径,请勿递归包含" linkBy="path" hint="path">**/*.xml</Attribute>
     </Node>
     <Node name="HacknetEditorHint.ReplaceTextHint" enable="true" multi="false" desc="定义游戏中可替换文本:#xxx# 提示">
         <Content />
@@ -925,7 +925,7 @@
             </Enums>
         </Attribute>
     </Node>
-    <Node name="Computer.IRCDaemon.user" enable="true" multi="true" desc="定义一个消息面板内的用户信息">
+    <Node name="Computer.IRCDaemon.user|Computer.IRCDaemon.agent" enable="true" multi="true" desc="定义一个消息面板内的用户信息">
         <Attribute name="name" required="true" desc="用户名称" default="fengxu" hint="enum" />
         <Attribute name="color" required="true" desc="用户信息的字体颜色" default="0,209,232" hint="color" diag="E" />
     </Node>
@@ -962,7 +962,7 @@
             </Enums>
         </Attribute>
     </Node>
-    <Node name="Computer.DHSDaemon.agent" enable="true" multi="true" desc="定义任务中心的一个用户">
+    <Node name="Computer.DHSDaemon.user|Computer.DHSDaemon.agent" enable="true" multi="true" desc="定义任务中心的一个用户">
         <Attribute name="name" required="true" desc="用户名" default="fengxu" hint="enum" />
         <Attribute name="pass" required="true" desc="密码" default="pass" hint="enum" />
         <Attribute name="color" required="true" desc="该用户的消息字体颜色" default="209,74,48" hint="color" diag="E" />

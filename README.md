@@ -1,5 +1,7 @@
 # 快速开始
 
+下载地址：[Hacknet扩展编写插件](https://marketplace.visualstudio.com/items?itemName=fengxu30338.hacknetextensionhelper)
+
 1.创建编辑器提示文件
 
 按下快捷键 Ctrl + Shift + P 输入hacknet，选择"**创建Hacknet编辑器提示文件**"运行
@@ -8,7 +10,7 @@
 
 创建完毕后会在项目根目录生成一个Hacknet-EditorHint.xml文件，内部提供了编辑器的提示信息，您可以在使用Pathfinder定义了新的Action等标签后可自定义该文件以获得编辑器提示，自定义功能将在后续介绍。
 
-现在您就可以开始愉快的编写Hacknet Extension文件了，可以通过`空格`或按下快捷键`ctrl + enter`触发提示。值得注意的是您在写标签时请尽量不要输入`'<xxx'`，这样会导致提示效果不好，您可以按照如下步骤输入以此获得更好的提示效果:
+现在您就可以开始愉快的编写Hacknet Extension文件了，可以通过 `空格`或按下快捷键 `ctrl + enter`触发提示。值得注意的是您在写标签时请尽量不要输入 `'<xxx'`，这样会导致提示效果不好，您可以按照如下步骤输入以此获得更好的提示效果:
 
 ```xml
 <!-- 
@@ -28,7 +30,8 @@
 - xml文件提示
 - #xx#文本高亮
 - HackerScript文件提示及高亮
-- 在线调试主题`(v0.0.2新增)`
+- 在线调试主题 `(v0.0.2新增)`
+- Hacknet所有文件的树状节点查看器
 
 ## 1.创建模板文件
 
@@ -48,7 +51,7 @@
 - Faction
 - HackerScript
 
-您在需要提示的地方可以通过按下"Ctrl + 回车键"或按下`空格`来触发代码提示功能
+您在需要提示的地方可以通过按下"Ctrl + 回车键"或按下 `空格`来触发代码提示功能
 
 > 代码提示示例
 
@@ -86,14 +89,14 @@ HackerScript文件提示及高亮
 
 ## 4.符号跳转
 
-您可以在以下地方，按住`Ctrl+鼠标左键`进行目标文件跳转
+您可以在以下地方，按住 `Ctrl+鼠标左键`进行目标文件跳转
 
 - 计算机ID
 - 任意文件路径处（Action文件，Mission文件，音乐文件、图片文件等）
 
 ## 5.编写自定义提示规则
 
-您可以通过在`Hacknet-EditorHint.xml`中添加规则来达到给你自定义标签提示的效果
+您可以通过在 `Hacknet-EditorHint.xml`中添加规则来达到给你自定义标签提示的效果
 
 ### 基础示例
 
@@ -217,7 +220,7 @@ hacknetNodeHolder: 可以获取当前工作空间下的各种阶段信息，如c
 </Node>
 ```
 
-上面的示例展示了Step的用法，其基础用法类型于enum，对在初始给出用户Step中定义的value的提示，当用户选择某一项后再次进行提示时则进入Next标签定义的规则,Next标签用法与`Attribute标签一样`
+上面的示例展示了Step的用法，其基础用法类型于enum，对在初始给出用户Step中定义的value的提示，当用户选择某一项后再次进行提示时则进入Next标签定义的规则,Next标签用法与 `Attribute标签一样`
 
 ### **子标签示例**
 
@@ -230,7 +233,7 @@ hacknetNodeHolder: 可以获取当前工作空间下的各种阶段信息，如c
     </Node>
 ```
 
-多级子标签用`.`分隔，比如此处的dlink，name需要设置为`Computer.dlink`，设置name同时设置属于多个子标签，用`|`隔开，例如：
+多级子标签用 `.`分隔，比如此处的dlink，name需要设置为 `Computer.dlink`，设置name同时设置属于多个子标签，用 `|`隔开，例如：
 
 ```xml
 <!--
@@ -251,7 +254,7 @@ hacknetNodeHolder: 可以获取当前工作空间下的各种阶段信息，如c
 使用|表示或运算，例如："Computer.id|Computer.eosDevice.id" 表示这两个属性存在一个匹配成功则整体匹配成功，但是第一层
 ```
 
-**必须一样**此处就是必须都以`Computer.`开头
+**必须一样**此处就是必须都以 `Computer.`开头
 
 ```
 当前可用的有 Computer.* Mission.*  Action.*  Theme.* Faction.*  People.*  path(直接路径跳转)
@@ -293,7 +296,7 @@ LinkByCollection表示同时定义一组linkBy的跳转规则，存在一条匹�
 <Item linkBy="Faction.id" linkByValuePattern="setFaction:(.*)" />
 ```
 
-用实际属性与linkByValuePattern中定义的正则进行匹配`(取捕获组的最后一个值)`，如果匹配成功则按Faction.id规则进行跳转，不成功则继续尝试下一条linkBy规则。
+用实际属性与linkByValuePattern中定义的正则进行匹配 `(取捕获组的最后一个值)`，如果匹配成功则按Faction.id规则进行跳转，不成功则继续尝试下一条linkBy规则。
 
 ### 条件属性
 
@@ -328,7 +331,7 @@ LinkByCollection表示同时定义一组linkBy的跳转规则，存在一条匹�
 
 版本>=`0.0.3`可用
 
-xml提示文件`Hacknet-EditorHint.xml`新增Include标签可引用其他提示文件。您可以在您项目中使用的其他mod单独写一份提示文件，以供其他人使用。
+xml提示文件 `Hacknet-EditorHint.xml`新增Include标签可引用其他提示文件。您可以在您项目中使用的其他mod单独写一份提示文件，以供其他人使用。
 
 > 示例
 
@@ -360,3 +363,8 @@ xml提示文件`Hacknet-EditorHint.xml`新增Include标签可引用其他提示�
 点击后会在侧边栏弹出网页模拟的界面，您更改xml后可立即在网页看到效果。
 
 更方便的是，您在鼠标在网页想改的元素处停留3秒以上，该元素用到的颜色会在左侧xml文件中高亮出来，以便您能够更精准的定位到想要改的标签。
+
+
+## 7.Hacknet节点查看
+
+在标题栏依次点击  "查看"->"打开视图" 搜索Hacknet找到 `Hacknet节点查看`即可打开，效果如下![](imgs/NodeView.png)

@@ -22,7 +22,7 @@ class HacknetNodeHolder {
     };
 
     // 附加节点的绝对路径属性
-    public readonly FilePathSymbol = "__FilePath__";
+    public readonly FilePathSymbol = "__FullPath__";
 
     // 附加节点的相对路径属性
     public readonly RelativePathSymbol = "__RelativePath__";
@@ -120,6 +120,25 @@ class HacknetNodeHolder {
         return HacknetNodeType.Other;
     }
 
+    public GetNodeXmlRootPath(nodeType:HacknetNodeType):string | null {
+        switch (nodeType) {
+            case HacknetNodeType.Computer:
+                return "Computer";
+            case HacknetNodeType.Mission:
+                return "mission";
+            case HacknetNodeType.Action:
+                return "ConditionalActions";
+            case HacknetNodeType.Theme:
+                return "CustomTheme";
+            case HacknetNodeType.Faction:
+                return "CustomFaction";
+            case HacknetNodeType.People:
+                return "Person";
+            case HacknetNodeType.Other:
+                return null;
+        }
+    }
+
     public GetNodeByFilepath(filepath: string):any {
         for (const key in this.NodeMap) {
             const nodeMap:Map<string, any> = (this.NodeMap as any)[key];
@@ -146,8 +165,8 @@ class HacknetNodeHolder {
     }
 
     private attachNodeFunc(rootNode: any, realNode: any) {
-        realNode['__FullPath__'] = rootNode[this.FilePathSymbol];
-        realNode['__RelativePath__'] = rootNode[this.RelativePathSymbol];
+        realNode[this.FilePathSymbol] = rootNode[this.FilePathSymbol];
+        realNode[this.RelativePathSymbol] = rootNode[this.RelativePathSymbol];
     }
 
     /**
@@ -244,6 +263,25 @@ class HacknetNodeHolder {
             res.push(node);
         });
         return res;
+    }
+
+    public GetNodesByNodeType(nodeType: HacknetNodeType): HacknetNodeInfo[] {
+        switch (nodeType) {
+            case HacknetNodeType.Computer:
+                return this.GetComputers();
+            case HacknetNodeType.Mission:
+                return this.GetMissions();
+            case HacknetNodeType.Action:
+                return this.GetActions();
+            case HacknetNodeType.Theme:
+                return this.GetThemes();
+            case HacknetNodeType.Faction:
+                return this.GetFactions();
+            case HacknetNodeType.People:
+                return this.GetPeoples();
+            case HacknetNodeType.Other:
+                return this.GetOtherNodes();
+        }
     }
 }
 export const hacknetNodeHolder : HacknetNodeHolder = new HacknetNodeHolder(); 

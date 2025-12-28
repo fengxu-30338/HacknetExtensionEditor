@@ -19,7 +19,7 @@ export function RegiserHacknetThemeView(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand('hacknetextensionhelper.themeDebug',DebugThemeCommand));
 
     // 初始化并监听切换到主题页面才显示主题webview
-    InitStatusBarOnlyInThemeFile();
+    InitStatusBarOnlyInThemeFile(context);
 
     // 监听文档变化发送发送最新配置给vscode
     ListenEditorDocumentChange();
@@ -27,11 +27,12 @@ export function RegiserHacknetThemeView(context: vscode.ExtensionContext) {
 
 // 监听文档变化发送发送最新配置给vscode
 function ListenEditorDocumentChange() {
-   OnEditorFileChangedForChangeThemeWebview();
+    OnEditorFileChangedForChangeThemeWebview();
     const eventFunc = lodash.debounce(OnEditorFileChangedForChangeThemeWebview, 200);
 
-    vscode.window.onDidChangeActiveTextEditor(eventFunc);
-    vscode.workspace.onDidChangeTextDocument(eventFunc);
+    const context = CommonUtils.GetExtensionContext();
+    context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(eventFunc));
+    context.subscriptions.push(vscode.workspace.onDidChangeTextDocument(eventFunc));
 
 }
 
@@ -63,12 +64,13 @@ function DebugThemeCommand(...args: any[]) {
 
 
 // 初始化并监听切换到主题页面才显示主题webview
-function InitStatusBarOnlyInThemeFile() {
+function InitStatusBarOnlyInThemeFile(context: vscode.ExtensionContext) {
     const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
     statusBarItem.text = "$(browser) 调试主题";
     statusBarItem.tooltip = "在线调试Hacknet主题";
     statusBarItem.command = "hacknetextensionhelper.themeDebug";
     statusBarItem.hide();
+    context.subscriptions.push(statusBarItem);
 
     vscode.window.onDidChangeActiveTextEditor(_ => OnEditorFileChangedForChangeStatusBar(statusBarItem));
     vscode.window.onDidChangeVisibleTextEditors(_ => OnEditorFileChangedForChangeStatusBar(statusBarItem));

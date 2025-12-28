@@ -37,6 +37,11 @@ class MyEventManager {
     public removeListener(eventName: EventType, listener: (data?: any) => void): void {
         this.eventEmitter.removeListener(eventName, listener);
     }
+
+    // 移除所有事件监听器
+    public removeAllListeners(): void {
+        this.eventEmitter.removeAllListeners();
+    }
 }
 
 export const EventManager = MyEventManager.getInstance();

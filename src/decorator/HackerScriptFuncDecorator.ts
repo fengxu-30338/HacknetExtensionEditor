@@ -62,10 +62,11 @@ function highlightHackerScriptFunc() {
  * 注册黑客脚本方法高亮文本装饰器
  */
 export function RegisterHackerScriptsHightlight() {
+    const context = CommonUtils.GetExtensionContext();
     highlightHackerScriptFunc();
     const debounceHighlightHackerScriptFunc = lodash.debounce(highlightHackerScriptFunc, 200);
-    vscode.workspace.onDidChangeTextDocument(_ => debounceHighlightHackerScriptFunc());
-    vscode.window.onDidChangeActiveTextEditor(_ => debounceHighlightHackerScriptFunc());
-    vscode.window.onDidChangeVisibleTextEditors(_ => debounceHighlightHackerScriptFunc());
-    EventManager.onEvent(EventType.CodeHintSourceChange, _ => debounceHighlightHackerScriptFunc());
+    context.subscriptions.push(vscode.workspace.onDidChangeTextDocument(_ => debounceHighlightHackerScriptFunc()));
+    context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(_ => debounceHighlightHackerScriptFunc()));
+    context.subscriptions.push(vscode.window.onDidChangeVisibleTextEditors(_ => debounceHighlightHackerScriptFunc()));
+    EventManager.onEvent(EventType.CodeHintParseCompleted, _ => debounceHighlightHackerScriptFunc());
 }

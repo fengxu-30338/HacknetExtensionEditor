@@ -93,14 +93,13 @@ export async function CreateHacknetEditorHintFileInWorkspaceRoot(context: vscode
         const text = await readHacknetDefaultEditorHintFile(context);
         await vscode.workspace.fs.writeFile(filePath, Buffer.from(text.replace("<!-- %placeholder% -->", GetIncludeNodeFromXmlContent(oldFileContent))));
 
-        const document = await vscode.workspace.openTextDocument(filePath);
-        await vscode.window.showTextDocument(document, {
-            preview: true,  // 不以预览模式打开
-            preserveFocus: true,  // 将焦点转移到新打开的编辑器
-            viewColumn: vscode.ViewColumn.One  // 在第一个编辑器组打开
-        });
-
         if (notifyUser) {
+            const document = await vscode.workspace.openTextDocument(filePath);
+            await vscode.window.showTextDocument(document, {
+                preview: true,
+                preserveFocus: true,
+                viewColumn: vscode.ViewColumn.One
+            });
             vscode.window.showInformationMessage(`Hacknet-EditorHint Create Success`);
         }
     } catch (error) {

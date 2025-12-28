@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { EventManager } from './event/EventManager';
 import {CheckHacknetEditorHintFileExist, HintFileExistRule, CreateHacknetEditorHintFileInWorkspaceRoot} from './commands/CreateEditorHintCmd';
 import {RegisterHacknetXmlCodeHint} from './code-hint/CodeHint';
 import * as GlobalHacknetXmlNodeHolder from './worker/GlobalHacknetXmlNodeHolder';
@@ -9,6 +10,8 @@ import { RegisterHacknetReplaceTextHightlight } from "./decorator/HackerReplaceT
 import { RegisterCreateHacknetResourceFileCommands } from "./commands/CreateHacknetResourceFileCmd";
 import { RegiserHacknetThemeView } from "./view/ThemeViewer";
 import { StartDiagnostic } from "./diagnostic/HacknetFileDiagnostic";
+import { RegisterTutorialViewer } from "./view/TutorialViewer";
+import { RegisterHacknetNodeViewer } from "./view/HacknetNodeViewer";
 
 export async function activate(context: vscode.ExtensionContext) {
 
@@ -60,10 +63,18 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// 注册主题视图
 	RegiserHacknetThemeView(context);
+
+	// 注册教程视图
+	RegisterTutorialViewer(context);
+
+	// 注册节点视图
+	RegisterHacknetNodeViewer(context);
 }
 
 
 export function deactivate() {
 	// 停止扫描
 	GlobalHacknetXmlNodeHolder.StopScanWorker();
+	// 移除所有事件监听器
+	EventManager.removeAllListeners();
 }

@@ -2,7 +2,7 @@
   "name": "hacknetextensionhelper",
   "displayName": "HacknetExtensionHelper",
   "description": "hacknet extension write helper",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "engines": {
     "vscode": "^1.103.0"
   },
@@ -20,6 +20,17 @@
   },
   "publisher": "fengxu30338",
   "contributes": {
+    "views": {
+      "explorer": [
+        {
+          "id": "hacknetNodeViewer",
+          "name": "Hacknet节点查看",
+          "icon": "resources/NodeView/node.svg",
+          "visibility": "visible",
+          "when": "true"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "hacknetextensionhelper.createEditorHintFile",
@@ -32,6 +43,14 @@
       {
         "command": "hacknetextensionhelper.themeDebug",
         "title": "调试Hacknet主题文件"
+      },
+      {
+        "command": "hacknetextensionhelper.lookUpTutorialDoc",
+        "title": "查看Hacknet文件编辑教程"
+      },
+      {
+        "command": "hacknetextensionhelper.openXmlFile",
+        "title": "打开Hacknet xml文件并定位到node path处"
       },
       {
         "command": "hacknetextensionhelper.triggerHint",
@@ -170,6 +189,14 @@
         },
         {
           "command": "hacknetextensionhelper.createHackerScriptFile",
+          "when": "false"
+        },
+        {
+          "command": "hacknetextensionhelper.lookUpTutorialDoc",
+          "when": "false"
+        },
+        {
+          "command": "hacknetextensionhelper.openXmlFile",
           "when": "false"
         }
       ]

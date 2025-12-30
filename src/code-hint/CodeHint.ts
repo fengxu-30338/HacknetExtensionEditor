@@ -739,6 +739,7 @@ async function GetCodeHintFromHacknetCodeHintFile() {
         CodeHints.ReplaceTextSource = res.ReplaceTextSource;
         vscode.commands.executeCommand('setContext', 'hacknetextensionhelper.HasCodeHintFile', true);
         HasHintFile = true;
+        // console.trace('解析Hacknet提示文件完成');
         EventManager.fireEvent(EventType.CodeHintParseCompleted, CodeHints);
         WatchCodeHintFile(CommonUtils.GetExtensionContext(), CodeHints.IncludeFiles, false);
     } catch (err) {

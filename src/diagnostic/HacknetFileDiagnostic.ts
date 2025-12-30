@@ -6,8 +6,11 @@ import { Diagnostic, DiagnosticRequest, DiagnosticResult, DiagnosticWorkerDataTy
 import { CodeHints, HintFileExist } from '../code-hint/CodeHint';
 import { hacknetNodeHolder } from "../worker/GlobalHacknetXmlNodeHolder";
 import { EventManager, EventType } from '../event/EventManager';
+import loadsh from 'lodash';
 
 
+// 编辑器提示文件是否解析完成过
+let firstScaned = false;
 // 诊断集合
 let diagnosticCollection!: vscode.DiagnosticCollection;
 
@@ -56,18 +59,22 @@ export function StartDiagnostic() {
     // 监听xml节点变动
     EventManager.onEvent(EventType.HacknetNodeFileChange, (e) => {
         // console.log('xml节点变动');
-        if (e.filepath) {
+        // 此处必须先等待一次编辑器提示文件解析完成，否则会在刚启动时造成多处诊断错误
+        if (e.filepath && firstScaned) {
             debounceStartDiagnosticFile(e.filepath, true, false, worker);
         }
     });
 
 
     // 解析完编辑器提示文件后获取所有xml文件执行诊断一次
-    EventManager.onEvent(EventType.CodeHintParseCompleted, () => ScanAllXmlFileForDiagnostic(worker));
+    const debounceScanAllXmlFileForDiagnostic = loadsh.debounce(ScanAllXmlFileForDiagnostic, 3000);
+    EventManager.onEvent(EventType.CodeHintParseCompleted, () => {
+        debounceScanAllXmlFileForDiagnostic(worker);
+    });
 
     // 每隔10分钟全部扫描一次，清理可能改变的文件依赖关系
     const timer = setInterval(() => {
-        ScanAllXmlFileForDiagnostic(worker);
+        debounceScanAllXmlFileForDiagnostic(worker);
     }, 10 * 60 * 1000);
     context.subscriptions.push({ dispose: () => clearInterval(timer) });
     
@@ -135,6 +142,7 @@ function HandleDiagnosticResult(result:DiagnosticResult) {
 async function ScanAllXmlFileForDiagnostic(worker:Worker) { 
     const xmlFiles = await vscode.workspace.findFiles('**/*.xml');
     StartDiagnosticFile(xmlFiles.map(uri => uri.fsPath), false, true, worker);
+    firstScaned = true;
 }
 
 // 开始诊断文件
@@ -154,6 +162,7 @@ async function StartDiagnosticFile(filepath:string | string[], scanDepedencyFile
         type: DiagnosticWorkerMsgType.DiagnosticReq,
         data: req
     };
+    // console.log('开始诊断文件', filepath);
     worker.postMessage(msg);
 }
 

@@ -43,11 +43,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// 扫描其他xml文件
 	GlobalHacknetXmlNodeHolder.StartHacknetNodeScan(context);
-	// 工作目录改变重新扫描
-	vscode.workspace.onDidChangeWorkspaceFolders(event => {
-		GlobalHacknetXmlNodeHolder.StopScanWorker();
-		GlobalHacknetXmlNodeHolder.StartHacknetNodeScan(context);
-	});
 
 	// 创建xml颜色提供器
 	RegisterHacknetColorProvider(context);

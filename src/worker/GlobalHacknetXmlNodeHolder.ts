@@ -324,6 +324,13 @@ export function StartHacknetNodeScan(context: vscode.ExtensionContext) {
         hacknetNodeHolder.RemoveNodeByFilepath(uri.fsPath);
     });
     context.subscriptions.push(watcher);
+
+
+    // 工作目录改变重新扫描
+    context.subscriptions.push(vscode.workspace.onDidChangeWorkspaceFolders(event => {
+        StopScanWorker();
+        StartHacknetNodeScan(context);
+    }));
 }
 
 

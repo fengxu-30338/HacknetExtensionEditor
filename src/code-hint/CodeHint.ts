@@ -6,7 +6,7 @@ import path from 'path';
 import * as vscode from 'vscode';
 import * as CommonUtils from '../utils/CommonUtils';
 import { hacknetNodeHolder } from '../worker/GlobalHacknetXmlNodeHolder';
-import lodash, { has } from 'lodash';
+import lodash from 'lodash';
 import { minimatch } from "minimatch";
 import { EventManager, EventType } from "../event/EventManager";
 
@@ -184,7 +184,8 @@ function parseLinkByCollectionFromNode(node:any):LinkBy[] {
     if (node['linkBy'] !== undefined) {
         res.push({
             linkBy: node['linkBy'],
-            linkByValuePattern: null
+            linkByValuePattern: null,
+            split: null
         });
     }
 
@@ -202,7 +203,8 @@ function parseLinkByCollectionFromNode(node:any):LinkBy[] {
         .forEach(item => {
             res.push({
                 linkBy: item['linkBy'] ?? '',
-                linkByValuePattern: item['linkByValuePattern'] ?? null
+                linkByValuePattern: item['linkByValuePattern'] ?? null,
+                split: item['split'] ?? null
             });
         });
 
@@ -291,6 +293,7 @@ function parseNodeHintConditionAttributes(node: any):ConditionAttributeHint[] {
                 attrName: conditionNode['attr'],
                 match: conditionNode['match'] ?? '',
                 attributes: {},
+                ignoreCase: getBool(conditionNode, 'ignoreCase', false),
                 repeatRule: GetRepeatRule(conditionNode['repeatRule'])
             };
             parseNodeHintAttributes(conditionNode).forEach(item => conditionAttributeHint.attributes[item.attrName] = item.codeHint);
@@ -891,7 +894,7 @@ function GetNewAttributesByActiveNodeForHint(actNode: ActiveNode, nodeCodeHint: 
             return;
         }
 
-        if (attrValue.match(conditionAttr.match)) {
+        if (conditionAttr.ignoreCase ? attrValue.match(new RegExp(conditionAttr.match, 'i')) : attrValue.match(conditionAttr.match)) {
             // 条件检测成功附加新属性
             for (const newAttrName in conditionAttr.attributes) {
                 newAttrNodeHint[newAttrName] = conditionAttr.attributes[newAttrName];
@@ -1408,9 +1411,14 @@ async function ParseNodeLinkToUri(codeHint: CodeHint, linkValue:string): Promise
             matchedValue = matchRes[matchRes.length - 1];
             return true;
         }
-    })?.linkBy;
+    });
 
-    if (!linkBy) {
+    if (linkBy === undefined) {
+        return uriList;
+    }
+
+    const handleContents = linkBy.split === null ? [matchedValue] : matchedValue.split(new RegExp(linkBy.split)).filter(item => item.trim() !== '').map(item => item.trim());
+    if (handleContents.length === 0) {
         return uriList;
     }
 
@@ -1419,42 +1427,57 @@ async function ParseNodeLinkToUri(codeHint: CodeHint, linkValue:string): Promise
         return uriList;
     }
 
-    if (linkBy.startsWith('Computer.')) {
-        return CommonUtils.filterObjectByExpression(hacknetNodeHolder.GetComputers(), linkBy, matchedValue)
-            .map(comp => vscode.Uri.joinPath(rootUri, comp['__RelativePath__']));
-    }
-
-    if (linkBy.startsWith('Mission.')) {
-        return CommonUtils.filterObjectByExpression(hacknetNodeHolder.GetMissions(), linkBy, matchedValue)
-            .map(mission => vscode.Uri.joinPath(rootUri, mission['__RelativePath__']));
-    }
-
-    if (linkBy.startsWith('Action.')) {
-        return CommonUtils.filterObjectByExpression(hacknetNodeHolder.GetActions(), linkBy, matchedValue)
-            .map(action => vscode.Uri.joinPath(rootUri, action['__RelativePath__']));
-    }
-
-    if (linkBy.startsWith('Theme.')) {
-        return CommonUtils.filterObjectByExpression(hacknetNodeHolder.GetThemes(), linkBy, matchedValue)
-            .map(theme => vscode.Uri.joinPath(rootUri, theme['__RelativePath__']));
-    }
-
-    if (linkBy.startsWith('Faction.')) {
-        return CommonUtils.filterObjectByExpression(hacknetNodeHolder.GetFactions(), linkBy, matchedValue)
-            .map(faction => vscode.Uri.joinPath(rootUri, faction['__RelativePath__']));
-    }
-
-    if (linkBy === "path") {
-        try {
-            const uri = vscode.Uri.joinPath(rootUri, matchedValue);
-            // 测试文件是否存在
-            await vscode.workspace.fs.stat(uri);
-            uriList.push(uri);
-        } catch (error) {
-            console.error('hint:path link跳转出错:' + error);
+    const linkByStr = linkBy.linkBy;
+    for (const val of handleContents) {
+        if (linkByStr.startsWith('Computer.')) {
+            uriList.push(...CommonUtils.filterObjectByExpression(hacknetNodeHolder.GetComputers(), linkByStr, val)
+                .map(comp => vscode.Uri.joinPath(rootUri, comp['__RelativePath__'])));
+            continue;
         }
-    }
 
+        if (linkByStr.startsWith('Mission.')) {
+            uriList.push(...CommonUtils.filterObjectByExpression(hacknetNodeHolder.GetMissions(), linkByStr, val)
+                .map(mission => vscode.Uri.joinPath(rootUri, mission['__RelativePath__'])));
+            continue;
+        }
+
+        if (linkByStr.startsWith('Action.')) {
+            uriList.push(...CommonUtils.filterObjectByExpression(hacknetNodeHolder.GetActions(), linkByStr, val)
+                .map(action => vscode.Uri.joinPath(rootUri, action['__RelativePath__'])));
+            continue;
+        }
+
+        if (linkByStr.startsWith('Theme.')) {
+            uriList.push(...CommonUtils.filterObjectByExpression(hacknetNodeHolder.GetThemes(), linkByStr, val)
+                .map(theme => vscode.Uri.joinPath(rootUri, theme['__RelativePath__'])));
+            continue;
+        }
+
+        if (linkByStr.startsWith('Faction.')) {
+            uriList.push(...CommonUtils.filterObjectByExpression(hacknetNodeHolder.GetFactions(), linkByStr, val)
+                .map(faction => vscode.Uri.joinPath(rootUri, faction['__RelativePath__'])));
+            continue;
+        }
+
+        if (linkByStr.startsWith('People.')) {
+            uriList.push(...CommonUtils.filterObjectByExpression(hacknetNodeHolder.GetPeoples(), linkByStr, val)
+                .map(people => vscode.Uri.joinPath(rootUri, people['__RelativePath__'])));
+            continue;
+        }
+
+        if (linkByStr === "path") {
+            try {
+                const uri = vscode.Uri.joinPath(rootUri, val);
+                // 测试文件是否存在
+                await vscode.workspace.fs.stat(uri);
+                uriList.push(uri);
+            } catch (error) {
+                console.error('hint:path link跳转出错:' + error);
+            }
+            continue;
+        }   
+    }
+    
     return uriList;
 }
 

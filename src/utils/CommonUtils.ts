@@ -69,7 +69,7 @@ export function filterObjectByExpression<T>(
 ): T[] {
   const exps = expression.split('|');
   const res: T[] = [];
-  exps.some(exp => res.push(...filterByExpression(array, exp, targetValue)));
+  exps.forEach(exp => res.push(...filterByExpression(array, exp, targetValue)));
 
   return res;
 }
@@ -155,7 +155,7 @@ function matchObject(
     return true;
   }
 
-  if (childValue === 'object' && matchObject(childValue, remainingKeys, targetValue)) {
+  if (typeof childValue === 'object' && matchObject(childValue, remainingKeys, targetValue)) {
     return true;
   }
 
@@ -232,14 +232,14 @@ export enum CombineType {
   Remove
 }
 
-export function CombineSameElementFromArray<T>(arr: T[], type:CombineType, sameCheck:((a:T, b:T) => boolean), combineFunc:((saveNode:T, otherNode:T) => boolean | void)) {
+export function CombineSameElementFromArray<T>(arr: T[], type: CombineType, sameCheck: ((a: T, b: T) => boolean), combineFunc: ((saveNode: T, otherNode: T) => boolean | void)) {
   let idx = 0;
   while (idx < arr.length) {
     const curNode = arr[idx];
     const sameNodeIdx = arr.findIndex(item => sameCheck(curNode, item) && item !== curNode);
     if (sameNodeIdx < 0) {
-        idx++;
-        continue;
+      idx++;
+      continue;
     }
 
     if (type === CombineType.OverrideOrAppend) {

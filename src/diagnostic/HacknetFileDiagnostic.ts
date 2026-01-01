@@ -71,13 +71,6 @@ export function StartDiagnostic() {
     EventManager.onEvent(EventType.CodeHintParseCompleted, () => {
         debounceScanAllXmlFileForDiagnostic(worker);
     });
-
-    // 每隔10分钟全部扫描一次，清理可能改变的文件依赖关系
-    const timer = setInterval(() => {
-        debounceScanAllXmlFileForDiagnostic(worker);
-    }, 10 * 60 * 1000);
-    context.subscriptions.push({ dispose: () => clearInterval(timer) });
-    
 }
 
 // 处理worker发送过来的消息

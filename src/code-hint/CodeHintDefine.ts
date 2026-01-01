@@ -47,6 +47,7 @@ export interface NodeCodeHintItem extends CodeHintItem {
 export interface LinkBy {
     linkBy: string
     linkByValuePattern: string | null
+    split: string | null
 }
 
 export const RepeatRuleDef = {
@@ -90,6 +91,7 @@ export interface ConditionAttributeHint {
     attrName: string
     match: string
     attributes: AttributeHint
+    ignoreCase: boolean
     repeatRule: RepeatRule // 标签的重复合并规则
 }
 

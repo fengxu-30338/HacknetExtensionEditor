@@ -151,6 +151,7 @@
             </Enums>
         </Attribute>
         <Attribute name="linkByValuePattern" required="true" default="(.*)" desc="使用第一个捕获组的内容进行linkby跳转" />
+        <Attribute name="split" required="false" default="" desc="分隔字符串时使用的正则表达式，分隔后的每一个元素都会当成一处引用进行解析跳转" />
     </Node>
     <Node name="HacknetEditorHint.Node.Content.Step|HacknetEditorHint.Node.Attribute.Step|HacknetEditorHint.Node.ConditionAttributes.Attribute.Step" enable="true" multi="true" desc="定义一个或多个分段提示，更多用法请查阅插件安装界面的自定义提示规则章节">
         <Attribute name="value" required="true" default="" desc="用于匹配的字符串" />
@@ -187,6 +188,12 @@
                 <Enum desc="移除与本标签匹配规则相同的标签">remove</Enum>
                 <Enum desc="覆盖或追加子标签">overrideItem</Enum>
                 <Enum desc="删除具有相同名称的子标签">removeItem</Enum>
+            </Enums>
+        </Attribute>
+        <Attribute name="ignoreCase" required="false" default="false" desc="是否在正则匹配时忽略大小写">
+            <Enums>
+                <Enum desc="忽略大小写">true</Enum>
+                <Enum desc="不忽略大小写">false</Enum>
             </Enums>
         </Attribute>
     </Node>
@@ -264,7 +271,10 @@
 
     <!-- <StartingVisibleNodes>advExamplePC</StartingVisibleNodes> -->
     <Node name="HacknetExtension.StartingVisibleNodes" enable="true" multi="false" desc="设置游戏最开始显示的电脑ID">
-        <Content desc="游戏最开始显示的电脑ID" default="computer" hint="computer" linkBy="Computer.id|Computer.eosDevice.id">
+        <Content desc="游戏最开始显示的电脑ID" default="computer" hint="ComputerOrEos">
+            <LinkByCollection>
+                <Item linkBy="Computer.id|Computer.eosDevice.id" linkByValuePattern=".*" split=",| |\t|\r|\n|\/" />
+            </LinkByCollection>
             <Diag type="E" jsRuleFor="override">
                 (function(node, hacknetNodeHolder){
                     const compIds = [];
@@ -2003,9 +2013,37 @@
                 <Enum desc="删除死亡数据库记录(使用前请确保您的机器里存在id为deathRow的计算机且存在deathRowDatabase服务)">removeDeathRowRecord</Enum>
                 <Enum desc="修改死亡数据库记录(使用前请确保您的机器里存在id为deathRow的计算机且存在deathRowDatabase服务)，该标签修改后的内容需要写到标签内容处而非属性处">modifyDeathRowRecord</Enum>
             </Enums>
-            <Diag type="I" ignoreCaseForEnum="true" />
+            <Diag type="I" ignoreCaseForEnum="true" jsRuleFor="attach">
+                (function(actNode, hacknetNodeHolder){
+                    let type = actNode.node.attribute.get('type');
+                    if (!type) {return;}
+                    type = type.toLowerCase();
+
+                    if (type === 'AddDegree'.toLowerCase() || type === 'wipedegrees'.toLowerCase()) {
+                        const comp = hacknetNodeHolder.GetComputers().find(c =&gt; c.id === 'academic' || c.name === 'academic');
+                        if (!comp) {
+                            return {msg: `未在当前工作空间中找到id或name为academic的计算机，不符合type=${type}的条件`, type: 'E'};
+                        }
+
+                        if (comp.academicDatabase === undefined) {
+                            return {msg: `在id或name为academic的计算机中，不存在academicDatabase服务，不符合type=${type}的条件`, type: 'E'};
+                        }
+                    }
+
+                    if (type === 'removeDeathRowRecord'.toLowerCase() || type === 'modifyDeathRowRecord'.toLowerCase()) {
+                        const comp = hacknetNodeHolder.GetComputers().find(c =&gt; c.id === 'deathRow' || c.name === 'deathRow');
+                        if (!comp) {
+                            return {msg: `未在当前工作空间中找到id或name为deathRow的计算机，不符合type=${type}的条件`, type: 'E'};
+                        }
+
+                        if (comp.deathRowDatabase === undefined) {
+                            return {msg: `在id或name为deathRow的计算机中，不存在deathRowDatabase服务，不符合type=${type}的条件`, type: 'E'};
+                        }
+                    }
+                });
+            </Diag>
         </Attribute>
-        <ConditionAttributes attr="type" match="^filedeletion$">
+        <ConditionAttributes attr="type" match="^filedeletion$" ignoreCase="true">
             <Attribute name="target" required="true" desc="待删文件所处的计算机ID" default="" hint="ComputerOrEos" linkBy="Computer.id|Computer.eosDevice.id" diag="E" />
             <Attribute name="file" required="true" desc="文件名" default="file.txt" hint="enum" />
             <Attribute name="path" required="true" desc="文件所在路径" default="home" hint="enum">
@@ -2017,7 +2055,7 @@
                 </Enums>
             </Attribute>
         </ConditionAttributes>
-        <ConditionAttributes attr="type" match="^clearfolder$">
+        <ConditionAttributes attr="type" match="^clearfolder$" ignoreCase="true">
             <Attribute name="target" required="true" desc="目标计算机ID" default="" hint="ComputerOrEos" linkBy="Computer.id|Computer.eosDevice.id" diag="E" />
             <Attribute name="path" required="true" desc="待清空路径" default="home" hint="enum">
                 <Enums kind="value">
@@ -2028,7 +2066,7 @@
                 </Enums>
             </Attribute>
         </ConditionAttributes>
-        <ConditionAttributes attr="type" match="^filedownload$">
+        <ConditionAttributes attr="type" match="^filedownload$" ignoreCase="true">
             <Attribute name="target" required="true" desc="待下载文件所处的计算机ID" default="" hint="ComputerOrEos" linkBy="Computer.id|Computer.eosDevice.id" diag="E" />
             <Attribute name="file" required="true" desc="文件名" default="file.txt" hint="enum" />
             <Attribute name="path" required="true" desc="文件所在路径" default="home" hint="enum">
@@ -2040,7 +2078,7 @@
                 </Enums>
             </Attribute>
         </ConditionAttributes>
-        <ConditionAttributes attr="type" match="^filechange$">
+        <ConditionAttributes attr="type" match="^filechange$" ignoreCase="true">
             <Attribute name="target" required="true" desc="待更改文件所处的计算机ID" default="" hint="ComputerOrEos" linkBy="Computer.id|Computer.eosDevice.id" diag="E" />
             <Attribute name="file" required="true" desc="文件名" default="file.txt" hint="enum" />
             <Attribute name="path" required="true" desc="文件所在路径" default="home" hint="enum">
@@ -2065,19 +2103,19 @@
                 </Enums>
             </Attribute>
         </ConditionAttributes>
-        <ConditionAttributes attr="type" match="^getadmin$">
+        <ConditionAttributes attr="type" match="^getadmin$" ignoreCase="true">
             <Attribute name="target" required="true" desc="目标计算机ID" default="" hint="ComputerOrEos" linkBy="Computer.id|Computer.eosDevice.id" diag="E" />
         </ConditionAttributes>
-        <ConditionAttributes attr="type" match="^getstring$">
+        <ConditionAttributes attr="type" match="^getstring$" ignoreCase="true">
             <Attribute name="target" required="true" desc="待回复的字符串" default="mail response" hint="enum" />
         </ConditionAttributes>
-        <ConditionAttributes attr="type" match="^delay$">
+        <ConditionAttributes attr="type" match="^delay$" ignoreCase="true">
             <Attribute name="time" required="true" desc="延时的时间" default="10.0" hint="enum" />
         </ConditionAttributes>
-        <ConditionAttributes attr="type" match="^hasflag$">
+        <ConditionAttributes attr="type" match="^hasflag$" ignoreCase="true">
             <Attribute name="target" required="true" desc="flag值，不支持多个" default="flag1" hint="enum" />
         </ConditionAttributes>
-        <ConditionAttributes attr="type" match="^fileupload$">
+        <ConditionAttributes attr="type" match="^fileupload$" ignoreCase="true">
             <Attribute name="target" required="true" desc="待上传文件所处的计算机ID" default="" hint="ComputerOrEos" linkBy="Computer.id|Computer.eosDevice.id" diag="E" />
             <Attribute name="file" required="true" desc="待上传文件名" default="file.txt" hint="enum" />
             <Attribute name="path" required="true" desc="待上传文件所在路径" default="home" hint="enum">
@@ -2105,16 +2143,16 @@
             </Attribute>
             <Attribute name="decryptPass" required="false" desc="加密文件的密码" default="pass" hint="enum" />
         </ConditionAttributes>
-        <ConditionAttributes attr="type" match="^AddDegree$">
+        <ConditionAttributes attr="type" match="^AddDegree$" ignoreCase="true">
             <Attribute name="owner" required="true" desc="学生姓名" default="John Stalvern" hint="enum" />
             <Attribute name="degree" required="true" desc="学位" default="Masters in Digital Security" hint="enum" />
             <Attribute name="uni" required="true" desc="大学" default="Manchester University" hint="enum" />
             <Attribute name="gpa" required="true" desc="绩点" default="3.0" hint="enum" />
         </ConditionAttributes>
-        <ConditionAttributes attr="type" match="^wipedegrees$">
+        <ConditionAttributes attr="type" match="^wipedegrees$" ignoreCase="true">
             <Attribute name="owner" required="true" desc="待删信息的学生姓名" default="John Stalvern" hint="enum" />
         </ConditionAttributes>
-        <ConditionAttributes attr="type" match="^sendemail$">
+        <ConditionAttributes attr="type" match="^sendemail$" ignoreCase="true">
             <Attribute name="mailServer" required="true" desc="存在邮件服务的计算机ID" default="" hint="js" linkBy="Computer.id|Computer.eosDevice.id" diag="E">
                 (function(node, hacknetNodeHolder){
                     const res = hacknetNodeHolder.GetComputers()
@@ -2163,10 +2201,10 @@
             </Attribute>
             <Attribute name="subject" required="true" desc="邮件主题" default="Email Subject" hint="enum" />
         </ConditionAttributes>
-        <ConditionAttributes attr="type" match="^getadminpasswordstring$">
+        <ConditionAttributes attr="type" match="^getadminpasswordstring$" ignoreCase="true">
             <Attribute name="target" required="true" desc="目标计算机ID" default="" hint="ComputerOrEos" linkBy="Computer.id|Computer.eosDevice.id" diag="E" />
         </ConditionAttributes>
-        <ConditionAttributes attr="type" match="^databaseentrychange$">
+        <ConditionAttributes attr="type" match="^databaseentrychange$" ignoreCase="true">
             <Attribute name="comp" required="true" desc="具有DatabaseDaemon的计算机ID" default="" hint="js" linkBy="Computer.id|Computer.eosDevice.id" diag="E">
                 (function(node, hacknetNodeHolder){
                     return hacknetNodeHolder.GetComputers()
@@ -2188,12 +2226,12 @@
             <Attribute name="fieldName" required="true" desc="待比较字段名" default="" hint="enum" />
             <Attribute name="targetValue" required="true" desc="目标值" default="" hint="enum" />
         </ConditionAttributes>
-        <ConditionAttributes attr="type" match="^removeDeathRowRecord$">
+        <ConditionAttributes attr="type" match="^removeDeathRowRecord$" ignoreCase="true">
             <Attribute name="name" required="true" desc="待删除人员的名字：firstName lastname" default="firstName lastname" hint="enum" />
             <Attribute name="fname" required="false" desc="待删除人员的firstName" default="firstName" hint="enum" />
             <Attribute name="lname" required="false" desc="待删除人员的lastname" default="lastname" hint="enum" />
         </ConditionAttributes>
-        <ConditionAttributes attr="type" match="^modifyDeathRowRecord$">
+        <ConditionAttributes attr="type" match="^modifyDeathRowRecord$" ignoreCase="true">
             <Attribute name="name" required="true" desc="待修改人员的名字：firstName lastname" default="firstName lastname" hint="enum" />
             <Attribute name="fname" required="false" desc="待修改人员的firstName" default="firstName" hint="enum" />
             <Attribute name="lname" required="false" desc="待修改人员的lastname" default="lastname" hint="enum" />

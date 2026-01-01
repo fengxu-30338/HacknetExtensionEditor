@@ -273,6 +273,8 @@ async function ScanFileFromDiagnostic(filepath:string, req:DiagnosticRequest, sc
         } catch (error) {
             do {
                 if (error instanceof Error && error.message.includes('no such file or directory')) {
+                    // 文件被删后清除依赖
+                    CleanupDependencyForFile(filepath);
                     break;
                 }
                 console.error('诊断xml错误', error);
@@ -317,6 +319,20 @@ function GetDependencyFilePath(filepath: string, req:DiagnosticRequest,):Iterabl
     return new Set<string>(depResourceArray.map(resourceIdentifier => resourceIdentifier.split('|')[0]));
 }
 
+// 清理掉指定文件的依赖
+function CleanupDependencyForFile(filepath: string) {
+    const resourceIdentifierPrefix = `${filepath}|`;
+
+    HacknetFileRelationMap.forEach(resourceSet => {
+        const resources = [...resourceSet.values()];
+        for (const res of resources) {
+            if (res.startsWith(resourceIdentifierPrefix)) {
+                resourceSet.delete(res);
+            }
+        }
+    });
+}
+
 // 构建hacknet文件管理引用表
 function BuildHacknetFileRelationMap(filepath: string, dependencies: DepdendencyInfo) {
 
@@ -330,14 +346,12 @@ function BuildHacknetFileRelationMap(filepath: string, dependencies: Depdendency
         return path.resolve(DiagnosticWorkerData.workspacePath, depyPath);
     };
 
+    // 移除所有的旧资源依赖
+    CleanupDependencyForFile(filepath);
+
     for (const identifier in dependencies) {
         const dependencyPathArray = dependencies[identifier];
         const resourceIdentifier = `${filepath}|${identifier}`;
-
-        // 移除所有的旧资源依赖
-        HacknetFileRelationMap.forEach(resourceSet => {
-            resourceSet.delete(resourceIdentifier);
-        });
 
         // 添加新资源依赖
         for (const depyPath of dependencyPathArray) {
@@ -351,6 +365,8 @@ function BuildHacknetFileRelationMap(filepath: string, dependencies: Depdendency
             depResourceSet.add(resourceIdentifier);
         }
     }
+
+    // console.log('构建文件依赖表:', filepath, dependencies);
 }
 
 function BuildDiagnostic(startLine:number, startCharacter:number, endLine:number, endCharacter:number, message:string, type:DiagnosticType):Diagnostic {
@@ -434,7 +450,7 @@ async function DiagnosticNodeAttribute(node: Node, hint: NodeCodeHints, req: Dia
             return;
         }
 
-        if (attrValue.match(conditionAttr.match)) {
+        if (conditionAttr.ignoreCase ? attrValue.match(new RegExp(conditionAttr.match, 'i')) : attrValue.match(conditionAttr.match)) {
             // 条件检测成功附加新属性
             for (const newAttrName in conditionAttr.attributes) {
                 newAttrNodeHint[newAttrName] = conditionAttr.attributes[newAttrName];
@@ -583,8 +599,18 @@ async function DiagnosticByCodeHint(node:Node, checkVal:string, codeHint:CodeHin
     const checkResult = checkItem.checkFunc(checkVal);
     result.depdendencyPath.push(...checkResult.depdendencyPath);
 
+    const depPath:Set<string> = new Set<string>();
+    const hook: NodeHolderHookType = {
+        hookFunc: nodeType => {
+            depPath.add(GetDependencyFileType(nodeType));
+        }
+    };
+    NodeHolderHook.AddHook(hook);
+
     if (codeHint.diag!.jsRule === 'override') {
         result.diagnosticArr.push(...ExecJsFuncForDiag(node, codeHint, req));
+        result.depdendencyPath.push(...depPath);
+        NodeHolderHook.RemoveHook(hook);
         return result;
     }
 
@@ -595,7 +621,9 @@ async function DiagnosticByCodeHint(node:Node, checkVal:string, codeHint:CodeHin
         });
     } else {
         result.diagnosticArr.push(...ExecJsFuncForDiag(node, codeHint, req));
+        result.depdendencyPath.push(...depPath);
     }
+    NodeHolderHook.RemoveHook(hook);
 
     return result;
 }

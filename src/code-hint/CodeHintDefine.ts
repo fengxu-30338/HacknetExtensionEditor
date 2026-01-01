@@ -57,6 +57,13 @@ export const RepeatRuleDef = {
 } as const;
 export type RepeatRule = (typeof RepeatRuleDef)[keyof typeof RepeatRuleDef];
 
+export interface Diag {
+    type: number // 诊断等级
+    ignoreCase: boolean
+    jsRule: 'attach' | 'override'
+    jsContent: string
+}
+
 export interface CodeHint {
     type: HintType
     content: string
@@ -66,7 +73,7 @@ export interface CodeHint {
     codeSnippets: string
     default: string
     linkByCollection: LinkBy[]
-    diag?: number // 诊断等级
+    diag?: Diag // 诊断等级
     repeatRule: RepeatRule // 标签的重复合并规则
 }
 

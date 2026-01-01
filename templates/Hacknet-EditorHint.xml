@@ -109,17 +109,40 @@
             </Enums>
         </Attribute>
     </Node>
-    <Node name="HacknetEditorHint.Node.Content.Enums|HacknetEditorHint.Node.Attribute.Enums" enable="true" multi="false" desc="定义一个枚举组，需要hint=enum类型">
+    <Node name="HacknetEditorHint.Node.Content.Diag|HacknetEditorHint.Node.Attribute.Diag|HacknetEditorHint.Node.ConditionAttributes.Attribute.Diag" enable="true" multi="false" desc="定义编辑器诊断信息">
+        <Content desc="执行js获取诊断信息" />
+        <Attribute name="type" required="true" default="E" desc="诊断等级">
+            <Enums>
+                <Enum desc="错误等级">E</Enum>
+                <Enum desc="警告等级">W</Enum>
+                <Enum desc="消息等级">I</Enum>
+                <Enum desc="提示等级">H</Enum>
+            </Enums>
+        </Attribute>
+        <Attribute name="ignoreCaseForEnum" required="true" default="false" desc="诊断枚举类型时是否忽略大小写">
+            <Enums>
+                <Enum desc="忽略大小写">true</Enum>
+                <Enum desc="不忽略大小写">false</Enum>
+            </Enums>
+        </Attribute>
+        <Attribute name="jsRuleFor" required="true" default="attach" desc="js规则应用方式">
+            <Enums>
+                <Enum desc="在原有规则的基础上附加js检测后的结果">attach</Enum>
+                <Enum desc="完全使用js规则进行检测，忽略原有规则">override</Enum>
+            </Enums>
+        </Attribute>
+    </Node>
+    <Node name="HacknetEditorHint.Node.Content.Enums|HacknetEditorHint.Node.Attribute.Enums|HacknetEditorHint.Node.ConditionAttributes.Attribute.Enums" enable="true" multi="false" desc="定义一个枚举组，需要hint=enum类型">
         <Content />
     </Node>
-    <Node name="HacknetEditorHint.Node.Content.Enums.Enum|HacknetEditorHint.Node.Attribute.Enums.Enum" enable="true" multi="true" desc="定义一个枚举">
+    <Node name="HacknetEditorHint.Node.Content.Enums.Enum|HacknetEditorHint.Node.Attribute.Enums.Enum|HacknetEditorHint.Node.ConditionAttributes.Attribute.Enums.Enum" enable="true" multi="true" desc="定义一个枚举">
         <Content default="枚举实际值" />
         <Attribute name="desc" required="true" default="" desc="枚举值描述" />
     </Node>
-    <Node name="HacknetEditorHint.Node.Content.LinkByCollection|HacknetEditorHint.Node.Attribute.LinkByCollection" enable="true" multi="false" desc="定义一个linkby组合，根据匹配成功的进行跳转">
+    <Node name="HacknetEditorHint.Node.Content.LinkByCollection|HacknetEditorHint.Node.Attribute.LinkByCollection|HacknetEditorHint.Node.ConditionAttributes.Attribute.LinkByCollection" enable="true" multi="false" desc="定义一个linkby组合，根据匹配成功的进行跳转">
         <Content />
     </Node>
-    <Node name="HacknetEditorHint.Node.Content.LinkByCollection.Item|HacknetEditorHint.Node.Attribute.LinkByCollection.Item" enable="true" multi="true" desc="定义一个linkby匹配项">
+    <Node name="HacknetEditorHint.Node.Content.LinkByCollection.Item|HacknetEditorHint.Node.Attribute.LinkByCollection.Item|HacknetEditorHint.Node.ConditionAttributes.Attribute.LinkByCollection.Item" enable="true" multi="true" desc="定义一个linkby匹配项">
         <Attribute name="linkBy" required="true" default="path" desc="根据匹配后的标签的实际(属性/内容)跳转到目标文件，更多用法请查阅插件安装界面的自定义提示规则章节">
             <Enums>
                 <Enum desc="直接路径跳转">path</Enum>
@@ -129,11 +152,11 @@
         </Attribute>
         <Attribute name="linkByValuePattern" required="true" default="(.*)" desc="使用第一个捕获组的内容进行linkby跳转" />
     </Node>
-    <Node name="HacknetEditorHint.Node.Content.Step|HacknetEditorHint.Node.Attribute.Step" enable="true" multi="true" desc="定义一个或多个分段提示，更多用法请查阅插件安装界面的自定义提示规则章节">
+    <Node name="HacknetEditorHint.Node.Content.Step|HacknetEditorHint.Node.Attribute.Step|HacknetEditorHint.Node.ConditionAttributes.Attribute.Step" enable="true" multi="true" desc="定义一个或多个分段提示，更多用法请查阅插件安装界面的自定义提示规则章节">
         <Attribute name="value" required="true" default="" desc="用于匹配的字符串" />
         <Attribute name="desc" required="true" default="描述" desc="描述信息" />
     </Node>
-    <Node name="HacknetEditorHint.Node.Content.Step.Next|HacknetEditorHint.Node.Attribute.Step.Next" enable="true" multi="false" desc="定义一个或多个分段提示，更多用法请查阅插件安装界面的自定义提示规则章节">
+    <Node name="HacknetEditorHint.Node.Content.Step.Next|HacknetEditorHint.Node.Attribute.Step.Next|HacknetEditorHint.Node.ConditionAttributes.Attribute.Step.Next" enable="true" multi="false" desc="定义一个或多个分段提示，更多用法请查阅插件安装界面的自定义提示规则章节">
         <Content />
         <Attribute name="hint" required="true" default="enum" desc="下一阶段的提示类型">
             <Enums>
@@ -230,17 +253,48 @@
 
     <!-- <AllowSaves>true</AllowSaves> -->
     <Node name="HacknetExtension.AllowSaves" enable="true" multi="false" desc="设置是否允许用户手动保存游戏">
-        <Content desc="是否允许用户手动保存游戏" default="true" hint="enum" diag="E">
+        <Content desc="是否允许用户手动保存游戏" default="true" hint="enum">
             <Enums>
                 <Enum>true</Enum>
                 <Enum>false</Enum>
             </Enums>
+            <Diag type="E" ignoreCaseForEnum="true" />
         </Content>
     </Node>
 
     <!-- <StartingVisibleNodes>advExamplePC</StartingVisibleNodes> -->
     <Node name="HacknetExtension.StartingVisibleNodes" enable="true" multi="false" desc="设置游戏最开始显示的电脑ID">
-        <Content desc="游戏最开始显示的电脑ID" default="computer" hint="computer" linkBy="Computer.id|Computer.eosDevice.id" diag="E" />
+        <Content desc="游戏最开始显示的电脑ID" default="computer" hint="computer" linkBy="Computer.id|Computer.eosDevice.id">
+            <Diag type="E" jsRuleFor="override">
+                (function(node, hacknetNodeHolder){
+                    const compIds = [];
+                    hacknetNodeHolder.GetComputers().forEach(comp =&gt; {
+                        if (comp.id) {
+                            compIds.push(comp.id);
+                        }
+
+                        if (!comp.eosDevice) {
+                            return;
+                        }
+
+                        if (Array.isArray(comp.eosDevice)) {
+                            comp.eosDevice.forEach(eos =&gt; {
+                                if (eos.id) compIds.push(eos.id);
+                            });
+                        } else {
+                            if (comp.eosDevice.id) compIds.push(comp.eosDevice.id);
+                        }
+                    });
+
+                    const curIds = node.node.content.trim().split(/,| |\t|\r|\n|\//).filter(str =&gt; str !== '');
+                    for (const id of curIds) {
+                        if (compIds.every(compId =&gt; compId !== id)) {
+                            return {msg: `未在当前工作空间中找到id为"${id}"的计算机或eos设备`, type: 'E'};
+                        }
+                    }
+                })
+            </Diag>
+        </Content>
     </Node>
 
     <!-- <StartingMission>Missions/Intro/IntroMission1.xml</StartingMission> -->
@@ -265,32 +319,69 @@
 
     <!-- <StartsWithTutorial>False</StartsWithTutorial> -->
     <Node name="HacknetExtension.StartsWithTutorial" enable="true" multi="false" desc="设置是否需要开启引导教程">
-        <Content desc="是否需要开启引导教程" default="False" hint="enum" diag="E">
+        <Content desc="是否需要开启引导教程" default="False" hint="enum">
             <Enums>
                 <Enum>False</Enum>
                 <Enum>True</Enum>
             </Enums>
+            <Diag type="E" ignoreCaseForEnum="true" />
         </Content>
     </Node>
 
     <!-- <HasIntroStartup>false</HasIntroStartup> -->
     <Node name="HacknetExtension.HasIntroStartup" enable="true" multi="false" desc="设置第一次进游戏是否显示引导文本，引导文本为根目录下的intro.txt">
-        <Content desc="是否显示引导文本" default="false" hint="enum" diag="E">
+        <Content desc="是否显示引导文本" default="false" hint="enum">
             <Enums>
                 <Enum>true</Enum>
                 <Enum>false</Enum>
             </Enums>
+            <Diag type="E" ignoreCaseForEnum="true" />
         </Content>
     </Node>
 
     <!-- <StartingTheme>Themes/ExampleTheme.xml</StartingTheme> -->
     <Node name="HacknetExtension.StartingTheme" enable="true" multi="false" desc="设置第一次进游戏时的主题">
-        <Content desc="主题文件路径" default="themePath" hint="ThemeFile" linkBy="path" diag="E" />
+        <Content desc="主题文件路径" default="themePath" hint="ThemeFile" linkBy="path" >
+            <Enums>
+                <Enum>TerminalOnlyBlack</Enum>
+                <Enum>HacknetBlue</Enum>
+                <Enum>HacknetTeal</Enum>
+                <Enum>HacknetYellow</Enum>
+                <Enum>HackerGreen</Enum>
+                <Enum>HacknetWhite</Enum>
+                <Enum>HacknetPurple</Enum>
+                <Enum>HacknetMint</Enum>
+                <Enum>Custom</Enum>
+                <Enum>Colamaeleon</Enum>
+                <Enum>GreenCompact</Enum>
+                <Enum>Riptide</Enum>
+                <Enum>Riptide2</Enum>
+            </Enums>
+            <Diag type="I" ignoreCaseForEnum="true" />
+        </Content>
     </Node>
 
     <!-- <IntroStartupSong>The_Quickening</IntroStartupSong> -->
     <Node name="HacknetExtension.IntroStartupSong" enable="true" multi="false" desc="设置第一次进游戏时播放的歌曲">
-        <Content desc="歌曲文件路径(必须是.ogg格式)" default="musicPath" hint="path" linkBy="path" diag="I">**/*.ogg</Content>
+        <Content desc="歌曲文件路径(必须是.ogg格式)" default="musicPath" hint="path" linkBy="path">
+            **/*.ogg
+            <Enums>
+                <Enum>Bit(Ending)</Enum>
+                <Enum>Broken_Boy</Enum>
+                <Enum>Irritations</Enum>
+                <Enum>out_run_the_wolves</Enum>
+                <Enum>Revolve</Enum>
+                <Enum>Rico_Puestel-Roja_Drifts_By</Enum>
+                <Enum>Rico_Puestel-Roller_Mobster_Clipped</Enum>
+                <Enum>Ryan3</Enum>
+                <Enum>Ryan10</Enum>
+                <Enum>tetrameth</Enum>
+                <Enum>The_Quickening</Enum>
+                <Enum>TheAlgorithm</Enum>
+                <Enum>Traced</Enum>
+            </Enums>
+            <Diag type="I" ignoreCaseForEnum="true" />
+        </Content>
     </Node>
 
     <!-- <SequencerTargetID>advExamplePC</SequencerTargetID> -->
@@ -445,7 +536,7 @@
      <Node name="Computer.account" enable="true" multi="true" desc="添加计算机的账户">
         <Attribute name="username" required="true" desc="账户名" />
         <Attribute name="password" required="true" desc="密码" />
-        <Attribute name="type" required="true" default="ALL" desc="账户类型" hint="enum" diag="H">
+        <Attribute name="type" required="true" default="ALL" desc="账户类型" hint="enum">
             <Enums>
                 <Enum desc="管理员">ADMIN</Enum>
                 <Enum desc="可删文件">ALL</Enum>
@@ -456,6 +547,7 @@
                 <Enum desc="邮件账户">2</Enum>
                 <Enum desc="任务监听服务的账户(mission listing server)">3</Enum>
             </Enums>
+            <Diag type="H" ignoreCaseForEnum="true" />
         </Attribute>
     </Node>
 
@@ -1892,7 +1984,7 @@
         <Content />
     </Node>
     <Node name="mission.goals.goal" enable="true" multi="true" desc="定义一个任务需要完成的目标">
-        <Attribute name="type" required="true" desc="任务类型" default="" hint="enum" diag="I">
+        <Attribute name="type" required="true" desc="任务类型" default="" hint="enum">
             <Enums>
                 <Enum desc="删除文件">filedeletion</Enum>
                 <Enum desc="清空文件夹">clearfolder</Enum>
@@ -1911,6 +2003,7 @@
                 <Enum desc="删除死亡数据库记录(使用前请确保您的机器里存在id为deathRow的计算机且存在deathRowDatabase服务)">removeDeathRowRecord</Enum>
                 <Enum desc="修改死亡数据库记录(使用前请确保您的机器里存在id为deathRow的计算机且存在deathRowDatabase服务)，该标签修改后的内容需要写到标签内容处而非属性处">modifyDeathRowRecord</Enum>
             </Enums>
+            <Diag type="I" ignoreCaseForEnum="true" />
         </Attribute>
         <ConditionAttributes attr="type" match="^filedeletion$">
             <Attribute name="target" required="true" desc="待删文件所处的计算机ID" default="" hint="ComputerOrEos" linkBy="Computer.id|Computer.eosDevice.id" diag="E" />
@@ -2341,13 +2434,12 @@
        <Content />
     </Node>
     <Node name="CustomTheme.themeLayoutName" enable="true" multi="false" desc="主题的布局类型">
-       <Content desc="布局类型" default="mint" hint="enum" diag="W">
+       <Content desc="布局类型" default="mint" hint="enum">
             <Enums>
                 <Enum desc="布局样式: ram|display,netmap|terminal">blue</Enum>
                 <Enum desc="布局样式: display,netmap|terminal|ram">green</Enum>
                 <Enum desc="布局样式: ram|display|terminal,netmap">white</Enum>
                 <Enum desc="布局样式: ram|terminal,netmap|display">mint</Enum>
-                <Enum desc="布局样式: display,netmap|terminal|ram">greencompact</Enum>
                 <Enum desc="布局样式: display,netmap|terminal|ram">GreenCompact</Enum>
                 <Enum desc="布局样式: netmap,display|terminal|ram">riptide</Enum>
                 <Enum desc="布局样式: display,netmap|terminal|ram">riptide2</Enum>
@@ -2357,6 +2449,7 @@
                 <Enum desc="布局样式: ram|display,netmap|terminal">space</Enum>
                 <Enum desc="布局样式: ram|display,netmap|terminal">miamiLight</Enum>
             </Enums>
+            <Diag type="W" ignoreCaseForEnum="true" />
        </Content>
     </Node>
     <Node name="CustomTheme.backgroundImagePath" enable="true" multi="false" desc="背景图路径">

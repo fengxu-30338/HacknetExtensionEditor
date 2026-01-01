@@ -472,7 +472,7 @@ async function DiagnosticNodeAttribute(node: Node, hint: NodeCodeHints, req: Dia
             }
             
             // 诊断已经存在的属性值的正确性
-            if (attrCodeHint.diag === undefined) {
+            if (!attrCodeHint.diag) {
                 continue;
             }
             const items = await DiagnosticByCodeHint(node, attrValue.trim(), attrCodeHint, req);
@@ -548,7 +548,7 @@ async function DiagnosticNodeContent(node:Node, hint:NodeCodeHints, req:Diagnost
     };
     const identifier = node.nodePath + '#content';
 
-    if (!hint.ContentHint || hint.ContentHint.diag === undefined || !node.contentToken) {
+    if (!hint.ContentHint || !hint.ContentHint.diag || !node.contentToken) {
         return result;
     }
 
@@ -583,11 +583,18 @@ async function DiagnosticByCodeHint(node:Node, checkVal:string, codeHint:CodeHin
     const checkResult = checkItem.checkFunc(checkVal);
     result.depdendencyPath.push(...checkResult.depdendencyPath);
 
+    if (codeHint.diag!.jsRule === 'override') {
+        result.diagnosticArr.push(...ExecJsFuncForDiag(node, codeHint, req));
+        return result;
+    }
+
     if (!checkResult.validate) {
         result.diagnosticArr.push({
             message: checkResult.diagMsg,
-            type: codeHint.diag! as any
+            type: codeHint.diag!.type as any
         });
+    } else {
+        result.diagnosticArr.push(...ExecJsFuncForDiag(node, codeHint, req));
     }
 
     return result;
@@ -598,7 +605,7 @@ async function DiagnosticByCodeHint(node:Node, checkVal:string, codeHint:CodeHin
 async function GetHintItems(node: Node, codeHint: CodeHint, req:DiagnosticRequest): Promise<CheckItem | null> {
     const enumCheckFunc = (checkVal:string) => {
         const values = codeHint.items.map(item => item.value);
-        return values.includes(checkVal);
+        return codeHint.diag!.ignoreCase ? values.map(item => item.toLowerCase()).includes(checkVal.toLowerCase()) : values.includes(checkVal);
     };
 
     // 枚举
@@ -607,7 +614,7 @@ async function GetHintItems(node: Node, codeHint: CodeHint, req:DiagnosticReques
             checkFunc: (checkVal: string) => {
                 const values = codeHint.items.map(item => item.value);
                 return {
-                    validate: values.includes(checkVal),
+                    validate: enumCheckFunc(checkVal),
                     depdendencyPath: [],
                     diagMsg: `错误的值,应为：[${values.join(',')}]之一`
                 };
@@ -863,6 +870,58 @@ function ExecJsFuncToGetCodeHintItems(node: Node, codeHint: CodeHint, req:Diagno
     }
 
     return codeHintArr.map(item => item.value);
+}
+
+function ExecJsFuncForDiag(node: Node, codeHint: CodeHint, req:DiagnosticRequest): PartialBy<Diagnostic, 'range'>[] {
+    if (!codeHint.diag || codeHint.diag.jsContent === '') {
+        return [];
+    }
+
+    const res = eval(codeHint.diag.jsContent)(new ActiveNode(node), req.nodeHolder);
+    if (res === null || res === undefined) {
+        return [];
+    }
+
+    const getDiagLevel = (level:any) => {
+        if (level === undefined) {
+            return DiagnosticType.Hint;
+        }
+
+        if (typeof level === 'number') {
+            if (level < DiagnosticType.Error || level > DiagnosticType.Hint) {
+                return DiagnosticType.Hint;
+            }
+
+            return level;
+        }
+
+        const firstChar = level.toString().toUpperCase().charAt(0);
+        switch(firstChar) {
+            case 'E':
+                return DiagnosticType.Error;
+            case 'W':
+                return DiagnosticType.Warning;
+            case 'I':
+                return DiagnosticType.Information;
+            default:
+                return DiagnosticType.Hint;
+        }
+    };
+
+    const resArr:any[] = [];
+    if (Array.isArray(res)) {
+        resArr.push(...res);
+    } else {
+        resArr.push(res);
+    }
+
+    return resArr.map(item => {
+        return {
+                message: item.msg ?? '未知错误',
+                type: getDiagLevel(item.type),
+                source: item.source ?? undefined
+            };
+    });
 }
 
 function GetAllComputerAndEosId(req:DiagnosticRequest) : PathItem<string>[] { 

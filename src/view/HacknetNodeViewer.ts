@@ -106,6 +106,32 @@ class HacknetNodeTreeDataProvider implements vscode.TreeDataProvider<HacknetFile
                         }
                     });
                 }
+
+                if (name === "eosDevice") {
+                    const eosDevice:any[] = [];
+                    if (Array.isArray(element.node[name])) {
+                        eosDevice.push(...element.node[name]);
+                    } else {
+                        eosDevice.push(element.node[name]);
+                    }
+                    res.push(...eosDevice.map(item => {
+                        return {
+                            filepath: element.filepath,
+                            label: item.name || item.id || name,
+                            nodePath: nodePath,
+                            nodeType: element.nodeType,
+                            parent: element,
+                            node: element.node,
+                            level: element.level + 1,
+                            iconPath: vscode.Uri.file(CommonUtils.GetExtensionContext().asAbsolutePath("resources/NodeView/eos.png")),
+                            command: {
+                                command: "hacknetextensionhelper.openXmlFile",
+                                title: "打开文件并定位到该eosDevice",
+                                arguments: [element.filepath, nodePath, {id: item.id}]
+                            }
+                        };
+                    }));
+                }
             }
 
             return res;
@@ -134,7 +160,7 @@ class HacknetNodeTreeDataProvider implements vscode.TreeDataProvider<HacknetFile
 
 }
 
-function FindXmlNodeByNodePath(xmlNode: Node, nodePath: string): Node | null {
+function FindXmlNodeByNodePath(xmlNode: Node, nodePath: string, condition?:any): Node | null {
     const nodeLevel = nodePath.split(".").length;
     if (xmlNode.level > nodeLevel) {
         return null;
@@ -142,14 +168,26 @@ function FindXmlNodeByNodePath(xmlNode: Node, nodePath: string): Node | null {
 
     if (xmlNode.level < nodeLevel) {
         for (const node of xmlNode.children) {
-            const res = FindXmlNodeByNodePath(node, nodePath);
+            const res = FindXmlNodeByNodePath(node, nodePath, condition);
             if (res !== null) {
                 return res;
             }
         }
     }
 
-    return xmlNode.nodePath === nodePath ? xmlNode : null;
+    if (xmlNode.nodePath === nodePath) {
+        if (condition && typeof condition === 'object') {
+            for (const key in condition) {
+                if (xmlNode.attribute.get(key) !== condition[key]) {
+                    return null;
+                }
+            } 
+        }
+
+        return xmlNode;
+    }
+
+    return null;
 }
 
 async function HanldeOpenXmlFileCommand(...args: any[]) {
@@ -171,7 +209,7 @@ async function HanldeOpenXmlFileCommand(...args: any[]) {
         let targetXmlNode:Node | null = null;
         if (nodePath) {
             const xmlParser = new XmlParser();
-            targetXmlNode = FindXmlNodeByNodePath(xmlParser.parse(document.getText(), {needToken: true})!, nodePath);
+            targetXmlNode = FindXmlNodeByNodePath(xmlParser.parse(document.getText(), {needToken: true})!, nodePath, args[2]);
         }
         await vscode.window.showTextDocument(document, {
             preview: false,

@@ -1,4 +1,4 @@
-import {AttributeHint, AttributeHintItem, CodeHint, CodeHintItem, CommonTextHintItem, ConditionAttributeHint, FileCodeHint, GlobalCodeHints, HintType, LinkBy, NodeCodeHintItem, NodeCodeHints, RepeatRule, RepeatRuleDef} from './CodeHintDefine';
+import {AttributeHint, AttributeHintItem, CodeHint, CodeHintItem, CommonTextHintItem, ConditionAttributeHint, Diag, FileCodeHint, GlobalCodeHints, HintType, LinkBy, NodeCodeHintItem, NodeCodeHints, RepeatRule, RepeatRuleDef} from './CodeHintDefine';
 import { XMLParser as StandardXMLParser } from 'fast-xml-parser';
 import {ActiveNode, CursorPosition, XmlParser} from '../parser/XmlParser';
 import XmlPathUtil from '../utils/XmlPathUtil';
@@ -6,7 +6,7 @@ import path from 'path';
 import * as vscode from 'vscode';
 import * as CommonUtils from '../utils/CommonUtils';
 import { hacknetNodeHolder } from '../worker/GlobalHacknetXmlNodeHolder';
-import lodash from 'lodash';
+import lodash, { has } from 'lodash';
 import { minimatch } from "minimatch";
 import { EventManager, EventType } from "../event/EventManager";
 
@@ -40,25 +40,58 @@ function getBool(obj:any, key:string, defaultVal: boolean) {
     return obj[key].toLowerCase() === 'true' ? true : false;
 }
 
-function getDiagLevel(obj:any, key:string): vscode.DiagnosticSeverity | null {
-    const diag = obj[key] as string;
-    if (!diag) {
+function getDiag(obj:any): Diag | null {
+    const diag:Diag = {
+        type: vscode.DiagnosticSeverity.Hint,
+        ignoreCase: false,
+        jsRule: 'attach',
+        jsContent: '',
+    };
+    let diagLevelStr = obj['diag'] as string;
+    const hasDiagElement = 'Diag' in obj;
+
+    if (!hasDiagElement && !diagLevelStr) {
         return null;
     }
 
-    if (diag.toUpperCase().startsWith('E')) {
-        return vscode.DiagnosticSeverity.Error;
+    const getDiagLevel = (str:string) => {
+        str = str.charAt(0).toUpperCase();
+        switch (str) {
+            case 'E':
+                return vscode.DiagnosticSeverity.Error;
+            case 'I':
+                return vscode.DiagnosticSeverity.Information;
+            case 'W':
+                return vscode.DiagnosticSeverity.Warning;
+            default:
+                return vscode.DiagnosticSeverity.Hint;
+        }
+    };
+
+    if (diagLevelStr) {
+        diag.type = getDiagLevel(diagLevelStr);
     }
 
-    if (diag.toUpperCase().startsWith('I')) {
-        return vscode.DiagnosticSeverity.Information;
+    if (hasDiagElement) {
+        const diagNode = obj['Diag'];
+        if (typeof diagNode === 'string') {
+            diag.jsContent = diagNode;
+        } else if (typeof diagNode === 'object') {
+            diag.ignoreCase = getBool(diagNode, 'ignoreCaseForEnum', false);
+            if ('type' in diagNode) {
+                diag.type = getDiagLevel(diagNode['type']);
+            }
+
+            if ('jsRuleFor' in diagNode) {
+                diag.jsRule = diagNode['jsRuleFor'] === 'attach' ? 'attach' : 'override';
+            }
+
+            diag.jsContent = diagNode['#text']?.trim() ?? '';
+        }
     }
 
-    if (diag.toUpperCase().startsWith('W')) {
-        return vscode.DiagnosticSeverity.Warning;
-    }
-
-    return vscode.DiagnosticSeverity.Hint;
+    
+    return diag;
 }
 
 function parseEnumAttrCodeHint(codeHint: CodeHint, attrNode: any) {
@@ -195,14 +228,14 @@ function generateCodeHintFromXmlNode(node:any):CodeHint {
         items: [],
         desc: node['desc'] ?? '',
         type: getAttributeNodeHintType(node),
-        content: node['#text'] ?? '',
+        content: (node['#text'] as string)?.trim() ?? '',
         codeSnippets: '',
         default: node['default'] ?? '',
         linkByCollection: parseLinkByCollectionFromNode(node),
         repeatRule: GetRepeatRule(node['repeatRule'])
     };
 
-    const diag = getDiagLevel(node, 'diag');
+    const diag = getDiag(node);
     if (diag !== null) {
         codeHint.diag = diag;
     }

@@ -185,7 +185,9 @@ function parseLinkByCollectionFromNode(node:any):LinkBy[] {
         res.push({
             linkBy: node['linkBy'],
             linkByValuePattern: null,
-            split: null
+            split: null,
+            ignoreCaseForMatch: false,
+            overrideValue: null
         });
     }
 
@@ -204,7 +206,9 @@ function parseLinkByCollectionFromNode(node:any):LinkBy[] {
             res.push({
                 linkBy: item['linkBy'] ?? '',
                 linkByValuePattern: item['linkByValuePattern'] ?? null,
-                split: item['split'] ?? null
+                split: item['split'] ?? null,
+                ignoreCaseForMatch: getBool(item, 'ignoreCaseForMatch', false),
+                overrideValue: item['overrideValue'] ?? null
             });
         });
 
@@ -1405,7 +1409,7 @@ async function ParseNodeLinkToUri(codeHint: CodeHint, linkValue:string): Promise
         if (linkByItem.linkByValuePattern === null) {
             return true;
         }
-        const linkByValueRegex = new RegExp(linkByItem.linkByValuePattern);
+        const linkByValueRegex = new RegExp(linkByItem.linkByValuePattern, linkByItem.ignoreCaseForMatch ? 'i' : undefined);
         const matchRes = linkValue.match(linkByValueRegex);
         if (matchRes !== null) {
             matchedValue = matchRes[matchRes.length - 1];
@@ -1415,6 +1419,10 @@ async function ParseNodeLinkToUri(codeHint: CodeHint, linkValue:string): Promise
 
     if (linkBy === undefined) {
         return uriList;
+    }
+
+    if (linkBy.overrideValue !== null) {
+        matchedValue = linkBy.overrideValue;
     }
 
     const handleContents = linkBy.split === null ? [matchedValue] : matchedValue.split(new RegExp(linkBy.split)).filter(item => item.trim() !== '').map(item => item.trim());

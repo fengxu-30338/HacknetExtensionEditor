@@ -47,6 +47,8 @@ export interface NodeCodeHintItem extends CodeHintItem {
 export interface LinkBy {
     linkBy: string
     linkByValuePattern: string | null
+    ignoreCaseForMatch: boolean
+    overrideValue: string | null
     split: string | null
 }
 

@@ -151,6 +151,13 @@
             </Enums>
         </Attribute>
         <Attribute name="linkByValuePattern" required="true" default="(.*)" desc="使用第一个捕获组的内容进行linkby跳转" />
+        <Attribute name="ignoreCaseForMatch" required="false" default="false" desc="是否忽略大小写进行匹配">
+            <Enums>
+                <Enum desc="忽略大小写">true</Enum>
+                <Enum desc="不忽略大小写">false</Enum>
+            </Enums>
+        </Attribute>
+        <Attribute name="overrideValue" required="false" default="" desc="匹配成功后，使用该值进行跳转" />
         <Attribute name="split" required="false" default="" desc="分隔字符串时使用的正则表达式，分隔后的每一个元素都会当成一处引用进行解析跳转" />
     </Node>
     <Node name="HacknetEditorHint.Node.Content.Step|HacknetEditorHint.Node.Attribute.Step|HacknetEditorHint.Node.ConditionAttributes.Attribute.Step" enable="true" multi="true" desc="定义一个或多个分段提示，更多用法请查阅插件安装界面的自定义提示规则章节">
@@ -2013,6 +2020,10 @@
                 <Enum desc="删除死亡数据库记录(使用前请确保您的机器里存在id为deathRow的计算机且存在deathRowDatabase服务)">removeDeathRowRecord</Enum>
                 <Enum desc="修改死亡数据库记录(使用前请确保您的机器里存在id为deathRow的计算机且存在deathRowDatabase服务)，该标签修改后的内容需要写到标签内容处而非属性处">modifyDeathRowRecord</Enum>
             </Enums>
+            <LinkByCollection>
+                <Item linkBy="Computer.id|Computer.name" linkByValuePattern="^adddegree|wipedegrees$" ignoreCaseForMatch="true" overrideValue="academic" />
+                <Item linkBy="Computer.id|Computer.name" linkByValuePattern="^removeDeathRowRecord|modifyDeathRowRecord$" ignoreCaseForMatch="true" overrideValue="deathRow" />
+            </LinkByCollection>
             <Diag type="I" ignoreCaseForEnum="true" jsRuleFor="attach">
                 (function(actNode, hacknetNodeHolder){
                     let type = actNode.node.attribute.get('type');
@@ -2038,6 +2049,10 @@
 
                         if (comp.deathRowDatabase === undefined) {
                             return {msg: `在id或name为deathRow的计算机中，不存在deathRowDatabase服务，不符合type=${type}的条件`, type: 'E'};
+                        }
+
+                        if (type === 'modifyDeathRowRecord'.toLowerCase() &amp;&amp; actNode.node.content.trim() === '') {
+                            return {msg: `在type=${type}的任务中，modifyDeathRowRecord标签的内容不能为空`, type: 'E'};
                         }
                     }
                 });

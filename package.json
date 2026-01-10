@@ -2,7 +2,7 @@
   "name": "hacknetextensionhelper",
   "displayName": "HacknetExtensionHelper",
   "description": "hacknet extension write helper",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "engines": {
     "vscode": "^1.103.0"
   },
@@ -51,6 +51,10 @@
       {
         "command": "hacknetextensionhelper.openXmlFile",
         "title": "打开Hacknet xml文件并定位到node path处"
+      },
+      {
+        "command": "hacknetextensionhelper.openSelectHacknetExtensionFolder",
+        "title": "选择本地的Hacknet扩展文件夹打开"
       },
       {
         "command": "hacknetextensionhelper.triggerHint",
@@ -123,6 +127,12 @@
           "submenu": "hacknetextensionhelper/createHacknetResourceFile",
           "group": "createHacknetResourceFile",
           "when": "explorerResourceIsFolder && hacknetextensionhelper.HasCodeHintFile"
+        },
+        {
+          "command": "hacknetextensionhelper.openSelectHacknetExtensionFolder",
+          "group": "openSelectHacknetExtensionFolder",
+          "label": "选择一个本地Hacknet扩展打开",
+          "when": "explorerResourceIsFolder"
         }
       ],
       "hacknetextensionhelper/createHacknetResourceFile": [

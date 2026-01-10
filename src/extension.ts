@@ -12,6 +12,7 @@ import { RegiserHacknetThemeView } from "./view/ThemeViewer";
 import { StartDiagnostic } from "./diagnostic/HacknetFileDiagnostic";
 import { RegisterTutorialViewer } from "./view/TutorialViewer";
 import { RegisterHacknetNodeViewer } from "./view/HacknetNodeViewer";
+import RegisterSelectHacknetExtensionCmd from './commands/SelectHacknetExtensionCmd';
 
 export async function activate(context: vscode.ExtensionContext) {
 
@@ -40,6 +41,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// 注册创建hacknet资源文件命令
 	RegisterCreateHacknetResourceFileCommands(context);
+
+	// 注册选择Hacknet扩展命令
+	RegisterSelectHacknetExtensionCmd(context);
 
 	// 扫描其他xml文件
 	GlobalHacknetXmlNodeHolder.StartHacknetNodeScan(context);

@@ -33,6 +33,7 @@ export function StartDiagnostic() {
     context.subscriptions.push({ dispose: () => worker.terminate() });
     worker.on('message', msg => HandleDiagnosticWorkerMsg(msg, worker));
     worker.on('error', error => console.error('DiagnosticWorker error:', error));
+    worker.on('messageerror', error => console.error('DiagnosticWorker error:', error));
 
     // 创建诊断监听(使用filepath做防抖，相同的filepath 1秒内只执行一次)
     const debounceStartDiagnosticFile = CommonUtils.debounce(StartDiagnosticFile, 1000, 0);
@@ -123,6 +124,7 @@ async function HandleQueryRelativeFileResp(req: QueryRelativeFileReq, worker: Wo
 
 // 处理诊断结果
 function HandleDiagnosticResult(result:DiagnosticResult) {
+    // console.log('收到诊断结果', result);
     const uri = vscode.Uri.file(result.filepath);
     if (result.result.length > 0) {
         diagnosticCollection.set(uri, ParseDiagnosticToVscodeFormat(result.result));

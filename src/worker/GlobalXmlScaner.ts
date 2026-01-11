@@ -44,7 +44,7 @@ async function processFile(fullPath: string) {
         const msg: XmlNodeParseResult = {filepath: fullPath, node: xmlParser.parse(text)};
         parentPort?.postMessage(msg);
     } catch (error) {
-        // ignore
+        console.error(`GlobalXmlScanerWorker: 解析xml文件失败 ${fullPath}`, error);
     }
 }
 

@@ -11,7 +11,6 @@ const tokenDefine = {
     space:              {match: /[ \t\r\n]+/, lineBreaks: true },
     equal:              '=',
     content:            {match: /[^<>]+/, lineBreaks: true },
-    // content end
     xmlTagClose:        '>',
 } as const;
 
@@ -142,6 +141,7 @@ export class XmlParser {
              tokenType === TokenTypes.attrValue ||
              tokenType === TokenTypes.space ||
              tokenType === TokenTypes.content ||
+             tokenType === TokenTypes.xmlTagClose ||
              tokenType === TokenTypes.equal;
     }
 
@@ -253,7 +253,10 @@ export class XmlParser {
 
             if (token.type === TokenTypes.xmlTagStart) {
                 this.parseNode(node);
+                continue;
             }
+
+            throw new Error(`current token shound be content, but = '${token.text}', in col ${token.col} , line ${token.line}`);
         }
     }
 

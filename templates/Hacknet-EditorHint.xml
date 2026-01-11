@@ -584,7 +584,7 @@
     </Node>
 
     <!-- <portsForCrack val="0" /> -->
-    <Node name="Computer.portsForCrack" enable="true" multi="false" desc="设置破解该计算机所需的端口数,超过1000显示为不可破解">
+    <Node name="Computer.portsForCrack" enable="true" multi="false" desc="设置破解该计算机所需的端口数,超过100显示为不可破解">
         <Attribute name="val" required="true" desc="破解所需的端口数" default="0" hint="enum" />
     </Node>
 
@@ -813,7 +813,7 @@
        <Attribute name="name" required="true" desc="服务名称" default="Custom Board Name" hint="enum" />
     </Node>
     <Node name="Computer.messageBoard.thread" enable="true" multi="true" desc="定义一条消息面板的消息">
-       <Content required="true" desc="消息文件路径" default="Docs/msg.txt" hint="path" linkBy="path" diag="E">Docs/**/*.txt</Content>
+       <Content required="true" desc="消息文件路径" default="Docs/msg.txt" hint="path" linkBy="path" diag="E">**/*.txt</Content>
     </Node>
 
     <!-- <MedicalDatabase /> -->
@@ -863,7 +863,7 @@
     <Node name="Computer.missionHubServer" enable="true" multi="true" desc="csec样式的任务中心服务(daemon)">
        <Attribute name="groupName" required="true" desc="组织名" default="CSEC" hint="enum" />
        <Attribute name="serviceName" required="true" desc="服务名称" default="Example Tech Contract Hub" hint="enum" />
-       <Attribute name="missionFolderPath" required="true" desc="任务所在的文件夹路径" hint="folder" linkBy="path" diag="E">Missions/**/*.xml</Attribute>
+       <Attribute name="missionFolderPath" required="true" desc="任务所在的文件夹路径" hint="folder" linkBy="path" diag="W">Missions/**/*.xml</Attribute>
        <Attribute name="themeColor" required="true" desc="主题颜色" default="200,10,10" hint="color" diag="E" />
        <Attribute name="lineColor" required="true" desc="线条颜色" default="255,80,80" hint="color" diag="E" />
        <Attribute name="backgroundColor" required="true" desc="背景颜色" default="20,20,20" hint="color" diag="E" />
@@ -1371,7 +1371,12 @@
 
     <Node name="ConditionalActions.OnDisconnect" enable="true" multi="true" desc="当前玩家断开与某台电脑的连接时触发">
         <Content />
-        <Attribute name="target" required="false" desc="电脑ID" default="computer" hint="ComputerOrEos" linkBy="Computer.id|Computer.eosDevice.id" diag="E" />
+        <Attribute name="target" required="false" desc="电脑ID" default="computer" hint="ComputerOrEos" linkBy="Computer.id|Computer.eosDevice.id">
+            <Enums>
+                <Enum>NONE</Enum>
+            </Enums>
+            <Diag type="E" ignoreCaseForEnum="true" />
+        </Attribute>
     </Node>
     
     <Node name="ConditionalActions.OnAdminGained " enable="true" multi="true" desc="当玩家获取到某台电脑的管理员权限后触发">
@@ -1835,7 +1840,20 @@
 
     <!-- <ChangeAlertIcon Target="advExamplePC" Type="irc" DelayHost="advExamplePC" Delay="9.5"/> -->
     <Node name="ConditionalActions.*.ChangeAlertIcon|CustomFaction.Action.ChangeAlertIcon" enable="true" multi="true" desc="更改邮件位置图标">
-        <Attribute name="Target" required="true" desc="点击图标后关联的目标计算机ID" default="computer" hint="computer" linkBy="Computer.id|Computer.eosDevice.id" diag="E" />
+        <Attribute name="Target" required="true" desc="点击图标后关联的目标计算机ID" default="computer" hint="js" linkBy="Computer.id|Computer.eosDevice.id" diag="E">
+            (function(node, hacknetNodeHolder){
+                const res = hacknetNodeHolder.GetComputers()
+                    .filter(comp =&gt; comp.id)
+                    .map(comp =&gt; {
+                    return {value: comp.id, desc: comp.name, filterText: comp.id, kind: "reference"};
+                });
+                if (!res.find(item =&gt; item.value === 'jmail')) {
+                    res.push({value: 'jmail', desc: 'jmail邮件服务', kind: 'value'});
+                }
+
+                return res;
+            })
+        </Attribute>
         <Attribute name="Type" required="true" desc="要更改的目标图标类型" hint="enum" diag="E">
             <Enums kind="value">
                 <Enum desc="邮件图标">mail</Enum>
@@ -1876,7 +1894,7 @@
 
     <!-- <ChangeNetmapSortMethod Method="scatter" DelayHost="advExamplePC" Delay="9.5" /> -->
     <Node name="ConditionalActions.*.ChangeNetmapSortMethod|CustomFaction.Action.ChangeNetmapSortMethod" enable="true" multi="true" desc="更改网络图节点排序方式">
-        <Attribute name="Method" required="true" desc="排序方式" default="scatter" hint="enum" diag="E">
+        <Attribute name="Method" required="true" desc="排序方式" default="scatter" hint="enum">
             <Enums>
                 <Enum desc="散点图">scatter</Enum>
                 <Enum desc="网格图">grid</Enum>
@@ -1886,6 +1904,7 @@
                 <Enum desc="扫描序列">sequencegrid</Enum>
                 <Enum desc="扫描序列">sequence grid</Enum>
             </Enums>
+            <Diag type="E" ignoreCaseForEnum="true" />
         </Attribute>
         <Attribute name="DelayHost" required="false" desc="具有daemon服务的计算机ID,否则无法触发延时效果" default="computer" hint="computer" linkBy="Computer.id|Computer.eosDevice.id" diag="E" />
         <Attribute name="Delay" required="false" desc="延迟触发(秒)" default="0.0" hint="enum"/>
@@ -1942,6 +1961,7 @@
             <Step value="playCustomSongImmediatley:" desc="立即播放自定义歌曲，无淡入淡出效果(后缀必须为.ogg)" kind="function">
                 <Next hint="path">**/*.ogg</Next>
             </Step>
+            <Step value="flashUI" desc="界面边框闪红" kind="function" />
         </Attribute>
 
         <Attribute name="FunctionValue" required="true" desc="方法参数" hint="js">

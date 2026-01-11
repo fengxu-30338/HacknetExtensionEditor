@@ -52,6 +52,12 @@ class HacknetNodeHolder {
         if (rootUri !== undefined) {
             const relativePath = path.relative(rootUri.fsPath, fullpath).replaceAll('\\', '/');
             node[this.RelativePathSymbol] = relativePath;
+
+            // 排除非Nodes目录下的Computer节点
+            if (nodeType === HacknetNodeType.Computer && !relativePath.toLowerCase().startsWith("nodes/")) {
+                // console.log(`排除非Nodes目录下的Computer节点: ${relativePath}`);
+                return;
+            }
         }
 
         this.NodeMap[nodeType].set(fullpath, node);

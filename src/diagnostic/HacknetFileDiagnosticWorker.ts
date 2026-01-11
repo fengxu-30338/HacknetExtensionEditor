@@ -243,7 +243,6 @@ async function StartDiagnosticFile(req:DiagnosticRequest) {
 // 扫描文件诊断
 async function ScanFileFromDiagnostic(filepath:string, req:DiagnosticRequest, scanDepy:boolean):Promise<DiagnosticResult[]> {
     let diagnosticResult:DiagnosticResult[] = [];
-
     AttachFuncToNodeHolder(req);
     
     let depdendencyInfo: DepdendencyInfo = {};

@@ -607,6 +607,7 @@
                 <Enum desc="大概在15s后重置密码、端口、防火墙等信息">basic</Enum>
                 <Enum desc="在玩家非管理员时重置">progress</Enum>
                 <Enum desc="配合isSuper在断开时可以立即重置密码">fast</Enum>
+                <Enum desc="不做任何处理">none</Enum>
             </Enums>
         </Attribute>
         <Attribute name="resetPassword" required="true" desc="是否重置admin密码" default="false" hint="enum" diag="E">

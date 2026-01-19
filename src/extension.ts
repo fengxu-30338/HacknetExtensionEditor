@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { EventManager } from './event/EventManager';
-import {CheckHacknetEditorHintFileExist, HintFileExistRule, CreateHacknetEditorHintFileInWorkspaceRoot} from './commands/CreateEditorHintCmd';
+import {CheckHacknetEditorHintFileExist, HintFileExistRule, CreateHacknetEditorHintFileInWorkspaceRoot, CheckExtensionTipUserCreateHintFile} from './commands/CreateEditorHintCmd';
 import {RegisterHacknetXmlCodeHint} from './code-hint/CodeHint';
 import * as GlobalHacknetXmlNodeHolder from './worker/GlobalHacknetXmlNodeHolder';
 import {RegisterHacknetColorProvider} from './decorator/XmlTextColorProvider';
@@ -17,6 +17,9 @@ import RegisterSelectHacknetExtensionCmd from './commands/SelectHacknetExtension
 export async function activate(context: vscode.ExtensionContext) {
 
 	CommonUtils.SetExtensionContext(context);
+
+	// 检测当前工作目录是否是Hacknet扩展目录并提示用户创建编辑器提示文件
+	await CheckExtensionTipUserCreateHintFile(context);
 
 	// 每次激活覆盖提示文件如果存在的话
 	if (await CheckHacknetEditorHintFileExist()) {

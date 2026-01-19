@@ -276,7 +276,7 @@ async function ScanFileFromDiagnostic(filepath:string, req:DiagnosticRequest, sc
                     CleanupDependencyForFile(filepath);
                     break;
                 }
-                console.error('诊断xml错误', error);
+                console.error('诊断xml错误', filepath, error);
             } while (false);
         }
     }

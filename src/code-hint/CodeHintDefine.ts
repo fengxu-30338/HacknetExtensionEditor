@@ -110,3 +110,43 @@ export interface NodeCodeHints {
     Enable: boolean
     FileTriggerPattern: string | null
 }
+
+export async function GetLinkByFinalMatchValue(linkByCollection:LinkBy[], linkValue:string, forEach?:(value:string, linkBy:LinkBy) => Promise<void> | void):Promise<string[]> {
+    if (linkByCollection.length === 0) {
+        return [];
+    }
+
+    let matchedValue = linkValue.trim();
+    const linkBy = linkByCollection.find(linkByItem => {
+        if (linkByItem.linkByValuePattern === null) {
+            return true;
+        }
+        const linkByValueRegex = new RegExp(linkByItem.linkByValuePattern, linkByItem.ignoreCaseForMatch ? 'i' : undefined);
+        const matchRes = linkValue.match(linkByValueRegex);
+        if (matchRes !== null) {
+            matchedValue = matchRes[matchRes.length - 1];
+            return true;
+        }
+    });
+
+    if (linkBy === undefined) {
+        return [];
+    }
+
+    if (linkBy.overrideValue !== null) {
+        matchedValue = linkBy.overrideValue;
+    }
+
+    const handleContents = linkBy.split === null ? [matchedValue] : matchedValue.split(new RegExp(linkBy.split)).filter(item => item.trim() !== '').map(item => item.trim());
+    if (handleContents.length === 0) {
+        return [];
+    }
+
+    if (forEach !== undefined) {
+        for (const val of handleContents) {
+            await forEach(val, linkBy);
+        }
+    }
+    
+    return handleContents;
+}

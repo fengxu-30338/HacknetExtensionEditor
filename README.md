@@ -141,15 +141,16 @@ HackerScript文件提示及高亮
 
 当前支持的hint类型有
 
-1. Enum (枚举类型，用法如上图)
-2. EnumWithCommonString （在枚举的基础上，增加一些预定义的字符串，在代码提示文件中的CommonTextHint标签中定义）
-3. JavaScript （指定自定义js代码以获取提示，自由度最高）
-4. Computer （提供当前工作空间下的所有计算机ID供用户选择）
-5. ComputerOrEos （在Computer的基础上增加了eos设备id的提供）
-6. ActionFile (action文件路径)
-7. ThemeFile（主题文件路径）
-8. MisisonFile（任务文件路径）
-9. FactionFile（自定义派系文件路径）
+
+ 1. Enum (枚举类型，用法如上图)
+ 2. EnumWithCommonString （在枚举的基础上，增加一些预定义的字符串，在代码提示文件中的CommonTextHint标签中定义）
+ 3. JavaScript （指定自定义js代码以获取提示，自由度最高）
+ 4. Computer （提供当前工作空间下的所有计算机ID供用户选择）
+ 5. ComputerOrEos （在Computer的基础上增加了eos设备id的提供）
+ 6. ActionFile (action文件路径)
+ 7. ThemeFile（主题文件路径）
+ 8. MisisonFile（任务文件路径）
+ 9. FactionFile（自定义派系文件路径）
 10. PeopleFile （People文件路径）
 11. Color （一个颜色，会提供5种随机生成的颜色供选择）
 12. Path （路径选择，需要提供匹配路径的表达式）
@@ -162,9 +163,10 @@ HackerScript文件提示及高亮
 <!-- 
 此处通过js获取当前工作空间下的所有计算机的ip属性提供给用户选择
 node: 当前鼠标光标处的节点信息，可以获取的节点的属性名-属性值等关系
-hacknetNodeHolder: 可以获取当前工作空间下的各种阶段信息，如computer,action,mission,faction,people,themes
-	如：hacknetNodeHolder.GetComputers() 获取的是工作空间下的所有计算机信息，返回的是计算机数组，您可以通过其中子元素的
-	'__RelativePath__'属性获取到该元素所在文件的相对路径，您也可以通过调用其中子元素的属性来获取其在xml文件中定义的细节
+// hacknetNodeHolder 中存在一些方法可以获取当前工作空间定义的所有计算机节点信息，与之类似的还有：
+// GetComputers(), GetMissions(), GetActions(), GetThemes(), GetFactions(), GetPeoples(), GetOtherNodes()
+// Log(msg)方法可以在输出控制台打印一行日志便于调试,在输出窗口选择HacknetExtensionHelper通道即可查看
+// 在获取的节点中您可以通过调用"__FullPath__"属性获取节点所在文件的绝对路径， "__RelativePath__"属性获取相对路径
 [注意<>&等字符的转义]
 -->
 <Attribute name="ip" required="true" desc="加密所在计算机的IP" default="ip" hint="js" linkBy="Computer.ip">
@@ -290,6 +292,12 @@ hacknetNodeHolder: 可以获取当前工作空间下的各种阶段信息，如c
 
 LinkByCollection表示同时定义一组linkBy的跳转规则，存在一条匹配成功则按匹配成功的那一条规则进行跳转
 
+LinkByCollection标签内Item标签还存在另外的属性
+
+- `ignoreCaseForMatch`  是否在正则匹配时忽略大小写
+- `overrideValue` 匹配成功后使用该属性定义的值来跳转
+- `split` 用正则表达式来进行分割，按分割后的多个值同时给出跳转提示
+
 比如：
 
 ```xml
@@ -352,6 +360,58 @@ xml提示文件 `Hacknet-EditorHint.xml`新增Include标签可引用其他提示
 </HacknetEditorHint>
 ```
 
+您可以通过定义相同的Node然后指定Attribute标签、ConditionAttributes标签、 Content标签的`repeatRule`属性来进行相同属性的重写。
+
+### 编辑器错误检测
+
+您可以在编辑器提示文件的Attribute标签或Content标签中添加diag属性以达到自动检测文件填写错误的功能。
+
+diag的取值为：
+
+- E （错误等级）
+- W (警告等级)
+- I  (消息等级)
+- H （提示等级）
+
+例如：
+
+```xml
+<Attribute name="security" required="true" desc="电脑的安全等级" hint="enum" diag="W">
+            <Enums>
+                <Enum desc="图标样式为旧台式电脑">0</Enum>
+                <Enum desc="图标样式为一体机样式">1</Enum>
+                <Enum desc="图标样式为办公电脑样式">2</Enum>
+                <Enum desc="图标样式为服务器样式">3</Enum>
+                <Enum desc="图标样式为更高级的服务器样式">4</Enum>
+                <Enum desc="trace加100s,随机防火墙与代理">5</Enum>
+            </Enums>
+</Attribute>
+```
+
+上述功能能会在检测security属性时自动检测您实际填写的值是否在定义的范围内，否则弹出警告提示。
+
+#### 更复杂的错误检测功能
+
+您可以在编辑器提示文件的Attribute标签或Content标签中定义Diag标签来实现更为复杂的错误检测效果
+
+```xml
+<Attribute name="type" required="true" desc="任务类型" default="" hint="enum">
+            <Enums>
+                <Enum desc="删除文件">filedeletion</Enum>
+                <Enum desc="清空文件夹">clearfolder</Enum>
+            </Enums>
+           // type 是 错误错误提示等级
+          // ignoreCaseForEnum:  在值为枚举类型时忽略大小写校验
+          // jsRuleFor 检测检测规则，存在附加与重写两种类型。附加是在原有规则的基础上增加js校验，重写则完全由js规则校验
+            <Diag type="I" ignoreCaseForEnum="true" jsRuleFor="attach">
+                  (function(actNode, hacknetNodeHolder, value){
+                      // value就是当前属性或内容的实际值
+                      return {msg: `在type=${type}的任务中，modifyDeathRowRecord标签的内容不能为空`, type: 'E'};
+                  })
+            </Diag>
+</Attribute>>
+```
+
 ## 6.在线调试主题功能
 
 版本>=`0.0.2`可用
@@ -364,7 +424,14 @@ xml提示文件 `Hacknet-EditorHint.xml`新增Include标签可引用其他提示
 
 更方便的是，您在鼠标在网页想改的元素处停留3秒以上，该元素用到的颜色会在左侧xml文件中高亮出来，以便您能够更精准的定位到想要改的标签。
 
-
 ## 7.Hacknet节点查看
 
-在标题栏依次点击  "查看"->"打开视图" 搜索Hacknet找到 `Hacknet节点查看`即可打开，效果如下![](imgs/NodeView.png)
+在标题栏依次点击  "查看"->"打开视图" 搜索Hacknet找到 `Hacknet节点查看`即可打开，效果如下
+
+![](imgs/NodeView.png)
+
+
+在标题栏依次点击  "查看"->"打开视图" 搜索Hacknet找到 `Hacknet节点关系查看`可以看到从当前计算机开始的依赖数
+![](imgs/img12.jpg)
+
+--

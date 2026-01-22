@@ -15,7 +15,8 @@ export interface DiagnosticWorkerDataType {
 export enum DiagnosticWorkerMsgType {
     DiagnosticReq,
     DiagnosticResp,
-    QueryRelativeFileReq
+    QueryRelativeFileReq,
+    PrintLogReq,
 }
 
 export interface DiagnosticWorkerMsg {
@@ -43,6 +44,7 @@ export interface NodeHolder {
     GetFactions: () => HacknetNodeInfo[]
     GetPeoples: () => HacknetNodeInfo[]
     GetOtherNodes: () => HacknetNodeInfo[]
+    Log: (msg: string) => void
 }
 
 
@@ -86,13 +88,6 @@ interface DiagnosticAndDependency {
     depdendencyInfo: DepdendencyInfo
 }
 
-enum CheckType {
-    Text,   // 整段文本匹配
-    Prefix,  // 前缀匹配
-    Regex, // 正则匹配
-    Func, // 函数匹配
-}
-
 interface CheckItem {
     checkFunc: (checkVal: string) => {validate: boolean, diagMsg: string, depdendencyPath: string[]}
 }
@@ -114,7 +109,6 @@ export interface QueryRelativeFileReq extends UniqueMsg {
 export interface QueryRelativeFileResp extends UniqueMsg{
     result: string[]
 }
-
 class UniqueMsgSender {
 
     private static id: number = 0;
@@ -607,7 +601,7 @@ async function DiagnosticByCodeHint(node:Node, checkVal:string, codeHint:CodeHin
     NodeHolderHook.AddHook(hook);
 
     if (codeHint.diag!.jsRule === 'override') {
-        result.diagnosticArr.push(...ExecJsFuncForDiag(node, codeHint, req));
+        result.diagnosticArr.push(...ExecJsFuncForDiag(node, codeHint, checkVal, req));
         result.depdendencyPath.push(...depPath);
         NodeHolderHook.RemoveHook(hook);
         return result;
@@ -619,7 +613,7 @@ async function DiagnosticByCodeHint(node:Node, checkVal:string, codeHint:CodeHin
             type: codeHint.diag!.type as any
         });
     } else {
-        result.diagnosticArr.push(...ExecJsFuncForDiag(node, codeHint, req));
+        result.diagnosticArr.push(...ExecJsFuncForDiag(node, codeHint, checkVal, req));
         result.depdendencyPath.push(...depPath);
     }
     NodeHolderHook.RemoveHook(hook);
@@ -899,12 +893,12 @@ function ExecJsFuncToGetCodeHintItems(node: Node, codeHint: CodeHint, req:Diagno
     return codeHintArr.map(item => item.value);
 }
 
-function ExecJsFuncForDiag(node: Node, codeHint: CodeHint, req:DiagnosticRequest): PartialBy<Diagnostic, 'range'>[] {
+function ExecJsFuncForDiag(node: Node, codeHint: CodeHint, value:string, req:DiagnosticRequest): PartialBy<Diagnostic, 'range'>[] {
     if (!codeHint.diag || codeHint.diag.jsContent === '') {
         return [];
     }
 
-    const res = eval(codeHint.diag.jsContent)(new ActiveNode(node), req.nodeHolder);
+    const res = eval(codeHint.diag.jsContent)(new ActiveNode(node), req.nodeHolder, value);
     if (res === null || res === undefined) {
         return [];
     }
@@ -1109,5 +1103,12 @@ function AttachFuncToNodeHolder(req:DiagnosticRequest) {
         NodeHolderHook.TriggerHook(HacknetNodeType.Other);
 
         return res;
+    };
+
+    nodeHolder.Log = (msg: string) => {
+        SendMessage({
+            type: DiagnosticWorkerMsgType.PrintLogReq,
+            data: msg
+        });
     };
 }

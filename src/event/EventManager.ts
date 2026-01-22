@@ -4,6 +4,7 @@ export enum EventType {
     CodeHintSourceChange = 'CodeHintSourceChange',
     CodeHintParseCompleted = 'CodeHintParseCompleted',
     HacknetNodeFileChange = 'HacknetNodeFileChange',
+    EditorActiveFileChange = 'EditorActiveFileChange',
 }
 
 

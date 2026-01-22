@@ -2,7 +2,7 @@
   "name": "hacknetextensionhelper",
   "displayName": "HacknetExtensionHelper",
   "description": "hacknet extension write helper",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "engines": {
     "vscode": "^1.103.0"
   },
@@ -28,6 +28,13 @@
           "icon": "resources/NodeView/node.svg",
           "visibility": "visible",
           "when": "hacknetextensionhelper.HasCodeHintFile"
+        },
+        {
+          "id": "hacknetNodeRelationViewer",
+          "name": "Hacknet节点关系查看",
+          "icon": "resources/NodeView/node.svg",
+          "visibility": "visible",
+          "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsHacknetComputerFile"
         }
       ]
     },

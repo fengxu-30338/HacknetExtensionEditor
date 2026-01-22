@@ -23,7 +23,7 @@ function LookUpTutorialDocCommand(...args: any[]) {
     if (nodeType === null) {
         return;
     }
-    const docUrl = GetDocUrlByNodeType(nodeType);
+    const docUrl = GetDocUrlByFilepath(filepath);
     if (docUrl === null) {
         return;
     }
@@ -31,7 +31,16 @@ function LookUpTutorialDocCommand(...args: any[]) {
     vscode.env.openExternal(vscode.Uri.parse(docUrl));
 }
 
-function GetDocUrlByNodeType(nodeType: HacknetNodeType): string | null {
+function GetDocUrlByFilepath(filepath:string): string | null {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+        return null;
+    }
+    const nodeType = hacknetNodeHolder.GetNodeTypeByFilepath(filepath);
+    if (nodeType === null) {
+        return null;
+    }
+
     switch (nodeType) {
         case HacknetNodeType.Action:
             return "https://hacknet.wiki/reference/Action";
@@ -54,8 +63,8 @@ function OnEditorFileChangedForChangeStatusBar(statusBarItem: vscode.StatusBarIt
     const editor = vscode.window.activeTextEditor;
     if (!editor) {return;}
     const filepath = editor.document.fileName;
-    const nodeType = hacknetNodeHolder.GetNodeTypeByFilepath(filepath);
-    if (nodeType === null) {
+    const docUrl = GetDocUrlByFilepath(filepath);
+    if (docUrl === null) {
         statusBarItem.hide();
         return;
     }
@@ -71,11 +80,7 @@ function InitStatusBarOnlyInHacknetFile(context: vscode.ExtensionContext) {
     statusBarItem.hide();
     context.subscriptions.push(statusBarItem);
 
-    context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(_ => OnEditorFileChangedForChangeStatusBar(statusBarItem)));
-    context.subscriptions.push(vscode.workspace.onDidChangeTextDocument(_ => OnEditorFileChangedForChangeStatusBar(statusBarItem)));
-    EventManager.onEvent(EventType.HacknetNodeFileChange, e => {
-        if (e.modify === 'add') {
-            OnEditorFileChangedForChangeStatusBar(statusBarItem);
-        }
+    EventManager.onEvent(EventType.EditorActiveFileChange, _ => {
+        OnEditorFileChangedForChangeStatusBar(statusBarItem);
     });
 }

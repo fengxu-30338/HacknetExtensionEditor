@@ -1,4 +1,4 @@
-import {AttributeHint, AttributeHintItem, CodeHint, CodeHintItem, CommonTextHintItem, ConditionAttributeHint, Diag, FileCodeHint, GlobalCodeHints, HintType, LinkBy, NodeCodeHintItem, NodeCodeHints, RepeatRule, RepeatRuleDef} from './CodeHintDefine';
+import {AttributeHint, AttributeHintItem, CodeHint, CodeHintItem, CommonTextHintItem, ConditionAttributeHint, Diag, FileCodeHint, GetLinkByFinalMatchValue, GlobalCodeHints, HintType, LinkBy, NodeCodeHintItem, NodeCodeHints, RepeatRule, RepeatRuleDef} from './CodeHintDefine';
 import { XMLParser as StandardXMLParser } from 'fast-xml-parser';
 import {ActiveNode, CursorPosition, XmlParser} from '../parser/XmlParser';
 import XmlPathUtil from '../utils/XmlPathUtil';
@@ -1400,77 +1400,48 @@ function GetHintDescByActiveNode(actNode: ActiveNode): vscode.ProviderResult<vsc
 
 async function ParseNodeLinkToUri(codeHint: CodeHint, linkValue:string): Promise<vscode.Uri[]>{
     const uriList:vscode.Uri[] = [];
-    if (codeHint.linkByCollection.length === 0) {
-        return uriList;
-    }
-
-    let matchedValue = linkValue.trim();
-    const linkBy = codeHint.linkByCollection.find(linkByItem => {
-        if (linkByItem.linkByValuePattern === null) {
-            return true;
-        }
-        const linkByValueRegex = new RegExp(linkByItem.linkByValuePattern, linkByItem.ignoreCaseForMatch ? 'i' : undefined);
-        const matchRes = linkValue.match(linkByValueRegex);
-        if (matchRes !== null) {
-            matchedValue = matchRes[matchRes.length - 1];
-            return true;
-        }
-    });
-
-    if (linkBy === undefined) {
-        return uriList;
-    }
-
-    if (linkBy.overrideValue !== null) {
-        matchedValue = linkBy.overrideValue;
-    }
-
-    const handleContents = linkBy.split === null ? [matchedValue] : matchedValue.split(new RegExp(linkBy.split)).filter(item => item.trim() !== '').map(item => item.trim());
-    if (handleContents.length === 0) {
-        return uriList;
-    }
 
     const rootUri = CommonUtils.GetWorkspaceRootUri();
     if (!rootUri) {
         return uriList;
     }
 
-    const linkByStr = linkBy.linkBy;
-    for (const val of handleContents) {
+    await GetLinkByFinalMatchValue(codeHint.linkByCollection, linkValue, async (val, linkBy) => {
+        const linkByStr = linkBy.linkBy;
         if (linkByStr.startsWith('Computer.')) {
             uriList.push(...CommonUtils.filterObjectByExpression(hacknetNodeHolder.GetComputers(), linkByStr, val)
                 .map(comp => vscode.Uri.joinPath(rootUri, comp['__RelativePath__'])));
-            continue;
+            return;
         }
 
         if (linkByStr.startsWith('Mission.')) {
             uriList.push(...CommonUtils.filterObjectByExpression(hacknetNodeHolder.GetMissions(), linkByStr, val)
                 .map(mission => vscode.Uri.joinPath(rootUri, mission['__RelativePath__'])));
-            continue;
+            return;
         }
 
         if (linkByStr.startsWith('Action.')) {
             uriList.push(...CommonUtils.filterObjectByExpression(hacknetNodeHolder.GetActions(), linkByStr, val)
                 .map(action => vscode.Uri.joinPath(rootUri, action['__RelativePath__'])));
-            continue;
+            return;
         }
 
         if (linkByStr.startsWith('Theme.')) {
             uriList.push(...CommonUtils.filterObjectByExpression(hacknetNodeHolder.GetThemes(), linkByStr, val)
                 .map(theme => vscode.Uri.joinPath(rootUri, theme['__RelativePath__'])));
-            continue;
+            return;
         }
 
         if (linkByStr.startsWith('Faction.')) {
             uriList.push(...CommonUtils.filterObjectByExpression(hacknetNodeHolder.GetFactions(), linkByStr, val)
                 .map(faction => vscode.Uri.joinPath(rootUri, faction['__RelativePath__'])));
-            continue;
+            return;
         }
 
         if (linkByStr.startsWith('People.')) {
             uriList.push(...CommonUtils.filterObjectByExpression(hacknetNodeHolder.GetPeoples(), linkByStr, val)
                 .map(people => vscode.Uri.joinPath(rootUri, people['__RelativePath__'])));
-            continue;
+            return;
         }
 
         if (linkByStr === "path") {
@@ -1482,10 +1453,10 @@ async function ParseNodeLinkToUri(codeHint: CodeHint, linkValue:string): Promise
             } catch (error) {
                 console.error('hint:path link跳转出错:' + error);
             }
-            continue;
-        }   
-    }
-    
+            return;
+        }
+    });
+
     return uriList;
 }
 

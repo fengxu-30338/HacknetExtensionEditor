@@ -5,6 +5,7 @@ import * as CommonUtils from '../utils/CommonUtils';
 import path from 'path';
 import { EventManager, EventType } from "../event/EventManager";
 import { ComputerInfo, HacknetNodeInfo, HacknetNodeType, HacknetXmlNodeMap } from './GlobalHacknetXmlNodeHolderDefine';
+import OutputManager from "../utils/OutputChannelUtils";
 
 let scanWorker:Worker | null = null;
 let watcher:vscode.FileSystemWatcher | null = null;
@@ -269,6 +270,14 @@ class HacknetNodeHolder {
             res.push(node);
         });
         return res;
+    }
+
+    /**
+     * 输出日志
+     * @param msg 日志信息
+     */
+    public Log(msg:string) {
+        OutputManager.log(msg);
     }
 
     public GetNodesByNodeType(nodeType: HacknetNodeType): HacknetNodeInfo[] {

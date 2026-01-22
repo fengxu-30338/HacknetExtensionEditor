@@ -13,7 +13,7 @@ export type HacknetXmlNodeMap = {
 }
 
 export interface HacknetNodeInfo {
-    [key: string]: string
+    [key: string]: any
 }
 
 export interface ComputerInfo extends HacknetNodeInfo {

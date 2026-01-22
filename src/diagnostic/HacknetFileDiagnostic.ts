@@ -6,6 +6,7 @@ import { Diagnostic, DiagnosticRequest, DiagnosticResult, DiagnosticWorkerDataTy
 import { CodeHints, HintFileExist } from '../code-hint/CodeHint';
 import { hacknetNodeHolder } from "../worker/GlobalHacknetXmlNodeHolder";
 import { EventManager, EventType } from '../event/EventManager';
+import OutputManager from "../utils/OutputChannelUtils";
 import loadsh from 'lodash';
 
 
@@ -84,6 +85,10 @@ async function HandleDiagnosticWorkerMsg(msg:DiagnosticWorkerMsg, worker: Worker
         
         case DiagnosticWorkerMsgType.QueryRelativeFileReq:
             HandleQueryRelativeFileResp(msg.data, worker);
+            break;
+
+        case DiagnosticWorkerMsgType.PrintLogReq:
+            OutputManager.log(msg.data);
             break;
     }
 }

@@ -1,5 +1,29 @@
 # 更新日志
 
+## v0.2.9更新日志-2026-01-22
+
+
+1. JS执行提示或校验时您可以在hacknetNodeHolder对象中调用Log函数来输出一些信息供您调试,在输出窗口选择`HacknetExtensionHelper`通道即可查看。
+
+```xml
+<Attribute name="ip" required="false" desc="电脑的ip,不指定则由游戏自动生成" hint="js">
+            (function(node, hacknetNodeHolder){
+                const computers = hacknetNodeHolder.GetComputers();
+                hacknetNodeHolder.Log("获取所有计算机");
+            })
+</Attribute>
+```
+
+
+2. 新增节点关系查看视图
+
+   
+   在标题栏依次点击  "查看"->"打开视图" 搜索Hacknet找到 `Hacknet节点关系查看`可以看到从当前计算机开始的依赖数\
+   ![](imgs/img12.jpg)
+
+   
+
+
 ## v0.2.5更新日志-2026-01-10
 
 新增命令选择本地所有hacknet扩展文件并选择一个打开，可通过快捷键ctrl+shift+p打开命令面板搜索hacknet或者在文件夹右击后选择
@@ -20,16 +44,17 @@
 
 提示文件标签新增 `repeatRule`属性，描述多个相同的Node如何覆写规则
 
-* `override`      覆写/追加 相同name的属性到node下
-* `remove`         移除相同属性名称对应的Attribute定义
-* `overrideItem`  合并相同属性名称定义的枚举类型
-* `removeItem`     从上一个相同属性名称定义的枚举提示中移除相同定义
+- `override`      覆写/追加 相同name的属性到node下
+- `remove`         移除相同属性名称对应的Attribute定义
+- `overrideItem`  合并相同属性名称定义的枚举类型
+- `removeItem`     从上一个相同属性名称定义的枚举提示中移除相同定义
 
 `AddIRCMessage`标签的 `Author`属性新增Channel提示
 
 部分邮件属性标签中新增默认jmail提示以及默认admin账户提示。
 
 ## v0.1.5更新日志-2025-12-25
+
 
 1. **Hacknet-EditorHint.xml中的Include标签在重新创建提示文件后会保留下来**
 2. Hacknet-EditorHint.xml中定义多个相同的Node会自动合并/覆盖
@@ -62,6 +87,7 @@
 
 新增AddIRCMessage action标签中特殊内容的智能提示
 
+
 1. 类任务附件中计算机链接样式的消息：!ATTACHMENT:link#%#计算机名#%#IP/ID
 2. 类任务附件中计算机账户样式的消息: !ATTACHMENT:account#%#计算机名#%#IP/ID#%#账户#%#密码
 
@@ -88,6 +114,7 @@ windows下按下快捷键 `ctrl + shift + p `输入hacknet后选择**重新读�
 您更新到该版本后再写新的提示文件时有编辑器提示。但是需要您手动重新创建编辑器提示文件才有最新提示，如果您在原本的提示文件中新增了内容，那么请您做好备份。
 
 ## V0.0.4更新日志 - 2025-08-29
+
 
 1. 修复 `AddMissionToHubServer`标签在不同任务系统中的不同提示。在玩家选择非DHS服务中表示是否添加到任务中心的顶部，提供枚举选择，在玩家选择含有**DHS**服务的计算机id时，表示是谁领取了任务，将提供玩家定义的所有dhs agent用户供玩家选择。
 2. HackerScripts新增命令 `systakeover`命令高亮及提示。

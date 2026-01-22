@@ -466,10 +466,12 @@
         <Attribute name="ip" required="false" desc="电脑的ip,不指定则由游戏自动生成" hint="js">
             (function(node, hacknetNodeHolder){
                 let ipArr = [];
-                // 获取当前工作空间定义的所有计算机节点信息，与之类似的还有：
+                // hacknetNodeHolder 中存在一些方法可以获取当前工作空间定义的所有计算机节点信息，与之类似的还有：
                 // GetComputers(), GetMissions(), GetActions(), GetThemes(), GetFactions(), GetPeoples(), GetOtherNodes()
+                // Log(msg)方法可以在输出控制台打印一行日志便于调试,在输出窗口选择HacknetExtensionHelper通道即可查看
                 // 在获取的节点中您可以通过调用"__FullPath__"属性获取节点所在文件的绝对路径， "__RelativePath__"属性获取相对路径
                 const computers = hacknetNodeHolder.GetComputers();
+                
                 while(ipArr.length &lt; 5) {
                     const part1 = Math.floor(Math.random() * 256);
                     const part2 = Math.floor(Math.random() * 256);

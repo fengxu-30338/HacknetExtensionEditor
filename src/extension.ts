@@ -13,6 +13,11 @@ import { StartDiagnostic } from "./diagnostic/HacknetFileDiagnostic";
 import { RegisterTutorialViewer } from "./view/TutorialViewer";
 import { RegisterHacknetNodeViewer } from "./view/HacknetNodeViewer";
 import RegisterSelectHacknetExtensionCmd from './commands/SelectHacknetExtensionCmd';
+import { StartListenActiveFileChanged } from "./utils/ActiveFileTypeListener";
+import OutputManager from './utils/OutputChannelUtils';
+import { RegisterHacknetNodeRelationViewer } from "./view/hacknetNodeRelationViewer";
+
+
 
 export async function activate(context: vscode.ExtensionContext) {
 
@@ -71,6 +76,12 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// 注册节点视图
 	RegisterHacknetNodeViewer(context);
+
+	// 注册节点关系视图
+	RegisterHacknetNodeRelationViewer(context);
+
+	// 开始监听活动文件类型变化（最后执行）
+	StartListenActiveFileChanged();
 }
 
 
@@ -79,4 +90,6 @@ export function deactivate() {
 	GlobalHacknetXmlNodeHolder.StopScanWorker();
 	// 移除所有事件监听器
 	EventManager.removeAllListeners();
+	// 释放输出通道资源
+	OutputManager.dispose();
 }

@@ -260,10 +260,10 @@ export class XmlParser {
         }
     }
 
-    private parseNode(parent: Node | null = null): Node | null {
+    private parseNode(parent: Node | null = null): Node {
         this.jumpSpace();
         if (this.preCurTokenType !== TokenTypes.xmlTagStart) {
-            return null;
+            throw new Error(`current token shound be tag start, but = '${this.preToken()}'`);
         }
         const token = this.getNextToken()!;
         let node = new Node(token.value, parent);
@@ -313,7 +313,7 @@ export class XmlParser {
         }
     }
 
-    public parse(text:string, option:Partial<ParseOption> | null = null):Node | null {
+    public parse(text:string, option:Partial<ParseOption> | null = null):Node {
         this.option.activeOffset = Number.MAX_SAFE_INTEGER;
         this.setOption(option);
         this.tokens = [];

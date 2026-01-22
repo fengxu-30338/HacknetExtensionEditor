@@ -319,8 +319,7 @@ class HacknetNodeRelationTreeDataProvider implements vscode.TreeDataProvider<Hac
 
 export function RegisterHacknetNodeRelationViewer(context: vscode.ExtensionContext) {
     const treeView = vscode.window.createTreeView('hacknetNodeRelationViewer', {
-        treeDataProvider: new HacknetNodeRelationTreeDataProvider(),
-        showCollapseAll: true
+        treeDataProvider: new HacknetNodeRelationTreeDataProvider()
     });
     context.subscriptions.push(treeView);
 

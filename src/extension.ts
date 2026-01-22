@@ -15,7 +15,7 @@ import { RegisterHacknetNodeViewer } from "./view/HacknetNodeViewer";
 import RegisterSelectHacknetExtensionCmd from './commands/SelectHacknetExtensionCmd';
 import { StartListenActiveFileChanged } from "./utils/ActiveFileTypeListener";
 import OutputManager from './utils/OutputChannelUtils';
-import { RegisterHacknetNodeRelationViewer } from "./view/hacknetNodeRelationViewer";
+import { RegisterHacknetNodeRelationViewer } from "./view/HacknetNodeRelationViewer";
 
 
 

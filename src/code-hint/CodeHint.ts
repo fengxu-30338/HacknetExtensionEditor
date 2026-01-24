@@ -9,6 +9,7 @@ import { hacknetNodeHolder } from '../worker/GlobalHacknetXmlNodeHolder';
 import lodash from 'lodash';
 import { minimatch } from "minimatch";
 import { EventManager, EventType } from "../event/EventManager";
+import OutputManager from '../utils/OutputChannelUtils';
 
 
 
@@ -376,7 +377,8 @@ function parseNodeToNodeCodeHints(node: any): NodeCodeHints[]{
         CodeSnippets: '',
         Multi: getBool(node, 'multi', true),
         Enable: getBool(node, 'enable', true),
-        FileTriggerPattern: node['fileTriggerPattern'] ?? null
+        FileTriggerPattern: node['fileTriggerPattern'] ?? null,
+        Diag: getDiag(node)
     };
 
     if (!nodeCodeHint.Enable) {
@@ -433,7 +435,7 @@ function GetNodeCodeHints(xmlTip: string | any): NodeCodeHints[] {
             try {
                 nodeCodeHints.push(...parseNodeToNodeCodeHints(item));
             } catch (error) {
-                console.error(`解析提示文件节点错误: ${error}`, item);
+                OutputManager.error(`解析编辑器提示文件节点错误: ${error}`);
             }
         }
     } else {
@@ -645,6 +647,10 @@ function CombineSameNode(nodeHints: NodeCodeHints[]) {
             } else if (sameNode.ContentHint.repeatRule === RepeatRuleDef.Remove) {
                 curNode.ContentHint = null;
             }
+        }
+
+        if (sameNode.Diag !== null) {
+            curNode.Diag = sameNode.Diag;
         }
 
         for (const attrName in sameNode.AttributeNodeHint) {
@@ -1205,18 +1211,23 @@ function ExecJsFuncToGetCodeHintItems(actNode: ActiveNode, codeHint: CodeHint): 
     };
 
     const codeHintArr: CodeHintItem[] = [];
-    const res = eval(codeHint.content)(actNode, hacknetNodeHolder);
-    if (res === null || res === undefined) {
-        return [];
-    }
-    if (Array.isArray(res)) {
-        for (const item of res) {
-            if (checkObjIsCodeHintItem(item)) {
-                codeHintArr.push(item as CodeHintItem);
-            }
+    try {
+        const res = eval(codeHint.content)(actNode, hacknetNodeHolder);
+        if (res === null || res === undefined) {
+            return [];
         }
-    } else if (checkObjIsCodeHintItem(res)) {
-        codeHintArr.push(res as CodeHintItem);
+        if (Array.isArray(res)) {
+            for (const item of res) {
+                if (checkObjIsCodeHintItem(item)) {
+                    codeHintArr.push(item as CodeHintItem);
+                }
+            }
+        } else if (checkObjIsCodeHintItem(res)) {
+            codeHintArr.push(res as CodeHintItem);
+        }
+    } catch (error) {
+        OutputManager.error(`执行JS代码获取提示信息失败, location:${actNode.Path}, ${error}`);
+        throw error;
     }
 
     return codeHintArr;

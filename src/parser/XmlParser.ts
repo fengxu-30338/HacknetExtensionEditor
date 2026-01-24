@@ -61,6 +61,42 @@ export class Node {
 
         return path;
     }
+
+    public get root():Node {
+        let node:Node = this;
+        while (node.parent !== null) {
+            node = node.parent;
+        }
+        return node;
+    }
+
+    public GetNodesByNodePath(nodePath: string): Node[] {
+        const nodes:Node[] = [];
+        const res:Node[] = [];
+        const pathLevel = nodePath.split('.').length;
+        nodes.push(this);
+
+        while (nodes.length > 0) {
+            const node = nodes.shift()!;
+            if (node.nodePath === nodePath) {
+                res.push(node);
+            }
+
+            if (node.level >= pathLevel) {
+                continue;
+            }
+
+            nodes.push(...node.children);
+        }
+
+        // console.log(this, nodePath, res);
+
+        return res;
+    }
+
+    public GetAttr(name:string) {
+        return this.attribute.get(name);
+    }
 }
 
 export enum CursorPosition {

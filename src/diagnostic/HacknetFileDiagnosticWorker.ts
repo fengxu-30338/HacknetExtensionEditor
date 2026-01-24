@@ -1,7 +1,7 @@
 import { parentPort, workerData } from 'worker_threads';
 import * as fs from 'fs';
 import {ActiveNode, Node, XmlParser} from '../parser/XmlParser';
-import { AttributeHint, CodeHint, CodeHintItem, HintType, NodeCodeHints } from "../code-hint/CodeHintDefine";
+import { AttributeHint, CodeHint, CodeHintItem, Diag, HintType, NodeCodeHints } from "../code-hint/CodeHintDefine";
 import { ComputerInfo, HacknetNodeInfo, HacknetNodeType, HacknetXmlNodeMap } from "../worker/GlobalHacknetXmlNodeHolderDefine";
 import XmlPathUtil from "../utils/XmlPathUtil";
 import path from 'path';
@@ -208,6 +208,22 @@ parentPort?.on('message', (req:DiagnosticWorkerMsg) => {
 
 });
 
+// 打印日志
+function PrintLog(msg: string, isError: boolean = false) {
+    SendMessage({
+        type: DiagnosticWorkerMsgType.PrintLogReq,
+        data: {
+            logContent: msg,
+            isError
+        }
+    });
+}
+
+// 打印错误日志
+function PrintErrorLog(msg: string) {
+    PrintLog(msg, true);
+}
+
 // 启动扫描
 async function StartDiagnosticFile(req:DiagnosticRequest) {
     const filepathArr:string[] = [];
@@ -409,6 +425,33 @@ async function ParseNodeForDiagnostic(node:Node, req:DiagnosticRequest):Promise<
 
     const nodeHint = matchArr[0];
 
+    // 检查本节点
+    if (nodeHint.Diag !== null) {
+        const depPath:Set<string> = new Set<string>();
+        const hook: NodeHolderHookType = {
+            hookFunc: nodeType => {
+                depPath.add(GetDependencyFileType(nodeType));
+            }
+        };
+        NodeHolderHook.AddHook(hook);
+        const diagRes = ExecJsFuncForDiag(node, nodeHint.Diag, node.name, req);
+        NodeHolderHook.RemoveHook(hook);
+        const checkRes:DiagnosticAndDependency = {
+            diagnosticArr: [],
+            depdendencyInfo: {}
+        };
+        checkRes.depdendencyInfo[node.nodePath] = [...depPath];
+        checkRes.diagnosticArr.push(...diagRes.map(item => {
+            return {...item, range:{
+                startLine: node.nameToken!.line - 1,
+                startCharacter: node.nameToken!.col - 1,
+                endLine: node.nameToken!.line - 1,
+                endCharacter: node.nameToken!.col + node.name.length
+            }};
+        }));
+        CombineDiagnosticAndDependency(result, checkRes);
+    }
+
     // 验证Content
     CombineDiagnosticAndDependency(result, (await DiagnosticNodeContent(node, nodeHint, req)));
 
@@ -601,7 +644,7 @@ async function DiagnosticByCodeHint(node:Node, checkVal:string, codeHint:CodeHin
     NodeHolderHook.AddHook(hook);
 
     if (codeHint.diag!.jsRule === 'override') {
-        result.diagnosticArr.push(...ExecJsFuncForDiag(node, codeHint, checkVal, req));
+        result.diagnosticArr.push(...ExecJsFuncForDiag(node, codeHint.diag!, checkVal, req));
         result.depdendencyPath.push(...depPath);
         NodeHolderHook.RemoveHook(hook);
         return result;
@@ -613,7 +656,7 @@ async function DiagnosticByCodeHint(node:Node, checkVal:string, codeHint:CodeHin
             type: codeHint.diag!.type as any
         });
     } else {
-        result.diagnosticArr.push(...ExecJsFuncForDiag(node, codeHint, checkVal, req));
+        result.diagnosticArr.push(...ExecJsFuncForDiag(node, codeHint.diag!, checkVal, req));
         result.depdendencyPath.push(...depPath);
     }
     NodeHolderHook.RemoveHook(hook);
@@ -876,30 +919,29 @@ function ExecJsFuncToGetCodeHintItems(node: Node, codeHint: CodeHint, req:Diagno
     };
 
     const codeHintArr: CodeHintItem[] = [];
-    const res = eval(codeHint.content)(new ActiveNode(node), req.nodeHolder);
-    if (res === null || res === undefined) {
-        return [];
-    }
-    if (Array.isArray(res)) {
-        for (const item of res) {
-            if (checkObjIsCodeHintItem(item)) {
-                codeHintArr.push(item as CodeHintItem);
-            }
+    try {
+        const res = eval(codeHint.content)(new ActiveNode(node), req.nodeHolder);
+        if (res === null || res === undefined) {
+            return [];
         }
-    } else if (checkObjIsCodeHintItem(res)) {
-        codeHintArr.push(res as CodeHintItem);
+        if (Array.isArray(res)) {
+            for (const item of res) {
+                if (checkObjIsCodeHintItem(item)) {
+                    codeHintArr.push(item as CodeHintItem);
+                }
+            }
+        } else if (checkObjIsCodeHintItem(res)) {
+            codeHintArr.push(res as CodeHintItem);
+        }
+    } catch (error) {
+        PrintErrorLog(`执行JS代码获取提示信息供检测时出错,location${node.nodePath}：${error}`);
     }
 
     return codeHintArr.map(item => item.value);
 }
 
-function ExecJsFuncForDiag(node: Node, codeHint: CodeHint, value:string, req:DiagnosticRequest): PartialBy<Diagnostic, 'range'>[] {
-    if (!codeHint.diag || codeHint.diag.jsContent === '') {
-        return [];
-    }
-
-    const res = eval(codeHint.diag.jsContent)(new ActiveNode(node), req.nodeHolder, value);
-    if (res === null || res === undefined) {
+function ExecJsFuncForDiag(node: Node, diag: Diag, value:string, req:DiagnosticRequest): PartialBy<Diagnostic, 'range'>[] {
+    if (!diag || diag.jsContent === '') {
         return [];
     }
 
@@ -930,10 +972,19 @@ function ExecJsFuncForDiag(node: Node, codeHint: CodeHint, value:string, req:Dia
     };
 
     const resArr:any[] = [];
-    if (Array.isArray(res)) {
-        resArr.push(...res);
-    } else {
-        resArr.push(res);
+
+    try {
+        const res = eval(diag.jsContent)(new ActiveNode(node), req.nodeHolder, value);
+        if (res === null || res === undefined) {
+            return [];
+        }
+        if (Array.isArray(res)) {
+            resArr.push(...res);
+        } else {
+            resArr.push(res);
+        }
+    } catch (error) {
+        PrintErrorLog(`执行JS诊断时出错,location${node.nodePath}：${error}`);
     }
 
     return resArr.map(item => {
@@ -1106,9 +1157,6 @@ function AttachFuncToNodeHolder(req:DiagnosticRequest) {
     };
 
     nodeHolder.Log = (msg: string) => {
-        SendMessage({
-            type: DiagnosticWorkerMsgType.PrintLogReq,
-            data: msg
-        });
+        PrintLog(msg);
     };
 }

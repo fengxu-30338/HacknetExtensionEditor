@@ -109,6 +109,7 @@ export interface NodeCodeHints {
     Multi: boolean
     Enable: boolean
     FileTriggerPattern: string | null
+    Diag: Diag | null
 }
 
 export async function GetLinkByFinalMatchValue(linkByCollection:LinkBy[], linkValue:string, forEach?:(value:string, linkBy:LinkBy) => Promise<void> | void):Promise<string[]> {

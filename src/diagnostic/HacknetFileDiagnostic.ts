@@ -88,7 +88,12 @@ async function HandleDiagnosticWorkerMsg(msg:DiagnosticWorkerMsg, worker: Worker
             break;
 
         case DiagnosticWorkerMsgType.PrintLogReq:
-            OutputManager.log(msg.data);
+            const {logContent, isError} = msg.data;
+            if (isError) {
+                OutputManager.error(logContent);
+            } else {
+                OutputManager.log(logContent);
+            }
             break;
     }
 }

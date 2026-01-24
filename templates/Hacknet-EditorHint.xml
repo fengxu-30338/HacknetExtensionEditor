@@ -109,7 +109,7 @@
             </Enums>
         </Attribute>
     </Node>
-    <Node name="HacknetEditorHint.Node.Content.Diag|HacknetEditorHint.Node.Attribute.Diag|HacknetEditorHint.Node.ConditionAttributes.Attribute.Diag" enable="true" multi="false" desc="定义编辑器诊断信息">
+    <Node name="HacknetEditorHint.Node.Diag|HacknetEditorHint.Node.Content.Diag|HacknetEditorHint.Node.Attribute.Diag|HacknetEditorHint.Node.ConditionAttributes.Attribute.Diag" enable="true" multi="false" desc="定义编辑器诊断信息">
         <Content desc="执行js获取诊断信息" />
         <Attribute name="type" required="true" default="E" desc="诊断等级">
             <Enums>
@@ -665,7 +665,11 @@
                 <Enum desc="系统文件目录">sys</Enum>
             </Enums>
         </Attribute>
-        <Attribute name="name" required="true" desc="文件名" default="filename" hint="enumWithCommonString" />
+        <Attribute name="name" required="true" desc="文件名" default="filename" hint="enumWithCommonString">
+            <Enums>
+                <Enum desc="CreditsDaemon用于显示的感谢名单文件">CreditsData.txt</Enum>
+            </Enums>
+        </Attribute>
     </Node>
 
     <!-- <customthemefile path="sys" name="Custom_x-server.sys" themePath="Themes/SecondaryTheme.xml"/> -->
@@ -880,10 +884,24 @@
     <!-- 
         <CreditsDaemon Title="intro Extension Ending Credits" ButtonText="Complete" ConditionalActionSetToRunOnButtonPressPath="Actions/CreditsRunActions.xml"/>
     -->
-    <Node name="Computer.CreditsDaemon" enable="true" multi="true" desc="感谢人员名单后台服务(daemon)">
+    <Node name="Computer.CreditsDaemon" enable="true" multi="true" desc="感谢人员名单后台服务(daemon)，需要在home目录下存在CreditsData.txt文件，该文件用于显示感谢内容">
+        <Diag type="E" ignoreCaseForEnum="false" jsRuleFor="override">
+            (function(actNode, hacknetNodeHolder){
+                const rootNode = actNode.node.root;
+                const matchFileNodes = rootNode.GetNodesByNodePath('Computer.file').filter(node =&gt; {
+                    const name = node.GetAttr('name');
+                    const path = node.GetAttr('path');
+                    return name === 'CreditsData.txt' &amp;&amp; path === 'home';
+                });
+
+                if (matchFileNodes.length === 0) {
+                    return {msg: '请在当前计算的home目录下创建CreditsData.txt文件,否则无法显示感谢名单', type: 'E'};
+                }
+            });
+        </Diag>
        <Attribute name="Title" required="true" desc="标题" default="title" hint="enum" />
        <Attribute name="ButtonText" required="true" desc="中间按钮的显示文本" default="Complete" hint="enum" />
-       <Attribute name="ConditionalActionSetToRunOnButtonPressPath" required="true" desc="按钮点击后触发的Action文件路径" hint="ActionFile" linkBy="path" diag="E" />
+       <Attribute name="ConditionalActionSetToRunOnButtonPressPath" required="false" desc="按钮点击后触发的Action文件路径" hint="ActionFile" linkBy="path" diag="E" />
     </Node>
 
     <!-- <FastActionHost /> -->
@@ -1538,6 +1556,7 @@
             (function(actNode, hacknetNodeHolder){
                 const accouts = [];
                 const res = [];
+                const keywords = [{val: '!ANNOUNCEMENT!', desc: '添加公告样式消息,会在右上角闪烁提示'}, {val: '@Channel', desc: '添加频道名称样式消息'}];
                 for (const comp of hacknetNodeHolder.GetComputers()) {
                     res.push({
                         label: `link ${comp.name}`,
@@ -1561,7 +1580,52 @@
                             accouts.push({comp, user: account.username, pass: account.password});
                         }
                     }
+                    // 获取所有IRC定义的用户
+                    if (comp.IRCDaemon &amp;&amp; comp.IRCDaemon.user) {
+                        keywords.push(...(Array.isArray(comp.IRCDaemon.user) ? 
+                            comp.IRCDaemon.user.map(item =&gt; {
+                                return {val: '@' + item.name, desc: `IRC用户: ${item.name}`};
+                            }): 
+                            [{val: '@' + comp.IRCDaemon.user.name, desc: `IRC用户: ${comp.IRCDaemon.user.name}`}]
+                        ));
+                    }
+
+                    if (comp.IRCDaemon &amp;&amp; comp.IRCDaemon.agent) {
+                        keywords.push(...(Array.isArray(comp.IRCDaemon.agent) ? 
+                            comp.IRCDaemon.agent.map(item =&gt; {
+                                return {val: '@' + item.name, desc: `IRC用户: ${item.name}`};
+                            }): 
+                            [{val: '@' + comp.IRCDaemon.agent.name, desc: `IRC用户: ${comp.IRCDaemon.agent.name}`}]
+                        ));
+                    }
+
+                    if (comp.DHSDaemon &amp;&amp; comp.DHSDaemon.user) {
+                        keywords.push(...(Array.isArray(comp.DHSDaemon.user) ? 
+                            comp.DHSDaemon.user.map(item =&gt; {
+                                return {val: '@' + item.name, desc: `DHS用户: ${item.name}`};
+                            }): 
+                            [{val: '@' + comp.DHSDaemon.user.name, desc: `DHS用户: ${comp.DHSDaemon.user.name}`}]
+                        ));
+                    }
+
+                    if (comp.DHSDaemon &amp;&amp; comp.DHSDaemon.agent) {
+                        keywords.push(...(Array.isArray(comp.DHSDaemon.agent) ? 
+                            comp.DHSDaemon.agent.map(item =&gt; {
+                                return {val: '@' + item.name, desc: `DHS用户: ${item.name}`};
+                            }): 
+                            [{val: '@' + comp.DHSDaemon.agent.name, desc: `DHS用户: ${comp.DHSDaemon.agent.name}`}]
+                        ));
+                    }
                 }
+
+                keywords.forEach(kw =&gt; {
+                    res.unshift({
+                        label: kw.val,
+                        value: kw.val,
+                        desc: kw.desc,
+                        kind: 'value'
+                    });
+                });
 
                 accouts.forEach(account =&gt; {
                     const comp = account.comp;
@@ -1605,6 +1669,22 @@
                             return {value: item.name, kind: 'value'};
                         }): 
                         [{value: comp.IRCDaemon.user.name, kind: 'value'}]));
+                }
+
+                if (comp.IRCDaemon &amp;&amp; comp.IRCDaemon.agent) {
+                    res.push(...(Array.isArray(comp.IRCDaemon.agent) ? 
+                        comp.IRCDaemon.agent.map(item =&gt; {
+                            return {value: item.name, kind: 'value'};
+                        }): 
+                        [{value: comp.IRCDaemon.agent.name, kind: 'value'}]));
+                }
+
+                if (comp.DHSDaemon &amp;&amp; comp.DHSDaemon.user) {
+                    res.push(...(Array.isArray(comp.DHSDaemon.user) ? 
+                        comp.DHSDaemon.user.map(item =&gt; {
+                            return {value: item.name, kind: 'value'};
+                        }): 
+                        [{value: comp.DHSDaemon.user.name, kind: 'value'}]));
                 }
 
                 if (comp.DHSDaemon &amp;&amp; comp.DHSDaemon.agent) {

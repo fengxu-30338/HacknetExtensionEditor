@@ -1214,7 +1214,7 @@ async function GetHacknetNodeContentHint(actNode: ActiveNode) : Promise<vscode.C
             const completionItem = new vscode.CompletionItem(item.Name);
             completionItem.detail = item.Desc;
             completionItem.insertText = new vscode.SnippetString(item.CodeSnippets);
-            completionItem.sortText = idx.toString().padStart(3, '0');
+            completionItem.sortText = (idx + 500).toString().padStart(3, '0');
             completionItem.kind = vscode.CompletionItemKind.Snippet;
             
             return completionItem;
@@ -1227,7 +1227,7 @@ async function GetHacknetNodeContentHint(actNode: ActiveNode) : Promise<vscode.C
     }
 
     const codeHintItems = await GetCodeHintItems(actNode, nodeHint.ContentHint);
-    const contentHints = codeHintItems.map((item, idx) => {
+    codeHintItems.forEach((item, idx) => {
             const completionItem = new vscode.CompletionItem(item.label ?? item.value);
             completionItem.detail = item.desc;
             completionItem.insertText = item.value;
@@ -1235,9 +1235,8 @@ async function GetHacknetNodeContentHint(actNode: ActiveNode) : Promise<vscode.C
             completionItem.filterText = item.filterText;
             completionItem.kind = GetCompletionItemKindFromStr(item.kind);
 
-            return completionItem;
+            compArr.push(completionItem);
         });
-    compArr.unshift(...contentHints);
 
     return compArr;
 }

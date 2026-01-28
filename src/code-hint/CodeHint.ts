@@ -1,4 +1,4 @@
-import {AttributeHint, AttributeHintItem, CodeHint, CodeHintItem, CommonTextHintItem, ConditionAttributeHint, Diag, FileCodeHint, GetLinkByFinalMatchValue, GlobalCodeHints, HintType, LinkBy, NodeCodeHintItem, NodeCodeHints, RepeatRule, RepeatRuleDef} from './CodeHintDefine';
+import {AttributeHint, AttributeHintItem, CodeHint, CodeHintItem, CommonTextHintItem, ConditionAttributeHint, Diag, DynamicGenerateAttributeJsItem, FileCodeHint, GetLinkByFinalMatchValue, GlobalCodeHints, HintType, LinkBy, NodeCodeHintItem, NodeCodeHints, RepeatRule, RepeatRuleDef} from './CodeHintDefine';
 import { XMLParser as StandardXMLParser } from 'fast-xml-parser';
 import {ActiveNode, CursorPosition, XmlParser} from '../parser/XmlParser';
 import XmlPathUtil from '../utils/XmlPathUtil';
@@ -258,7 +258,7 @@ function generateCodeHintFromXmlNode(node:any):CodeHint {
     return codeHint;
 }
 
-function parseNodeHintAttributes(node: any):AttributeHintItem[] {
+export function parseNodeHintAttributes(node: any):AttributeHintItem[] {
     const attrNodeList:any[] = [];
     if (!node.Attribute) {
         return [];
@@ -566,6 +566,43 @@ export function GetHackerScriptsCodeHints(xmlTip: string | any): FileCodeHint {
     return fileCodeHint;
 }
 
+function GetDynamicGenerateAttributeJs(xmlJsObj: any):DynamicGenerateAttributeJsItem[] {
+    const dynamicGenerateAttributeJs: DynamicGenerateAttributeJsItem[] = [];
+    if (!('HacknetEditorHint' in xmlJsObj)) {
+        return dynamicGenerateAttributeJs;
+    }
+    const hacknetEditorHint = xmlJsObj['HacknetEditorHint'];
+    
+    if (!('DynamicGenerateAttribute' in hacknetEditorHint)) {
+        return dynamicGenerateAttributeJs;
+    }
+
+    const dynamicNodes:any[] = [];
+    if (Array.isArray(hacknetEditorHint['DynamicGenerateAttribute'])) {
+        dynamicNodes.push(...hacknetEditorHint['DynamicGenerateAttribute']);
+    } else {
+        dynamicNodes.push(hacknetEditorHint['DynamicGenerateAttribute']);
+    }
+
+    dynamicNodes.forEach(dynamicNode => {
+        if (typeof dynamicNode === 'string') {
+            dynamicGenerateAttributeJs.push({
+                js: dynamicNode,
+                overwrite: false,
+            });
+        }
+
+        if (typeof dynamicNode === 'object' && dynamicNode['#text']) {
+            dynamicGenerateAttributeJs.push({
+                js: dynamicNode['#text'],
+                overwrite: getBool(dynamicNode, 'overwrite', false),
+            });
+        }
+    });
+
+    return dynamicGenerateAttributeJs;
+}
+
 /**
  * 创建一个空的代码提示结构
  */
@@ -578,6 +615,7 @@ function CreateEmptyHacknetCodeHint():GlobalCodeHints {
             fileTriggerPattern: '**/*.txt',
             codeHintItems: []
         },
+        DynamicGenerateAttributeJs: [],
         IncludeFiles: []
     };
 
@@ -728,6 +766,7 @@ async function GetCodeHintFromCodeHintFile(fileUri: vscode.Uri):Promise<GlobalCo
             ReplaceTextSource: GetReplaceTextCodeHints(xmlObj),
             CommonTextSource: GetCommonTextCodeHints(xmlObj),
             HackerScriptSource: GetHackerScriptsCodeHints(xmlObj),
+            DynamicGenerateAttributeJs: GetDynamicGenerateAttributeJs(xmlObj),
             IncludeFiles: GetIncludeFileFromCodeHintFile(xmlObj)
         };
     } catch (err) {
@@ -749,6 +788,7 @@ async function GetCodeHintFromCodeHintFile(fileUri: vscode.Uri):Promise<GlobalCo
         codeHints.ReplaceTextSource.push(...hints.ReplaceTextSource);
         codeHints.CommonTextSource.push(...hints.CommonTextSource);
         codeHints.HackerScriptSource.codeHintItems.push(...hints.HackerScriptSource.codeHintItems);
+        codeHints.DynamicGenerateAttributeJs.push(...hints.DynamicGenerateAttributeJs);
         codeHints.IncludeFiles.push(...hints.IncludeFiles);
     }
 
@@ -783,6 +823,7 @@ async function GetCodeHintFromHacknetCodeHintFile() {
         CodeHints.IncludeFiles = res.IncludeFiles;
         CodeHints.NodeCodeHintSource = res.NodeCodeHintSource;
         CodeHints.ReplaceTextSource = res.ReplaceTextSource;
+        CodeHints.DynamicGenerateAttributeJs = res.DynamicGenerateAttributeJs;
         vscode.commands.executeCommand('setContext', 'hacknetextensionhelper.HasCodeHintFile', true);
         HasHintFile = true;
         // console.trace('解析Hacknet提示文件完成');
@@ -888,9 +929,6 @@ function WatchHacknetCodeHintFile(context: vscode.ExtensionContext) {
  * 根据当前激活节点获取最新的属性提示信息
  */
 function GetNewAttributesByActiveNodeForHint(actNode: ActiveNode, nodeCodeHint: NodeCodeHints): AttributeHint {
-    if (nodeCodeHint.ConditionAttributeHints.length === 0) {
-        return nodeCodeHint.AttributeNodeHint;
-    }
     const newAttrNodeHint:AttributeHint = {};
     // 复制一份老的，不需要全部深拷贝
     for (const attrName in nodeCodeHint.AttributeNodeHint) {
@@ -904,13 +942,34 @@ function GetNewAttributesByActiveNodeForHint(actNode: ActiveNode, nodeCodeHint: 
             return;
         }
 
-        if (conditionAttr.ignoreCase ? attrValue.match(new RegExp(conditionAttr.match, 'i')) : attrValue.match(conditionAttr.match)) {
+        if (attrValue.match(new RegExp(conditionAttr.match, conditionAttr.ignoreCase ? 'i' : ''))) {
             // 条件检测成功附加新属性
             for (const newAttrName in conditionAttr.attributes) {
                 newAttrNodeHint[newAttrName] = conditionAttr.attributes[newAttrName];
             }
         }
     });
+
+    // 执行JS动态获取属性提示
+    if (CodeHints.DynamicGenerateAttributeJs.length > 0) {
+        CodeHints.DynamicGenerateAttributeJs.forEach(dynamicJs => {
+            try {
+                const xmlNodeText = eval(dynamicJs.js)(actNode, hacknetNodeHolder);
+                const xmlNode = standardXmlParser.parse(xmlNodeText);
+                const attrHints = parseNodeHintAttributes(xmlNode);
+
+                attrHints.forEach(attrHint => {
+                    if (dynamicJs.overwrite || !newAttrNodeHint.hasOwnProperty(attrHint.attrName)) {
+                        newAttrNodeHint[attrHint.attrName] = attrHint.codeHint;
+                    }
+                });
+                
+            } catch (error) {
+                console.error(`执行JS动态获取属性执行失败: ${error}`);
+                OutputManager.error(`执行JS动态获取属性执行失败: \n${dynamicJs.js}\n---------------------------\n${error}`);
+            }
+        });
+    }
 
     return newAttrNodeHint;
 }
@@ -1148,7 +1207,8 @@ async function GetCodeHintItems(actNode: ActiveNode, codeHint: CodeHint): Promis
  * @returns 提示信息
  */
 async function GetHacknetNodeContentHint(actNode: ActiveNode) : Promise<vscode.CompletionItem[]>  {
-    const compArr = CodeHints.NodeCodeHintSource.filter(item => item.Leval === actNode.Level + 1 && XmlPathUtil.IsParentPath(actNode.Path, item.NodePath))
+    // 子标签提示
+    const compArr = CodeHints.NodeCodeHintSource.filter(item => XmlPathUtil.IsDirectParentPath(actNode.Path, item.NodePath))
         .filter(item => actNode.node.children.every(childNode => childNode.name !== item.Name || item.Multi))
         .map((item, idx) => {
             const completionItem = new vscode.CompletionItem(item.Name);
@@ -1160,19 +1220,14 @@ async function GetHacknetNodeContentHint(actNode: ActiveNode) : Promise<vscode.C
             return completionItem;
         });
     
-    // 存在子节点提示则忽略content提示
-    if (compArr.length > 0) {
-        return compArr;
-    }
-    
-    const nodeHint = CodeHints.NodeCodeHintSource.find(item => XmlPathUtil.EqualPath(item.NodePath, actNode.Path));
+    // 内容提示
+    const nodeHint = CodeHints.NodeCodeHintSource.find(item => XmlPathUtil.ComparePath(actNode.Path, item.NodePath));
     if (!nodeHint || nodeHint.ContentHint === null) {
         return compArr;
     }
 
     const codeHintItems = await GetCodeHintItems(actNode, nodeHint.ContentHint);
-
-    codeHintItems.forEach((item, idx) => {
+    const contentHints = codeHintItems.map((item, idx) => {
             const completionItem = new vscode.CompletionItem(item.label ?? item.value);
             completionItem.detail = item.desc;
             completionItem.insertText = item.value;
@@ -1180,8 +1235,9 @@ async function GetHacknetNodeContentHint(actNode: ActiveNode) : Promise<vscode.C
             completionItem.filterText = item.filterText;
             completionItem.kind = GetCompletionItemKindFromStr(item.kind);
 
-            compArr.push(completionItem);
+            return completionItem;
         });
+    compArr.unshift(...contentHints);
 
     return compArr;
 }
@@ -1248,7 +1304,7 @@ function GetCompletionItemKindFromStr(str: string | undefined): vscode.Completio
 
 async function GetHacknetNodeAttributeHint(actNode: ActiveNode) : Promise<vscode.CompletionItem[]>{
     const completionItems : vscode.CompletionItem[] = [];
-    const codeHint = CodeHints.NodeCodeHintSource.find(item => XmlPathUtil.EqualPath(item.NodePath, actNode.Path));
+    const codeHint = CodeHints.NodeCodeHintSource.find(item => XmlPathUtil.ComparePath(actNode.Path, item.NodePath));
     if (codeHint === undefined) {
         return completionItems;
     }
@@ -1320,6 +1376,7 @@ async function GetCoedHintByActiveNode(actNode: ActiveNode | null, documentFileU
         if (actNode === null) {
             return GetFirstLevelCodeHint();
         }
+        actNode.Filepath = documentFileUri.fsPath;
 
         // 获取Content提示
         if (actNode.cursorPosition === CursorPosition.Content) {
@@ -1379,7 +1436,7 @@ function GetMouseHoverDescByCodeHint(codeHint: CodeHint, value: string):string{
  * @param actNode 当前激活的node信息
  */
 function GetHintDescByActiveNode(actNode: ActiveNode): vscode.ProviderResult<vscode.Hover> {
-    const codeHint = CodeHints.NodeCodeHintSource.find(item => XmlPathUtil.EqualPath(item.NodePath, actNode.Path));
+    const codeHint = CodeHints.NodeCodeHintSource.find(item => XmlPathUtil.ComparePath(actNode.Path,item.NodePath));
     if (codeHint === undefined) {
         return null;
     }
@@ -1542,7 +1599,7 @@ async function ParseContentLinkByToGetDefinitionLink(actNode: ActiveNode, nodeHi
  * @param actNode 当前激活的node信息
  */
 function GetLocationLinkByActiveNode(actNode: ActiveNode, document: vscode.TextDocument): vscode.ProviderResult<vscode.Definition | vscode.DefinitionLink[]> {
-    const codeHint = CodeHints.NodeCodeHintSource.find(item => XmlPathUtil.EqualPath(item.NodePath, actNode.Path));
+    const codeHint = CodeHints.NodeCodeHintSource.find(item => XmlPathUtil.ComparePath(actNode.Path, item.NodePath));
     if (codeHint === undefined) {
         return;
     }
@@ -1618,6 +1675,7 @@ export function RegisterHacknetXmlCodeHint(context: vscode.ExtensionContext) {
             if (actNode === null) {
                 return null;
             }
+            actNode.Filepath = document.uri.fsPath;
 
             return GetHintDescByActiveNode(actNode);
         }
@@ -1658,6 +1716,7 @@ export function RegisterHacknetXmlCodeHint(context: vscode.ExtensionContext) {
                 if (actNode === null) {
                     return;
                 }
+                actNode.Filepath = document.uri.fsPath;
 
                 return GetLocationLinkByActiveNode(actNode, document);
             }

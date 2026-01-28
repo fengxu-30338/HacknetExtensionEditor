@@ -1,15 +1,21 @@
 import * as vscode from 'vscode';
 import * as CommonUtils from '../utils/CommonUtils';
 import path from 'path';
+import { XMLParser as StandardXMLParser } from 'fast-xml-parser';
 import { Worker } from 'worker_threads';
-import { Diagnostic, DiagnosticRequest, DiagnosticResult, DiagnosticWorkerDataType, DiagnosticWorkerMsg, DiagnosticWorkerMsgType, QueryRelativeFileReq, QueryRelativeFileResp } from './HacknetFileDiagnosticWorker';
-import { CodeHints, HintFileExist } from '../code-hint/CodeHint';
+import { Diagnostic, DiagnosticRequest, DiagnosticResult, DiagnosticWorkerDataType, DiagnosticWorkerMsg, DiagnosticWorkerMsgType, ParseXmlAttrReq, ParseXmlAttrResp, QueryRelativeFileReq, QueryRelativeFileResp } from './HacknetFileDiagnosticWorker';
+import { CodeHints, HintFileExist, parseNodeHintAttributes } from '../code-hint/CodeHint';
 import { hacknetNodeHolder } from "../worker/GlobalHacknetXmlNodeHolder";
 import { EventManager, EventType } from '../event/EventManager';
 import OutputManager from "../utils/OutputChannelUtils";
 import loadsh from 'lodash';
 
-
+// 标准XML解析器
+const standardXmlParser = new StandardXMLParser({ 
+        ignoreAttributes: false, 
+        attributeNamePrefix: '',
+        parseAttributeValue: false,
+});
 // 编辑器提示文件是否解析完成过
 let firstScaned = false;
 // 诊断集合
@@ -95,7 +101,30 @@ async function HandleDiagnosticWorkerMsg(msg:DiagnosticWorkerMsg, worker: Worker
                 OutputManager.log(logContent);
             }
             break;
+        
+        case DiagnosticWorkerMsgType.ParseXmlAttrReq:
+            HandleParseXmlAttrResp(msg.data, worker);
+            break;
     }
+}
+
+// 处理解析xml属性请求
+async function HandleParseXmlAttrResp(req:ParseXmlAttrReq, worker: Worker) {
+    // console.log('收到解析xml属性请求', req);
+    const resp:ParseXmlAttrResp = {
+        id: req.id,
+        attrHints: []
+    };
+    
+    try {
+        const xmlNode = standardXmlParser.parse(req.xml);
+        resp.attrHints = parseNodeHintAttributes(xmlNode);
+    } catch (error) {
+        OutputManager.error(`诊断时，执行JS动态获取属性失败: \n${error}`);
+    }
+
+    // console.log('处理解析xml属性结果', resp);
+    worker.postMessage(resp);
 }
 
 // 处理查询文件相对路径请求
@@ -161,7 +190,8 @@ async function StartDiagnosticFile(filepath:string | string[], scanDepedencyFile
         scanDepedencyFile,
         resetDepedencyTable: reset,
         nodeHints: [...CodeHints.NodeCodeHintSource], 
-        nodeHolder: hacknetNodeHolder
+        nodeHolder: hacknetNodeHolder,
+        dynamicGenerateAttributeJs: [...CodeHints.DynamicGenerateAttributeJs],
     };
     const msg: DiagnosticWorkerMsg = {
         type: DiagnosticWorkerMsgType.DiagnosticReq,

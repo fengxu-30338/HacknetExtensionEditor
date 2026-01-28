@@ -6,11 +6,20 @@
     </Node>
     <Node name="HacknetEditorHint.Node" enable="true" multi="true" desc="定义一个标签的提示内容">
         <Content />
-        <Attribute name="name" required="true" default="" desc="是否启用该标签对应的提示，多级用'.'隔开，多个用'|'隔开" />
+        <Attribute name="name" required="true" default="" desc="标签路径，多级用'.'隔开，多个用'|'隔开，可使用'*'进行单层匹配，'**'进行多层匹配" />
         <Attribute name="enable" required="true" default="true" desc="是否启用该标签" />
         <Attribute name="multi" required="true" default="false" desc="该标签在父标签下是否可以定义多个" />
-        <Attribute name="desc" required="true" default="false" desc="该标签的描述信息" />
-        <Attribute name="fileTriggerPattern" required="false" default="false" desc="该标签在哪些文件里可以进行提示" />
+        <Attribute name="desc" required="true" default="该标签的描述信息" desc="该标签的描述信息" />
+        <Attribute name="fileTriggerPattern" required="false" default="**/*.*" desc="该标签在哪些文件里可以进行提示" />
+    </Node>
+    <Node name="HacknetEditorHint.DynamicGenerateAttribute" enable="true" multi="true" desc="使用JS动态生成属性提示">
+        <Content desc="动态生成属性的JS代码" default="" />
+        <Attribute name="overwrite" required="true" default="false" desc="是否覆盖同名属性" hint="enum">
+            <Enums>
+                <Enum desc="覆盖已存在的属性">true</Enum>
+                <Enum desc="不覆盖已存在的属性">false</Enum>
+            </Enums>
+        </Attribute>
     </Node>
     <Node name="HacknetEditorHint.Node.Content" enable="true" multi="false" desc="定义标签的内容信息，不写则表示该标签没有内容或子标签">
         <Content />
@@ -1556,7 +1565,7 @@
             (function(actNode, hacknetNodeHolder){
                 const accouts = [];
                 const res = [];
-                const keywords = [{val: '!ANNOUNCEMENT!', desc: '添加公告样式消息,会在右上角闪烁提示'}, {val: '@Channel', desc: '添加频道名称样式消息'}];
+                const keywords = [{val: '!ANNOUNCEMENT!', desc: '背景红条'}, {val: '@Channel', desc: '添加频道名称样式消息'}];
                 for (const comp of hacknetNodeHolder.GetComputers()) {
                     res.push({
                         label: `link ${comp.name}`,

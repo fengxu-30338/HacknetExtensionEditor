@@ -110,6 +110,8 @@ export class ActiveNode {
 
     public Level:number;
 
+    public Filepath:string | null;
+
     constructor(public node: Node, 
         public cursorPosition: CursorPosition = CursorPosition.Attribute,
         public activeAttributeNameToken: MooToken | null = null,
@@ -117,6 +119,7 @@ export class ActiveNode {
         ) {
             this.Level = node.level;
             this.Path = node.nodePath;
+            this.Filepath = null;
     }
 }
 

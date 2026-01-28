@@ -15,11 +15,17 @@ export interface FileCodeHint {
     codeHintItems: CommonTextHintItem[];
 }
 
+export interface DynamicGenerateAttributeJsItem {
+    js: string,
+    overwrite: boolean
+}
+
 export interface GlobalCodeHints {
     NodeCodeHintSource: NodeCodeHints[]
     ReplaceTextSource: CodeHintItem[]
     CommonTextSource: CodeHintItem[]
     HackerScriptSource: FileCodeHint
+    DynamicGenerateAttributeJs: DynamicGenerateAttributeJsItem[]
     IncludeFiles: string[]
 }
 
@@ -112,6 +118,13 @@ export interface NodeCodeHints {
     Diag: Diag | null
 }
 
+/**
+ * 获取LinkBy最终匹配值
+ * @param linkByCollection LinkBy集合
+ * @param linkValue 原始LinkBy值
+ * @param forEach 每个匹配值的回调函数
+ * @returns 最终匹配值数组
+ */
 export async function GetLinkByFinalMatchValue(linkByCollection:LinkBy[], linkValue:string, forEach?:(value:string, linkBy:LinkBy) => Promise<void> | void):Promise<string[]> {
     if (linkByCollection.length === 0) {
         return [];

@@ -1,7 +1,7 @@
 import { parentPort, workerData } from 'worker_threads';
 import * as fs from 'fs';
 import {ActiveNode, Node, XmlParser} from '../parser/XmlParser';
-import { AttributeHint, CodeHint, CodeHintItem, Diag, HintType, NodeCodeHints } from "../code-hint/CodeHintDefine";
+import { AttributeHint, AttributeHintItem, CodeHint, CodeHintItem, Diag, DynamicGenerateAttributeJsItem, HintType, NodeCodeHints } from "../code-hint/CodeHintDefine";
 import { ComputerInfo, HacknetNodeInfo, HacknetNodeType, HacknetXmlNodeMap } from "../worker/GlobalHacknetXmlNodeHolderDefine";
 import XmlPathUtil from "../utils/XmlPathUtil";
 import path from 'path';
@@ -17,6 +17,7 @@ export enum DiagnosticWorkerMsgType {
     DiagnosticResp,
     QueryRelativeFileReq,
     PrintLogReq,
+    ParseXmlAttrReq,
 }
 
 export interface DiagnosticWorkerMsg {
@@ -29,7 +30,8 @@ export interface DiagnosticRequest {
     scanDepedencyFile: boolean
     resetDepedencyTable: boolean
     nodeHints: NodeCodeHints[]
-    nodeHolder: NodeHolder
+    nodeHolder: NodeHolder,
+    dynamicGenerateAttributeJs: DynamicGenerateAttributeJsItem[]
 }
 
 export interface NodeHolder {
@@ -109,6 +111,15 @@ export interface QueryRelativeFileReq extends UniqueMsg {
 export interface QueryRelativeFileResp extends UniqueMsg{
     result: string[]
 }
+
+export interface ParseXmlAttrReq extends UniqueMsg {
+    xml: string
+}
+
+export interface ParseXmlAttrResp extends UniqueMsg {
+    attrHints: AttributeHintItem[]
+}
+
 class UniqueMsgSender {
 
     private static id: number = 0;
@@ -417,7 +428,7 @@ async function ParseNodeForDiagnostic(node:Node, req:DiagnosticRequest):Promise<
     };
 
     const nodeHints = req.nodeHints;
-    const matchArr = nodeHints.filter(item => XmlPathUtil.EqualPath(item.NodePath, node.nodePath));
+    const matchArr = nodeHints.filter(item => XmlPathUtil.ComparePath(node.nodePath, item.NodePath));
     if (matchArr.length <= 0) {
         if (node.nameToken === null) {
             return result;
@@ -498,6 +509,30 @@ async function DiagnosticNodeAttribute(node: Node, hint: NodeCodeHints, req: Dia
             }
         }
     });
+
+    // 执行JS动态获取属性提示
+    if (req.dynamicGenerateAttributeJs.length > 0) {
+        for (const dynamicJs of req.dynamicGenerateAttributeJs) {
+            try {
+                const xmlNodeText = eval(dynamicJs.js)(new ActiveNode(node), req.nodeHolder);
+                const parseReq:ParseXmlAttrReq = {
+                    xml: xmlNodeText
+                };
+                const res = await uniqueMsgSender.Send(parseReq, DiagnosticWorkerMsgType.ParseXmlAttrReq);
+                const resp = res as ParseXmlAttrResp;
+
+                resp.attrHints.forEach(attrHint => {
+                    if (dynamicJs.overwrite || !newAttrNodeHint.hasOwnProperty(attrHint.attrName)) {
+                        newAttrNodeHint[attrHint.attrName] = attrHint.codeHint;
+                    }
+                });
+                
+            } catch (error) {
+                console.error(`诊断时执行JS动态获取属性执行失败：${dynamicJs.js}`);
+                PrintErrorLog(`诊断时执行JS动态获取属性执行失败：\n${dynamicJs.js}\n---------------------------\n${error}`);
+            }
+        }
+    }
 
     for (const attrName of node.attribute.keys()) {
         // 诊断未出现的属性

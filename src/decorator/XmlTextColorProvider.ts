@@ -6,7 +6,7 @@ function checkCharIsValid(char: string) {
 }
 
 function GetColorRangeFromDocument(document: vscode.TextDocument): vscode.ColorInformation[] {
-    const ColorRegex = /\d+(?:,\d+){2,}/g;
+    const ColorRegex = /\d+(?:\s*,\s*\d+){2,}/g;
     const res: vscode.ColorInformation[] = [];
     let match;
     const text = document.getText();

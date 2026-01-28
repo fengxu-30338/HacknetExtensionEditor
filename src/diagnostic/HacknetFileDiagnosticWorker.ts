@@ -282,11 +282,16 @@ async function ScanFileFromDiagnostic(filepath:string, req:DiagnosticRequest, sc
         } catch (error) {
             do {
                 if (error instanceof Error && error.message.includes('no such file or directory')) {
-                    // 文件被删后清除依赖
+                    // 文件被删后清除依赖并且清除报错信息
                     CleanupDependencyForFile(filepath);
+                    diagnosticResult.push({
+                        filepath,
+                        result: []
+                    });
                     break;
                 }
                 console.error('诊断xml错误', filepath, error);
+                PrintLog(`诊断xml:[${filepath}]错误: ${error instanceof Error ? error.message : error}`);
             } while (false);
         }
     }

@@ -43,9 +43,10 @@
                 <Enum desc="分步匹配，将字符串分成多段，每一段提供不同的匹配，非最后一段只能用hint=step类型，最后一段可以用所有hint类型">Step</Enum>
             </Enums>
         </Attribute>
-        <Attribute name="linkby" required="false" default="path" desc="根据匹配后的标签的实际(属性/内容)跳转到目标文件，更多用法请查阅插件安装界面的自定义提示规则章节">
+        <Attribute name="linkBy" required="false" default="path" desc="根据匹配后的标签的实际(属性/内容)跳转到目标文件，更多用法请查阅插件安装界面的自定义提示规则章节">
             <Enums>
                 <Enum desc="直接路径跳转">path</Enum>
+                <Enum desc="xml文件定义跳转">xml</Enum>
                 <Enum desc="根据计算机ID进行跳转">Computer.id</Enum>
                 <Enum desc="根据计算机ID或eos设备id进行跳转">Computer.id|Computer.eosDevice.id</Enum>
             </Enums>
@@ -94,9 +95,10 @@
                 <Enum desc="分步匹配，将字符串分成多段，每一段提供不同的匹配，非最后一段只能用hint=step类型，最后一段可以用所有hint类型">Step</Enum>
             </Enums>
         </Attribute>
-        <Attribute name="linkby" required="false" default="path" desc="根据匹配后的标签的实际(属性/内容)跳转到目标文件，更多用法请查阅插件安装界面的自定义提示规则章节">
+        <Attribute name="linkBy" required="false" default="path" desc="根据匹配后的标签的实际(属性/内容)跳转到目标文件，更多用法请查阅插件安装界面的自定义提示规则章节">
             <Enums>
                 <Enum desc="直接路径跳转">path</Enum>
+                <Enum desc="xml文件定义跳转">xml</Enum>
                 <Enum desc="根据计算机ID进行跳转">Computer.id</Enum>
                 <Enum desc="根据计算机ID或eos设备id进行跳转">Computer.id|Computer.eosDevice.id</Enum>
             </Enums>
@@ -155,6 +157,7 @@
         <Attribute name="linkBy" required="true" default="path" desc="根据匹配后的标签的实际(属性/内容)跳转到目标文件，更多用法请查阅插件安装界面的自定义提示规则章节">
             <Enums>
                 <Enum desc="直接路径跳转">path</Enum>
+                <Enum desc="xml文件定义跳转">xml</Enum>
                 <Enum desc="根据计算机ID进行跳转">Computer.id</Enum>
                 <Enum desc="根据计算机ID或eos设备id进行跳转">Computer.id|Computer.eosDevice.id</Enum>
             </Enums>

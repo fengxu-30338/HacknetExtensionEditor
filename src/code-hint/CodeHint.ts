@@ -1627,7 +1627,7 @@ function GetLocationLinkByActiveNode(actNode: ActiveNode, document: vscode.TextD
     if (codeHint === undefined) {
         return;
     }
-    // console.log('linkNode', actNode, codeHint);
+    console.log('linkNode', actNode, codeHint);
     if (actNode.cursorPosition === CursorPosition.Content) {
         return ParseContentLinkByToGetDefinitionLink(actNode, codeHint, document);
     }

@@ -119,13 +119,27 @@ export interface NodeCodeHints {
 }
 
 /**
+ * 替换文本中的变量
+ * @param text 待替换文本
+ * @param variables 变量对象 {varName: 'varValue'}
+ */
+export function ReplaceVariables(text:string, variables:object) {
+    text = text.replaceAll('$$', '&amp;');
+    for (const key in variables) {
+        text = text.replaceAll(`\$(${key})`, ((variables as any)[key]).toString());
+    }
+    text = text.replaceAll('&amp;', '$');
+    return text;
+}
+
+/**
  * 获取LinkBy最终匹配值
  * @param linkByCollection LinkBy集合
  * @param linkValue 原始LinkBy值
  * @param forEach 每个匹配值的回调函数
  * @returns 最终匹配值数组
  */
-export async function GetLinkByFinalMatchValue(linkByCollection:LinkBy[], linkValue:string, forEach?:(value:string, linkBy:LinkBy) => Promise<void> | void):Promise<string[]> {
+export async function GetLinkByFinalMatchValue(linkByCollection:LinkBy[], linkValue:string, forEach?:(value:string, linkBy:LinkBy, variables:object) => Promise<void> | void):Promise<string[]> {
     if (linkByCollection.length === 0) {
         return [];
     }
@@ -147,8 +161,10 @@ export async function GetLinkByFinalMatchValue(linkByCollection:LinkBy[], linkVa
         return [];
     }
 
+    const vars = {res: matchedValue};
+
     if (linkBy.overrideValue !== null) {
-        matchedValue = linkBy.overrideValue;
+        matchedValue = ReplaceVariables(linkBy.overrideValue, vars);
     }
 
     const handleContents = linkBy.split === null ? [matchedValue] : matchedValue.split(new RegExp(linkBy.split)).filter(item => item.trim() !== '').map(item => item.trim());
@@ -158,7 +174,7 @@ export async function GetLinkByFinalMatchValue(linkByCollection:LinkBy[], linkVa
 
     if (forEach !== undefined) {
         for (const val of handleContents) {
-            await forEach(val, linkBy);
+            await forEach(val, linkBy, vars);
         }
     }
     

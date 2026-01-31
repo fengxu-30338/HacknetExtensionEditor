@@ -176,7 +176,7 @@ function FindXmlNodeByNodePath(xmlNode: Node, nodePath: string, condition?:any):
     }
 
     if (xmlNode.nodePath === nodePath) {
-        if (condition && typeof condition === 'object') {
+        if (condition && typeof condition === 'object' && condition !== null) {
             for (const key in condition) {
                 if (xmlNode.attribute.get(key) !== condition[key]) {
                     return null;
@@ -190,38 +190,49 @@ function FindXmlNodeByNodePath(xmlNode: Node, nodePath: string, condition?:any):
     return null;
 }
 
-async function HanldeOpenXmlFileCommand(...args: any[]) {
-    if (args.length === 0) { return; }
-    const filepath = args[0].toString() as string;
-    if (!filepath.toLocaleLowerCase().endsWith(".xml")) {
-        return;
-    }
-
+export async function GetXmlNodePosition(filepath: string, nodePath?:string, condition?:any): Promise<vscode.LocationLink | undefined> {
     try {
+        if (!filepath.toLocaleLowerCase().endsWith(".xml")) {
+            return;
+        }
+
         const fileUri = vscode.Uri.file(filepath);
         const fsStat = await vscode.workspace.fs.stat(fileUri);
         if (fsStat.type !== vscode.FileType.File) {
             return;
         }
 
-        const nodePath = args[1]?.toString() as string || null;
-        const document = await vscode.workspace.openTextDocument(fileUri);
-        let targetXmlNode:Node | null = null;
-        if (nodePath) {
-            const xmlParser = new XmlParser();
-            targetXmlNode = FindXmlNodeByNodePath(xmlParser.parse(document.getText(), {needToken: true})!, nodePath, args[2]);
-        }
-        await vscode.window.showTextDocument(document, {
-            preview: false,
-            preserveFocus: false,
-            selection: !targetXmlNode ? 
-                undefined : 
-                new vscode.Range(
-                    document.positionAt(targetXmlNode.nameToken!.offset), 
-                    document.positionAt(targetXmlNode.nameToken!.offset + targetXmlNode.nameToken!.text.length)
-                )
-        });
+        const defaultRes:vscode.LocationLink = {
+            targetUri: fileUri,
+            targetRange: new vscode.Range(0, 0, 0, 0),
+        };
 
+        if (nodePath === undefined || nodePath === null || nodePath === "") {
+            return defaultRes;
+        }
+
+        const bytes = await vscode.workspace.fs.readFile(fileUri);
+        const text = new TextDecoder('utf-8').decode(bytes);
+        const xmlParser = new XmlParser();
+        const xmlNode = xmlParser.parse(text, {needToken: true});
+        if (!xmlNode) {
+            return defaultRes;
+        }
+
+        const targetXmlNode = FindXmlNodeByNodePath(xmlNode, nodePath, condition);
+        if (!targetXmlNode) {
+            return defaultRes;
+        }
+
+        return {
+            ...defaultRes,
+            targetRange: new vscode.Range(
+                targetXmlNode.nameToken!.line - 1,
+                targetXmlNode.nameToken!.col - 1,
+                targetXmlNode.nameToken!.line - 1,  
+                targetXmlNode.nameToken!.col - 1 + targetXmlNode.nameToken!.text.length,
+            ),
+        };
     } catch (error) {
         do {
             if (error instanceof vscode.FileSystemError && error.code === vscode.FileSystemError.FileNotFound().code) {
@@ -230,6 +241,21 @@ async function HanldeOpenXmlFileCommand(...args: any[]) {
 
             console.error(error);
         } while (false);
+    }
+}
+
+async function HanldeOpenXmlFileCommand(...args: any[]) {
+    if (args.length === 0) { return; }
+    const filepath = args[0].toString() as string;
+    const fileUri = vscode.Uri.file(filepath);
+    const locationLink = await GetXmlNodePosition(filepath, args[1], args[2]);
+    if (locationLink) {
+        const document = await vscode.workspace.openTextDocument(fileUri);
+        await vscode.window.showTextDocument(document, {
+            preview: false,
+            preserveFocus: false,
+            selection: locationLink.targetRange
+        });
     }
 }
 

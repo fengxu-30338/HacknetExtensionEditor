@@ -10,6 +10,7 @@ import lodash from 'lodash';
 import { minimatch } from "minimatch";
 import { EventManager, EventType } from "../event/EventManager";
 import OutputManager from '../utils/OutputChannelUtils';
+import { GetXmlNodePosition } from '../view/HacknetNodeViewer';
 
 
 
@@ -1465,15 +1466,16 @@ function GetHintDescByActiveNode(actNode: ActiveNode): vscode.ProviderResult<vsc
     }
 }
 
-async function ParseNodeLinkToUri(codeHint: CodeHint, linkValue:string): Promise<vscode.Uri[]>{
+async function ParseNodeLinkToUri(codeHint: CodeHint, linkValue:string): Promise<vscode.LocationLink[]>{
     const uriList:vscode.Uri[] = [];
+    const resList:vscode.LocationLink[] = [];
 
     const rootUri = CommonUtils.GetWorkspaceRootUri();
     if (!rootUri) {
-        return uriList;
+        return resList;
     }
 
-    await GetLinkByFinalMatchValue(codeHint.linkByCollection, linkValue, async (val, linkBy) => {
+    await GetLinkByFinalMatchValue(codeHint.linkByCollection, linkValue, async (val, linkBy, variables) => {
         const linkByStr = linkBy.linkBy;
         if (linkByStr.startsWith('Computer.')) {
             uriList.push(...CommonUtils.filterObjectByExpression(hacknetNodeHolder.GetComputers(), linkByStr, val)
@@ -1522,9 +1524,36 @@ async function ParseNodeLinkToUri(codeHint: CodeHint, linkValue:string): Promise
             }
             return;
         }
+
+        if (linkByStr === 'xml')
+        {
+            const args = val.split('|');
+            const commandArgs:any[] = [...args];
+            if (commandArgs.length >= 3 ) {
+                try {
+                    commandArgs[2]  = JSON.parse(commandArgs[2]);
+                } catch (error) {
+                    console.error(`link跳转参数JSON解析出错, linkBy=xml, jsonArg:${commandArgs[2]}`);
+                    OutputManager.error(`link跳转参数JSON解析出错, linkBy=xml, jsonArg:${commandArgs[2]}`);
+                }
+            }
+            const uri = vscode.Uri.joinPath(rootUri, commandArgs[0]);
+            const locationLink = await GetXmlNodePosition(uri.fsPath, commandArgs[1], commandArgs[2]);
+            if (locationLink) {
+                resList.push(locationLink);
+            }
+            return;
+        }
     });
 
-    return uriList;
+    uriList.forEach(uri => {
+        resList.push({
+            targetUri: uri,
+            targetRange: new vscode.Range(0, 0, 0, 0)
+        });
+    });
+
+    return resList;
 }
 
 /**
@@ -1550,14 +1579,12 @@ async function ParseAttrValueLinkByToGetDefinitionLink(actNode: ActiveNode, node
 
     const attrValue = actNode.activeAttributeValueToken.value;
 
-    const uriList = await ParseNodeLinkToUri(attrCodeHint, attrValue);
-    return uriList.map(uri => {
-        return {
-            originSelectionRange,
-            targetUri: uri,
-            targetRange: new vscode.Range(0, 0, 0, 0)
-        };
+    const resList = await ParseNodeLinkToUri(attrCodeHint, attrValue);
+    resList.forEach(link => {
+        link.originSelectionRange = originSelectionRange;
     });
+
+    return resList;
 }
 
 /**
@@ -1583,14 +1610,12 @@ async function ParseContentLinkByToGetDefinitionLink(actNode: ActiveNode, nodeHi
         document.positionAt(actNode.node.contentToken.offset + actNode.node.content.length)
     );
 
-    const uriList = await ParseNodeLinkToUri(contentHint, actNode.node.content);
-    return uriList.map(uri => {
-        return {
-            originSelectionRange,
-            targetUri: uri,
-            targetRange: new vscode.Range(0, 0, 0, 0)
-        };
+    const resList = await ParseNodeLinkToUri(contentHint, actNode.node.content);
+    resList.forEach(link => {
+        link.originSelectionRange = originSelectionRange;
     });
+
+    return resList;
 }
 
 /**

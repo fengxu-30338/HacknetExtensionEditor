@@ -141,16 +141,15 @@ HackerScript文件提示及高亮
 
 当前支持的hint类型有
 
-
- 1. Enum (枚举类型，用法如上图)
- 2. EnumWithCommonString （在枚举的基础上，增加一些预定义的字符串，在代码提示文件中的CommonTextHint标签中定义）
- 3. JavaScript （指定自定义js代码以获取提示，自由度最高）
- 4. Computer （提供当前工作空间下的所有计算机ID供用户选择）
- 5. ComputerOrEos （在Computer的基础上增加了eos设备id的提供）
- 6. ActionFile (action文件路径)
- 7. ThemeFile（主题文件路径）
- 8. MisisonFile（任务文件路径）
- 9. FactionFile（自定义派系文件路径）
+1. Enum (枚举类型，用法如上图)
+2. EnumWithCommonString （在枚举的基础上，增加一些预定义的字符串，在代码提示文件中的CommonTextHint标签中定义）
+3. JavaScript （指定自定义js代码以获取提示，自由度最高）
+4. Computer （提供当前工作空间下的所有计算机ID供用户选择）
+5. ComputerOrEos （在Computer的基础上增加了eos设备id的提供）
+6. ActionFile (action文件路径)
+7. ThemeFile（主题文件路径）
+8. MisisonFile（任务文件路径）
+9. FactionFile（自定义派系文件路径）
 10. PeopleFile （People文件路径）
 11. Color （一个颜色，会提供5种随机生成的颜色供选择）
 12. Path （路径选择，需要提供匹配路径的表达式）
@@ -258,8 +257,23 @@ node: 当前鼠标光标处的节点信息，可以获取的节点的属性名-�
 
 **必须一样**此处就是必须都以 `Computer.`开头
 
-```
-当前可用的有 Computer.* Mission.*  Action.*  Theme.* Faction.*  People.*  path(直接路径跳转)
+```xml
+<!--
+当前可用的有 Computer.* Mission.*  Action.*  Theme.* Faction.*  People.*  path(直接路径跳转) xml(xml文件跳转)
+当linkBy="xml"时，可以通过overrideValue属性传递更多信息来精确定位到xml的子标签处
+-->
+<LinkByCollection>
+      <Item linkBy="xml" 
+            <!-- $(res)在使用正则匹配时是匹配组的最后一个结果，否则是实际标签属性/内容的值 -->
+            <!--其中|用来分隔多个参数
+                参数1： xml文件位于扩展根目录的相对路径
+                参数2:  要定位到xml文件的子标签行处a.b就是a标签下的b标签处
+                参数3:  匹配属性json字符串，如果有多个相同的标签路径，会根据该json内的key作为属性名匹配具有对应值对应的标签
+             -->
+            overrideValue="Plugins/$(res).xml|a.b|{"c": 1}" />
+</LinkByCollection>
+
+
 ```
 
 ### **多级linkBy**
@@ -305,6 +319,18 @@ LinkByCollection标签内Item标签还存在另外的属性
 ```
 
 用实际属性与linkByValuePattern中定义的正则进行匹配 `(取捕获组的最后一个值)`，如果匹配成功则按Faction.id规则进行跳转，不成功则继续尝试下一条linkBy规则。
+
+当插件版本>=`0.3.3`时，`overrideValue`标签的值可以传入变量，例如
+
+```xml
+<LinkByCollection>
+      <Item linkBy="path" 
+            linkByValuePattern="^adddegree|wipedegrees$"   
+            ignoreCaseForMatch="true" 
+            <!-- $(res)在使用正则匹配时是匹配组的最后一个结果，否则是实际标签属性/内容的值 -->
+            overrideValue="Plugins/$(res).xml" />
+</LinkByCollection>
+```
 
 ### 条件属性
 
@@ -429,7 +455,6 @@ diag的取值为：
 在标题栏依次点击  "查看"->"打开视图" 搜索Hacknet找到 `Hacknet节点查看`即可打开，效果如下
 
 ![](imgs/NodeView.png)
-
 
 在标题栏依次点击  "查看"->"打开视图" 搜索Hacknet找到 `Hacknet节点关系查看`可以看到从当前计算机开始的依赖数
 ![](imgs/img12.jpg)

@@ -1,0 +1,20 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<Computer id="jmail" 
+          name="jmail" 
+          allowsDefaultBootModule="true"
+          ip="146.175.59.98"
+          security="3"
+          type="1" > 
+  
+  <adminPass pass="j19576841" />
+  <ports>80,22,21,25,1433</ports>
+  <portsForCrack val="5" />
+  
+  <account username="#PLAYERNAME#" password="w6edfc5w" type="mail" />
+  
+  <mailServer name="jmail Mail Server"
+              color="50,237,212"
+              generateJunk="true">
+  </mailServer>
+  
+</Computer>

@@ -1,0 +1,22 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<Computer id="creditscomp"
+          name="制作人员名单"
+          security="3"
+          ip="99.99.99.99"
+          allowsDefaultBootModule="true"
+          type="2" >
+
+<adminPass pass="Thanks" />
+<account username="#PLAYERNAME#" password="Thanks" type="ADMIN" />
+
+<ports>21, 22, 25, 80</ports>
+
+<proxy time="-1" />
+<portsForCrack val="0" />
+<trace time="300" />
+
+<file path="home" name="CreditsData.txt">感谢名单</file>
+
+<CreditsDaemon Title="鸣谢" ButtonText="播放"/>
+
+</Computer>

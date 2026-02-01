@@ -1,0 +1,1 @@
+存放自定义的Faction，定义后需要在ExtensionInfo.xml中通过 <Faction>Factions/StartingFaction.xml</Faction> 标签引入

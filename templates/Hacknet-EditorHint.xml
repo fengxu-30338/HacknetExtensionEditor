@@ -473,7 +473,38 @@
     <!-- 计算机定义开始 -->
     <Node name="Computer" enable="true" multi="false" desc="定义一台计算机" fileTriggerPattern="Nodes/**/*.xml">
         <Content />
-        <Attribute name="id" required="true" desc="电脑的ID" />
+        <Attribute name="id" required="true" desc="电脑的ID" hint="js">
+            (function(actNode, hacknetNodeHolder){
+                const specIds = [
+                    {id: 'playerComp', desc: '玩家电脑'}, 
+                    {id: 'ispComp', desc: 'ISP电脑,需要在computer文件中定义ispSystem daemon'}, 
+                    {id: 'jmail', desc: 'jmail邮件服务器'}, 
+                    {id: 'academic', desc: '学术电脑,任务目标为AddDegree或wipedegrees时使用'}, 
+                    {id: 'deathRow', desc: '死亡数据库电脑,任务目标为removeDeathRowRecord或modifyDeathRowRecord时使用'}
+                ];
+
+                const compIds = hacknetNodeHolder.GetComputers().filter(comp =&gt; comp.id).map(comp =&gt; comp.id);
+
+                return specIds.filter(item =&gt; !compIds.includes(item.id))
+                    .map(item =&gt; {
+                        return {
+                            value: item.id,
+                            desc: item.desc,
+                        };
+                    });
+            });
+
+            <Diag type="E" jsRuleFor="override">
+                (function(actNode, hacknetNodeHolder, val){
+                    if (val === 'ispComp') {
+                        const ispDaemons = actNode.node.root.GetNodesByNodePath('Computer.ispSystem');
+                        if (ispDaemons.length === 0) {
+                            return {type: 'E', msg: 'id为ispComp的计算机必须定义"ispSystem" daemon'};
+                        }
+                    }
+                });
+            </Diag>
+        </Attribute>
         <Attribute name="name" required="true" desc="电脑的名称" />
         <Attribute name="ip" required="false" desc="电脑的ip,不指定则由游戏自动生成" hint="js">
             (function(node, hacknetNodeHolder){

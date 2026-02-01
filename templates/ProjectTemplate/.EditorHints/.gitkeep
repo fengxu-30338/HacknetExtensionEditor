@@ -1,0 +1,3 @@
+存放其他mod的编辑器提示文件
+可在扩展根目录下的Hacknet-EditorHint.xml文件中通过 <Include path=".EditorHints/xxx.xml" /> 标签引入
+需要使用vscode并且安装HacknetExtensionHelper插件后才能正常使用

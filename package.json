@@ -2,7 +2,7 @@
   "name": "hacknetextensionhelper",
   "displayName": "HacknetExtensionHelper",
   "description": "hacknet extension write helper",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "engines": {
     "vscode": "^1.103.0"
   },
@@ -39,6 +39,10 @@
       ]
     },
     "commands": [
+      {
+        "command": "hacknetextensionhelper.createExtensionProjectTemplate",
+        "title": "创建Hacknet扩展项目模板"
+      },
       {
         "command": "hacknetextensionhelper.createEditorHintFile",
         "title": "创建Hacknet编辑器提示文件"
@@ -136,9 +140,8 @@
           "when": "explorerResourceIsFolder && hacknetextensionhelper.HasCodeHintFile"
         },
         {
-          "command": "hacknetextensionhelper.openSelectHacknetExtensionFolder",
-          "group": "openSelectHacknetExtensionFolder",
-          "label": "选择一个本地Hacknet扩展打开",
+          "submenu": "hacknetextensionhelper/ExtensionFunction",
+          "group": "ExtensionFunction",
           "when": "explorerResourceIsFolder"
         }
       ],
@@ -179,6 +182,18 @@
           "when": "explorerResourceIsFolder"
         }
       ],
+      "hacknetextensionhelper/ExtensionFunction":[
+        {
+          "command": "hacknetextensionhelper.openSelectHacknetExtensionFolder",
+          "group": "ExtensionFunction@1",
+          "when": "explorerResourceIsFolder"
+        },
+        {
+          "command": "hacknetextensionhelper.createExtensionProjectTemplate",
+          "group": "ExtensionFunction@2",
+          "when": "explorerResourceIsFolder"
+        }
+      ],
       "commandPalette": [
         {
           "command": "hacknetextensionhelper.createComputerFile",
@@ -215,6 +230,10 @@
         {
           "command": "hacknetextensionhelper.openXmlFile",
           "when": "false"
+        },
+        {
+          "command": "hacknetextensionhelper.createExtensionProjectTemplate",
+          "when": "false"
         }
       ]
     },
@@ -222,6 +241,11 @@
       {
         "id": "hacknetextensionhelper/createHacknetResourceFile",
         "label": "创建Hacknet资源文件",
+        "when": "explorerResourceIsFolder"
+      },
+      {
+        "id": "hacknetextensionhelper/ExtensionFunction",
+        "label": "Hacknet扩展项目",
         "when": "explorerResourceIsFolder"
       }
     ]

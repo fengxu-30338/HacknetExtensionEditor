@@ -560,7 +560,6 @@ async function DiagnosticNodeAttribute(node: Node, hint: NodeCodeHints, req: Dia
                     };
                     return item as Diagnostic;
                 }));
-                continue;
             }
             
             // 诊断已经存在的属性值的正确性

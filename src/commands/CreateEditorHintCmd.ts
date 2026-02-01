@@ -4,6 +4,7 @@ import { promises as fs } from 'fs';
 import * as CommonUtils from '../utils/CommonUtils';
 import { GetHacknetEditorHintFileUri } from "../code-hint/CodeHint";
 import { XMLParser as StandardXMLParser } from 'fast-xml-parser';
+import { EventManager, EventType } from '../event/EventManager';
 
 export enum HintFileExistRule {
     Overwrite = 0,
@@ -129,12 +130,16 @@ export async function CreateHacknetEditorHintFileInWorkspaceRoot(context: vscode
     }
 }
 
+function GetExtensionInfoFilePath() {
+    return path.join(CommonUtils.GetWorkspaceRootUri()!.fsPath, 'ExtensionInfo.xml');
+}
+
 async function CheckExtensionTipUserCreateHintFileImpl(context: vscode.ExtensionContext) {
     if (await CheckHacknetEditorHintFileExist()) {
         return;
     }
     
-    const extInfoPath = path.join(CommonUtils.GetWorkspaceRootUri()!.fsPath, 'ExtensionInfo.xml');
+    const extInfoPath = GetExtensionInfoFilePath();
     try {
         const xmlContent = await fs.readFile(extInfoPath, 'utf8');
         const info = XmlParser.parse(xmlContent);
@@ -169,4 +174,10 @@ export async function CheckExtensionTipUserCreateHintFile(context: vscode.Extens
     context.subscriptions.push(vscode.workspace.onDidChangeWorkspaceFolders(async (event) => {
         await CheckExtensionTipUserCreateHintFileImpl(context);
     }));
+
+    EventManager.onEvent(EventType.HacknetNodeFileChange, ({modify, filepath}) => {
+        if (modify === 'add' && filepath === GetExtensionInfoFilePath()) {
+            CheckExtensionTipUserCreateHintFileImpl(context);
+        }
+    });
 }

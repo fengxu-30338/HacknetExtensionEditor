@@ -1,0 +1,30 @@
+name: Publish VSCode Extension
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install vsce
+        run: npm install -g @vscode/vsce
+    
+      - name: Install ovsx
+        run: npm install -g ovsx
+        
+      - name: Publish Extension To VsCode Marketplace
+        run: npx vsce publish -p ${{ secrets.AZURE_DEVOPS_TOKEN }}
+
+      - name: Publish Extension To OpenVsx Marketplace
+        run: npx ovsx publish -p ${{ secrets.OPENVSX_TOKEN }}

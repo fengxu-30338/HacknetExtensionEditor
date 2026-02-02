@@ -370,7 +370,7 @@
 
     <!-- <StartingTheme>Themes/ExampleTheme.xml</StartingTheme> -->
     <Node name="HacknetExtension.StartingTheme" enable="true" multi="false" desc="设置第一次进游戏时的主题">
-        <Content desc="主题文件路径" default="themePath" hint="ThemeFile" linkBy="path" >
+        <Content desc="游戏自带主题(不可跳转)/主题文件路径" default="themePath" hint="ThemeFile" linkBy="path" >
             <Enums>
                 <Enum>TerminalOnlyBlack</Enum>
                 <Enum>HacknetBlue</Enum>
@@ -392,7 +392,7 @@
 
     <!-- <IntroStartupSong>The_Quickening</IntroStartupSong> -->
     <Node name="HacknetExtension.IntroStartupSong" enable="true" multi="false" desc="设置第一次进游戏时播放的歌曲">
-        <Content desc="歌曲文件路径(必须是.ogg格式)" default="musicPath" hint="path" linkBy="path">
+        <Content desc="游戏自带歌曲(不可跳转)/歌曲文件路径(必须是.ogg格式)" default="musicPath" hint="path" linkBy="path">
             **/*.ogg
             <Enums>
                 <Enum>Bit(Ending)</Enum>

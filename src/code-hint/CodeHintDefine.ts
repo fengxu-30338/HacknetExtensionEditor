@@ -167,7 +167,8 @@ export async function GetLinkByFinalMatchValue(linkByCollection:LinkBy[], linkVa
         matchedValue = ReplaceVariables(linkBy.overrideValue, vars);
     }
 
-    const handleContents = linkBy.split === null ? [matchedValue] : matchedValue.split(new RegExp(linkBy.split)).filter(item => item.trim() !== '').map(item => item.trim());
+    let handleContents = linkBy.split === null ? [matchedValue] : matchedValue.split(new RegExp(linkBy.split));
+    handleContents = handleContents.filter(item => item.trim() !== '').map(item => item.trim());
     if (handleContents.length === 0) {
         return [];
     }

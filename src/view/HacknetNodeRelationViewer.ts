@@ -82,7 +82,7 @@ class HacknetNodeRelationTreeDataProvider implements vscode.TreeDataProvider<Hac
 
     private async getRootNode(): Promise<HacknetFileTreeNode | null> {
         const actFile = GetActiveFile();
-        if (actFile.nodeType !== HacknetNodeType.Computer) {
+        if (actFile.nodeType !== HacknetNodeType.Computer || !actFile.filepath || !actFile.node) {
             return null;
         }
  

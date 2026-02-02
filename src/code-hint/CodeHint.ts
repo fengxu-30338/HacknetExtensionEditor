@@ -929,7 +929,7 @@ function WatchHacknetCodeHintFile(context: vscode.ExtensionContext) {
 /**
  * 根据当前激活节点获取最新的属性提示信息
  */
-function GetNewAttributesByActiveNodeForHint(actNode: ActiveNode, nodeCodeHint: NodeCodeHints): AttributeHint {
+export function GetNewAttributesByActiveNodeForHint(actNode: ActiveNode, nodeCodeHint: NodeCodeHints): AttributeHint {
     const newAttrNodeHint:AttributeHint = {};
     // 复制一份老的，不需要全部深拷贝
     for (const attrName in nodeCodeHint.AttributeNodeHint) {

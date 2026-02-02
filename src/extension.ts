@@ -16,6 +16,7 @@ import RegisterSelectHacknetExtensionCmd from './commands/SelectHacknetExtension
 import { StartListenActiveFileChanged } from "./utils/ActiveFileTypeListener";
 import OutputManager from './utils/OutputChannelUtils';
 import { RegisterHacknetNodeRelationViewer } from "./view/HacknetNodeRelationViewer";
+import { RegisterXmlNodeLinkTextDecorator } from "./decorator/XmlNodeLinkTextDecorator";
 
 
 
@@ -64,6 +65,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// 创建可替换文本的高亮显示
 	RegisterHacknetReplaceTextHightlight();
+
+	// 创建可链接xml节点文本装饰器
+	RegisterXmlNodeLinkTextDecorator();
 
 	// 开始文件诊断
 	StartDiagnostic();

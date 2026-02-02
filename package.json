@@ -2,7 +2,7 @@
   "name": "hacknetextensionhelper",
   "displayName": "HacknetExtensionHelper",
   "description": "hacknet extension write helper",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "engines": {
     "vscode": "^1.103.0"
   },
@@ -115,10 +115,10 @@
         "when": "editorTextFocus"
       }
     ],
-    "configuration":[
+    "configuration": [
       {
         "title": "Hacknet提示文件监控设置",
-        "properties":{
+        "properties": {
           "hacknetextensionhelperconfig.hintFile.autoRefresh": {
             "type": "boolean",
             "default": "true",
@@ -182,7 +182,7 @@
           "when": "explorerResourceIsFolder"
         }
       ],
-      "hacknetextensionhelper/ExtensionFunction":[
+      "hacknetextensionhelper/ExtensionFunction": [
         {
           "command": "hacknetextensionhelper.openSelectHacknetExtensionFolder",
           "group": "ExtensionFunction@1",
@@ -237,7 +237,7 @@
         }
       ]
     },
-    "submenus":[
+    "submenus": [
       {
         "id": "hacknetextensionhelper/createHacknetResourceFile",
         "label": "创建Hacknet资源文件",

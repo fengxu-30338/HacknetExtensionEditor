@@ -26,11 +26,11 @@
   <!-- this makes the extension start with the standard restart bootup sequence -->
   <HasIntroStartup>false</HasIntroStartup>
   
-  <StartingTheme>HacknetMint</StartingTheme>
   <!-- 
   Base Themes are named:
   TerminalOnlyBlack, HacknetBlue, HacknetTeal, HacknetYellow, HackerGreen, HacknetWhite, HacknetPurple, HacknetMint
   -->
+  <StartingTheme>HacknetMint</StartingTheme>
   
   <!-- You can reference songs from the original game here, or your own .ogg files by path.
   To reference original songs, use their name in the files! You don't need the path, just the filename. This works for any songs in these folders:

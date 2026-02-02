@@ -5,20 +5,23 @@ import { EventManager, EventType } from '../event/EventManager';
 import * as CommonUtils from '../utils/CommonUtils';
 
 export interface ActiveFileNodeType {
-    nodeType: HacknetNodeType;
-    filepath: string;
+    nodeType: HacknetNodeType | null;
+    filepath: string | null;
 }
 
 const CurrentFileNodeType: ActiveFileNodeType = {
     nodeType: HacknetNodeType.Other,
-    filepath: '',
+    filepath: null,
 };
 
 /**
  * 获取当前活动文件的节点类型
  * @returns 当前活动文件的节点类型
  */
-export function GetActiveFile(): ActiveFileNodeType & {node:HacknetNodeInfo} {
+export function GetActiveFile(): ActiveFileNodeType & {node:HacknetNodeInfo | null} {
+    if (!CurrentFileNodeType.filepath) {
+        return {...CurrentFileNodeType, node: null};
+    }
     return {...CurrentFileNodeType, node: hacknetNodeHolder.GetNodeByFilepath(CurrentFileNodeType.filepath)};
 }
 
@@ -39,13 +42,15 @@ export function StartListenActiveFileChanged() {
 
 function OnEditorFileChanged() {
     const editor = vscode.window.activeTextEditor;
-    if (!editor) {return;}
+    if (!editor) {
+        CurrentFileNodeType.nodeType = null;
+        CurrentFileNodeType.filepath = null;
+        EventManager.fireEvent(EventType.EditorActiveFileChange, {nodeType: null});
+        return;
+    }
 
     const filepath = editor.document.fileName;
     const nodeType = hacknetNodeHolder.GetNodeTypeByFilepath(filepath);
-    if (nodeType === null) {
-        return;
-    }
 
     if (CurrentFileNodeType.nodeType === nodeType && CurrentFileNodeType.filepath === filepath) {
         return;

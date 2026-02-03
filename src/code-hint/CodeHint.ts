@@ -966,7 +966,6 @@ export function GetNewAttributesByActiveNodeForHint(actNode: ActiveNode, nodeCod
                 });
                 
             } catch (error) {
-                console.error(`执行JS动态获取属性执行失败: ${error}`);
                 OutputManager.error(`执行JS动态获取属性执行失败: \n${dynamicJs.js}\n---------------------------\n${error}`);
             }
         });
@@ -1533,7 +1532,6 @@ async function ParseNodeLinkToUri(codeHint: CodeHint, linkValue:string): Promise
                 try {
                     commandArgs[2]  = JSON.parse(commandArgs[2]);
                 } catch (error) {
-                    console.error(`link跳转参数JSON解析出错, linkBy=xml, jsonArg:${commandArgs[2]}`);
                     OutputManager.error(`link跳转参数JSON解析出错, linkBy=xml, jsonArg:${commandArgs[2]}`);
                 }
             }

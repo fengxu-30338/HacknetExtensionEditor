@@ -32,6 +32,7 @@
 - HackerScript文件提示及高亮
 - 在线调试主题 `(v0.0.2新增)`
 - Hacknet所有文件的树状节点查看器
+- 热重载（需要安装[PathFinder](https://github.com/Arkhist/Hacknet-Pathfinder)）
 
 ## 1.创建模板文件
 
@@ -395,7 +396,7 @@ xml提示文件 `Hacknet-EditorHint.xml`新增Include标签可引用其他提示
 </HacknetEditorHint>
 ```
 
-您可以通过定义相同的Node然后指定Attribute标签、ConditionAttributes标签、 Content标签的`repeatRule`属性来进行相同属性的重写。
+您可以通过定义相同的Node然后指定Attribute标签、ConditionAttributes标签、 Content标签的 `repeatRule`属性来进行相同属性的重写。
 
 ### 编辑器错误检测
 
@@ -468,5 +469,28 @@ diag的取值为：
 在标题栏依次点击  "查看"->"打开视图" 搜索Hacknet找到 `Hacknet节点关系查看`可以看到从当前计算机开始的依赖数
 ![](imgs/img12.jpg)
 
---
+## 8.Hacknet热重载文件功能
 
+热重载功能依赖[Pathfinder](https://github.com/Arkhist/Hacknet-Pathfinder)，您需要安装该组件后才可使用本功能
+
+热重载功能实现依赖于PathFinder插件：[HacknetHotReplace](https://github.com/fengxu-30338/HacknetHotReplace)（由本人编写，已经开源到Github，您可以基于此实现其他热重载的客户端）
+
+当前的功能有
+
+1. 热重载Computer
+2. 连接一台指定的Computer并授予管理员权限
+3. 热重载Mission文件
+4. 热重载Action文件
+5. 热重载Faction文件
+6. 热重载Theme文件
+7. 热重载People文件（一次性所有People全部重新加载）
+
+使用方法：
+
+1.在文件编辑器右上角存在热重载图标，点击后即可热重载
+![](imgs/img15.jpg)
+
+2.在xml文档右击弹出的菜单中
+
+会自动根据当前的文档类型推断可用的重载命令
+![](imgs/img16.jpg)

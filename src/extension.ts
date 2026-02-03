@@ -17,6 +17,9 @@ import { StartListenActiveFileChanged } from "./utils/ActiveFileTypeListener";
 import OutputManager from './utils/OutputChannelUtils';
 import { RegisterHacknetNodeRelationViewer } from "./view/HacknetNodeRelationViewer";
 import { RegisterXmlNodeLinkTextDecorator } from "./decorator/XmlNodeLinkTextDecorator";
+import { InitHotReplaceClent } from "./hot-replace/HotReplaceClient/HotReplaceClient";
+import { InitHacknetEditorActiveFileContextSet } from "./utils/HacknetEditorActiveFileContextSet";
+import { RegisterHotReplaceClientCommands } from "./hot-replace/Interaction/HotReplaceCommandRegister";
 
 
 
@@ -83,6 +86,15 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// 注册节点关系视图
 	RegisterHacknetNodeRelationViewer(context);
+
+	// 初始化活动文件上下文设置
+	InitHacknetEditorActiveFileContextSet();
+
+	// 初始化热替换客户端
+	InitHotReplaceClent();
+
+	// 注册热替换客户端命令
+	RegisterHotReplaceClientCommands();
 
 	// 开始监听活动文件类型变化（最后执行）
 	StartListenActiveFileChanged();

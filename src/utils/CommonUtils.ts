@@ -1,4 +1,6 @@
 import * as vscode from 'vscode';
+import fs from 'fs';
+import * as crypto from 'crypto';
 
 let vscodeContext: vscode.ExtensionContext;
 
@@ -19,6 +21,10 @@ export function GetWorkspaceRootUri(): vscode.Uri | undefined {
   }
 
   return workspaceFolders[0].uri;
+}
+
+export function GetFilepathInExtension(relativePath: string): string {
+  return vscodeContext.asAbsolutePath(relativePath);
 }
 
 export function GetReplaceTextInfo(text: string, index: number, findRange: number = 30): string | undefined {
@@ -253,4 +259,21 @@ export function CombineSameElementFromArray<T>(arr: T[], type: CombineType, same
       arr.splice(idx, 1);
     }
   }
+}
+
+export async function Delay(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export async function GetFileHash(filePath: string): Promise<string> {
+  const fileContent = await fs.promises.readFile(filePath);
+  return crypto.createHash('sha256').update(fileContent).digest('hex');
+}
+
+export function WithTimeout<T>(promise: Promise<T>, timeoutMs: number, errorMessage = 'Operation timed out'): Promise<T> {
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    setTimeout(() => reject(new Error(errorMessage)), timeoutMs);
+  });
+  
+  return Promise.race([promise, timeoutPromise]);
 }

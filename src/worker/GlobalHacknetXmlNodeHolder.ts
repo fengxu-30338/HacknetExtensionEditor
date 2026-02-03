@@ -41,6 +41,9 @@ class HacknetNodeHolder {
             return;
         }
 
+        // 可能文件类型发生了改变，先从老的Map中删除
+        this.RemoveNodeByFilepath(fullpath);
+
         const nodeType = this.GetNodeType(node);
         if (nodeType === undefined) {
             return;

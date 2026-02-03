@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-export class OutputManager {
+class OutputManager {
     private static instance: OutputManager;
     private outputChannel: vscode.OutputChannel;
     
@@ -18,6 +18,7 @@ export class OutputManager {
     // 输出信息
     public log(message: string, show: boolean = false): void {
         const timestamp = new Date().toLocaleTimeString();
+        console.log(`[${timestamp}] ${message}`);
         this.outputChannel.appendLine(`[${timestamp}] ${message}`);
         
         if (show) {
@@ -29,6 +30,7 @@ export class OutputManager {
     public error(error: any, show: boolean = true): void {
         const timestamp = new Date().toLocaleTimeString();
         const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(`[${timestamp}] [ERROR] ${errorMessage}`);
         this.outputChannel.appendLine(`[${timestamp}] [ERROR] ${errorMessage}`);
         
         if (show) {

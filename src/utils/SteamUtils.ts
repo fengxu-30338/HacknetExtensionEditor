@@ -2,6 +2,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import { existsSync } from 'fs';
 import { join } from 'path';
+import { ReadRegistry } from './RegistryUtil';
 
 const execAsync = promisify(exec);
 
@@ -11,15 +12,11 @@ const execAsync = promisify(exec);
 export async function GetSteamPathFromRegistry(): Promise<string> {
     try {
         // 尝试从64位注册表获取
-        const command64 = 'reg query "HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Valve\\Steam" /v "InstallPath"';
-        const result64 = await execAsync(command64);
-        const path64 = extractRegistryPath(result64.stdout);
+        const path64 = await ReadRegistry('HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Valve\\Steam', 'InstallPath');
         if (path64) {return path64;}
 
         // 尝试从32位注册表获取
-        const command32 = 'reg query "HKEY_LOCAL_MACHINE\\SOFTWARE\\Valve\\Steam" /v "InstallPath"';
-        const result32 = await execAsync(command32);
-        const path32 = extractRegistryPath(result32.stdout);
+        const path32 = await ReadRegistry('HKEY_LOCAL_MACHINE\\SOFTWARE\\Valve\\Steam', 'InstallPath');
         if (path32) {return path32;}
 
         throw new Error('无法在注册表中找到Steam安装路径');

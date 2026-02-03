@@ -1,5 +1,33 @@
 # 更新日志
 
+## v0.4.1更新日志-2026-02-03
+
+新增热重载功能
+
+热重载功能依赖[Pathfinder](https://github.com/Arkhist/Hacknet-Pathfinder)，您需要安装该组件后才可使用本功能
+
+热重载功能实现依赖于PathFinder插件：[HacknetHotReplace](https://github.com/fengxu-30338/HacknetHotReplace)（由本人编写，已经开源到Github，您可以基于此实现其他热重载的客户端）
+
+当前的功能有
+
+1. 热重载Computer
+2. 连接一台指定的Computer并授予管理员权限
+3. 热重载Mission文件
+4. 热重载Action文件
+5. 热重载Faction文件
+6. 热重载Theme文件
+7. 热重载People文件（一次性所有People全部重新加载）
+
+使用方法：
+
+1.在文件编辑器右上角存在热重载图标，点击后即可热重载
+![](imgs/img15.jpg)
+
+2.在xml文档右击弹出的菜单中
+
+会自动根据当前的文档类型推断可用的重载命令
+![](imgs/img16.jpg)
+
 ## v0.3.6更新日志-2026-02-02
 
 1.创建项目模板
@@ -14,7 +42,7 @@
 
 ## v0.2.9更新日志-2026-01-22
 
-1. JS执行提示或校验时您可以在hacknetNodeHolder对象中调用Log函数来输出一些信息供您调试,在输出窗口选择`HacknetExtensionHelper`通道即可查看。
+1. JS执行提示或校验时您可以在hacknetNodeHolder对象中调用Log函数来输出一些信息供您调试,在输出窗口选择 `HacknetExtensionHelper`通道即可查看。
 
 ```xml
 <Attribute name="ip" required="false" desc="电脑的ip,不指定则由游戏自动生成" hint="js">
@@ -26,7 +54,7 @@
 ```
 
 2. 新增节点关系查看视图
-   
+
    在标题栏依次点击  "查看"->"打开视图" 搜索Hacknet找到 `Hacknet节点关系查看`可以看到从当前计算机开始的依赖数
    ![](imgs/img12.jpg)
 
@@ -158,4 +186,3 @@ xml提示文件 `Hacknet-EditorHint.xml`新增Include标签可引用其他提示
 点击后会在侧边栏弹出网页模拟的界面，您更改xml后可立即在网页看到效果。
 
 更方便的是，您在鼠标在网页想改的元素处停留3秒以上，该元素用到的颜色会在左侧xml文件中高亮出来，以便您能够更精准的定位到想要改的标签。
-

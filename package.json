@@ -2,7 +2,7 @@
   "name": "hacknetextensionhelper",
   "displayName": "HacknetExtensionHelper",
   "description": "hacknet extension write helper",
-  "version": "0.3.6",
+  "version": "0.4.1",
   "engines": {
     "vscode": "^1.103.0"
   },
@@ -34,7 +34,7 @@
           "name": "Hacknet节点关系查看",
           "icon": "resources/NodeView/node.svg",
           "visibility": "visible",
-          "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsHacknetComputerFile"
+          "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsComputer"
         }
       ]
     },
@@ -105,6 +105,96 @@
         "command": "hacknetextensionhelper.createThemeFile",
         "title": "创建Theme主题文件",
         "category": "创建Hacknet资源文件"
+      },
+      {
+        "command": "hacknetextensionhelper.HotReplace.EnterExtension",
+        "title": "操控Hacknet进入当前扩展",
+        "category": "Hacknet HotReplace",
+        "icon": {
+          "dark": "resources/HotReplace/Icon/dark/EnterExt.svg",
+          "light": "resources/HotReplace/Icon/light/EnterExt.svg"
+        }
+      },
+      {
+        "command": "hacknetextensionhelper.HotReplace.HotReloadComputer",
+        "title": "操控Hacknet重载当前计算机文件到游戏",
+        "category": "Hacknet HotReplace",
+        "icon": {
+          "dark": "resources/HotReplace/Icon/dark/ReloadFile.svg",
+          "light": "resources/HotReplace/Icon/light/ReloadFile.svg"
+        }
+      },
+      {
+        "command": "hacknetextensionhelper.HotReplace.ConnectComputerAndGrantAdmin",
+        "title": "操控Hacknet连接当前计算机并授予管理员权限",
+        "category": "Hacknet HotReplace",
+        "icon": {
+          "dark": "resources/HotReplace/Icon/dark/Admin.svg",
+          "light": "resources/HotReplace/Icon/light/Admin.svg"
+        }
+      },
+      {
+        "command": "hacknetextensionhelper.HotReplace.HotReloadMission",
+        "title": "操控Hacknet重载当前Mission文件到游戏",
+        "category": "Hacknet HotReplace",
+        "icon": {
+          "dark": "resources/HotReplace/Icon/dark/ReloadFile.svg",
+          "light": "resources/HotReplace/Icon/light/ReloadFile.svg"
+        }
+      },
+      {
+        "command": "hacknetextensionhelper.HotReplace.HotReloadMissionAndClearOldAction",
+        "title": "操控Hacknet重载当前Mission文件到游戏并清空已加载的Action",
+        "category": "Hacknet HotReplace",
+        "icon": {
+          "dark": "resources/HotReplace/Icon/dark/Reload.svg",
+          "light": "resources/HotReplace/Icon/light/Reload.svg"
+        }
+      },
+      {
+        "command": "hacknetextensionhelper.HotReplace.HotReloadAction",
+        "title": "操控Hacknet重载当前Action文件到游戏",
+        "category": "Hacknet HotReplace",
+        "icon": {
+          "dark": "resources/HotReplace/Icon/dark/ReloadFile.svg",
+          "light": "resources/HotReplace/Icon/light/ReloadFile.svg"
+        }
+      },
+      {
+        "command": "hacknetextensionhelper.HotReplace.HotReloadActionAndClearOldAction",
+        "title": "操控Hacknet重载当前Action文件到游戏并清空已加载的Action",
+        "category": "Hacknet HotReplace",
+        "icon": {
+          "dark": "resources/HotReplace/Icon/dark/Reload.svg",
+          "light": "resources/HotReplace/Icon/light/Reload.svg"
+        }
+      },
+      {
+        "command": "hacknetextensionhelper.HotReplace.HotReloadTheme",
+        "title": "操控Hacknet重载当前Theme文件到游戏",
+        "category": "Hacknet HotReplace",
+        "icon": {
+          "dark": "resources/HotReplace/Icon/dark/ReloadFile.svg",
+          "light": "resources/HotReplace/Icon/light/ReloadFile.svg"
+        }
+      },
+      {
+        "command": "hacknetextensionhelper.HotReplace.HotReloadFaction",
+        "title": "操控Hacknet重载当前Faction文件到游戏",
+        "category": "Hacknet HotReplace",
+        "icon": {
+          "dark": "resources/HotReplace/Icon/dark/ReloadFile.svg",
+          "light": "resources/HotReplace/Icon/light/ReloadFile.svg"
+        }
+      },
+      {
+        "command": "hacknetextensionhelper.HotReplace.HotReloadPeople",
+        "title": "操控Hacknet重载所有People文件到游戏",
+        "category": "Hacknet HotReplace",
+        "icon": {
+          "dark": "resources/HotReplace/Icon/dark/ReloadFile.svg",
+          "light": "resources/HotReplace/Icon/light/ReloadFile.svg"
+        }
       }
     ],
     "keybindings": [
@@ -125,6 +215,21 @@
             "description": "监听提示文件改变后自动刷新提示内容"
           }
         }
+      },
+      {
+        "title": "Hacknet热替换设置",
+        "properties": {
+          "hacknetextensionhelperconfig.hotReplace.hacknetExePath": {
+            "type": "string",
+            "default": "auto",
+            "description": "Hacknet可执行文件路径(自动查找时为auto)"
+          },
+          "hacknetextensionhelperconfig.hotReplace.hacknetExeStartArgs": {
+            "type": "string",
+            "default": "-enabledebug",
+            "description": "Hacknet可执行文件的启动参数：\n-disableweb: 不渲染html网页\n-disablebackground: 不渲染背景\n-altmonitor: 副屏显示\n-enablefc: 强制完成任务\n-enabledebug: 开启调试模式\n-allowextpublish: 允许发布扩展\n-extstart ${path}:自启动扩展，path为扩展所在路径"
+          }
+        }
       }
     ],
     "webview": {
@@ -133,6 +238,117 @@
       ]
     },
     "menus": {
+      "editor/title": [
+        {
+          "command": "hacknetextensionhelper.HotReplace.EnterExtension",
+          "group": "navigation@0",
+          "when": "hacknetextensionhelper.HasCodeHintFile"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.HotReloadComputer",
+          "group": "navigation@1",
+          "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsComputer"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.ConnectComputerAndGrantAdmin",
+          "group": "navigation@2",
+          "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsComputer"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.HotReloadMission",
+          "group": "navigation@3",
+          "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsMission"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.HotReloadMissionAndClearOldAction",
+          "group": "navigation@4",
+          "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsMission"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.HotReloadAction",
+          "group": "navigation@5",
+          "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsAction"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.HotReloadActionAndClearOldAction",
+          "group": "navigation@6",
+          "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsAction"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.HotReloadTheme",
+          "group": "navigation@7",
+          "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsTheme"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.HotReloadFaction",
+          "group": "navigation@8",
+          "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsFaction"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.HotReloadPeople",
+          "group": "navigation@9",
+          "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsPeople"
+        }
+      ],
+      "editor/context": [
+        {
+          "submenu": "hacknetextensionhelper/HotReplace",
+          "group": "navigation@1",
+          "when": "hacknetextensionhelper.HasCodeHintFile"
+        }
+      ],
+      "hacknetextensionhelper/HotReplace":[
+        {
+          "command": "hacknetextensionhelper.HotReplace.EnterExtension",
+          "group": "navigation@0",
+          "when": "hacknetextensionhelper.HasCodeHintFile"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.HotReloadComputer",
+          "group": "navigation@1",
+          "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsComputer"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.ConnectComputerAndGrantAdmin",
+          "group": "navigation@2",
+          "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsComputer"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.HotReloadMission",
+          "group": "navigation@3",
+          "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsMission"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.HotReloadMissionAndClearOldAction",
+          "group": "navigation@4",
+          "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsMission"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.HotReloadAction",
+          "group": "navigation@5",
+          "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsAction"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.HotReloadActionAndClearOldAction",
+          "group": "navigation@6",
+          "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsAction"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.HotReloadTheme",
+          "group": "navigation@7",
+          "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsTheme"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.HotReloadFaction",
+          "group": "navigation@8",
+          "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsFaction"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.HotReloadPeople",
+          "group": "navigation@9",
+          "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsPeople"
+        }
+      ],
       "explorer/context": [
         {
           "submenu": "hacknetextensionhelper/createHacknetResourceFile",
@@ -234,6 +450,46 @@
         {
           "command": "hacknetextensionhelper.createExtensionProjectTemplate",
           "when": "false"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.EnterExtension",
+          "when": "false"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.HotReloadComputer",
+          "when": "false"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.ConnectComputerAndGrantAdmin",
+          "when": "false"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.HotReloadMission",
+          "when": "false"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.HotReloadMissionAndClearOldAction",
+          "when": "false"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.HotReloadAction",
+          "when": "false"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.HotReloadActionAndClearOldAction",
+          "when": "false"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.HotReloadTheme",
+          "when": "false"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.HotReloadFaction",
+          "when": "false"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.HotReloadPeople",
+          "when": "false"
         }
       ]
     },
@@ -247,6 +503,11 @@
         "id": "hacknetextensionhelper/ExtensionFunction",
         "label": "Hacknet扩展项目",
         "when": "explorerResourceIsFolder"
+      },
+      {
+        "id": "hacknetextensionhelper/HotReplace",
+        "label": "Hacknet热重载",
+        "when": "&& hacknetextensionhelper.HasCodeHintFile"
       }
     ]
   },

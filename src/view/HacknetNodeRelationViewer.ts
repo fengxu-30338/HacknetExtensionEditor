@@ -322,8 +322,4 @@ export function RegisterHacknetNodeRelationViewer(context: vscode.ExtensionConte
         treeDataProvider: new HacknetNodeRelationTreeDataProvider()
     });
     context.subscriptions.push(treeView);
-
-    EventManager.onEvent(EventType.EditorActiveFileChange, ({nodeType}) => {
-        vscode.commands.executeCommand('setContext', 'hacknetextensionhelper.CurrentIsHacknetComputerFile', nodeType === HacknetNodeType.Computer);
-    });
 }

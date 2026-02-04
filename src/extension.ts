@@ -20,6 +20,7 @@ import { RegisterXmlNodeLinkTextDecorator } from "./decorator/XmlNodeLinkTextDec
 import { InitHotReplaceClent } from "./hot-replace/HotReplaceClient/HotReplaceClient";
 import { InitHacknetEditorActiveFileContextSet } from "./utils/HacknetEditorActiveFileContextSet";
 import { RegisterHotReplaceClientCommands } from "./hot-replace/Interaction/HotReplaceCommandRegister";
+import { InitHacknetActionTest } from "./hot-replace/Interaction/DynamicExecuteActionTest";
 
 
 
@@ -95,6 +96,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	// 注册热替换客户端命令
 	RegisterHotReplaceClientCommands();
+
+	// 初始化动态执行Action测试
+	InitHacknetActionTest();
 
 	// 开始监听活动文件类型变化（最后执行）
 	StartListenActiveFileChanged();

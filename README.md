@@ -1,5 +1,9 @@
 # 快速开始
 
+> English Version：[README_en.md](README_en.md)
+
+
+
 下载地址：[Hacknet扩展编写插件](https://marketplace.visualstudio.com/items?itemName=fengxu30338.hacknetextensionhelper)
 
 1.创建编辑器提示文件
@@ -484,6 +488,7 @@ diag的取值为：
 5. 热重载Faction文件
 6. 热重载Theme文件
 7. 热重载People文件（一次性所有People全部重新加载）
+8. 动态执行Action
 
 使用方法：
 
@@ -494,3 +499,9 @@ diag的取值为：
 
 会自动根据当前的文档类型推断可用的重载命令
 ![](imgs/img16.jpg)
+
+3.动态执行Action
+
+您可以打开Action文件，点击编辑器行号左侧的执行按钮，会自动唤醒游戏执行该Action(请先进入扩展在执行)
+注意：动态执行某个Condition下的所有action时是会自动忽略condition的条件
+![](imgs/img17.jpg)

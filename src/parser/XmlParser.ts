@@ -1,4 +1,5 @@
 import moo, { MooToken } from 'moo';
+import XmlPathUtil from '../utils/XmlPathUtil';
 
 const tokenDefine = {
     xmlStart:           {match: /<\?xml .*?\?>/, lineBreaks: true},
@@ -70,32 +71,40 @@ export class Node {
         return node;
     }
 
-    public GetNodesByNodePath(nodePath: string): Node[] {
-        const nodes:Node[] = [];
+    public GetNodesByNodePath(nodePathPattern: string): Node[] {
+        const scanNodes:Node[] = [];
         const res:Node[] = [];
-        const pathLevel = nodePath.split('.').length;
-        nodes.push(this);
 
-        while (nodes.length > 0) {
-            const node = nodes.shift()!;
-            if (node.nodePath === nodePath) {
+        scanNodes.push(this);
+        while (scanNodes.length > 0) {
+            const node = scanNodes.shift()!;
+            if (XmlPathUtil.ComparePath(node.nodePath, nodePathPattern)) {
                 res.push(node);
             }
 
-            if (node.level >= pathLevel) {
-                continue;
-            }
-
-            nodes.push(...node.children);
+            scanNodes.push(...node.children);
         }
-
-        // console.log(this, nodePath, res);
 
         return res;
     }
 
     public GetAttr(name:string) {
         return this.attribute.get(name);
+    }
+
+    public ToXmlString(): string {
+        let xml = `<${this.name}`;
+        for (const [name, value] of this.attribute) {
+            xml += ` ${name}="${value}"`;
+        }
+        xml += `>${this.content}`;
+        if (this.children.length > 0) {
+            for (const child of this.children) {
+                xml += child.ToXmlString();
+            }
+        }
+        xml += `</${this.name}>`;
+        return xml;
     }
 }
 

@@ -305,6 +305,14 @@ class HotReplaceClient {
     public async HotReloadPeople(): Promise<void> {
         await this.CommonSendRequest(new HotReplaceRequest.HotReloadPeopleRequest());
     }
+
+    /**
+     * 执行指定Action
+     * @param reqPayload 执行Action请求参数
+     */
+    public async ExecuteAction(reqPayload: HotReplaceRequest.ExecuteActionRequestPayload): Promise<void> {
+        await this.CommonSendRequest(new HotReplaceRequest.ExecuteActionRequest(reqPayload));
+    }
 }
 
 export default HotReplaceClient.getInstance();

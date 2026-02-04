@@ -132,3 +132,17 @@ export class ConnectComputerRequest extends HacknetHotReplaceRequest {
         super('ConnectComputer', Payload);
     }
 }
+
+export interface ExecuteActionRequestPayload {
+    /** action xml 内容 */
+    ActionXmlContent: string;
+}
+
+/**
+ * 执行Action请求
+ */
+export class ExecuteActionRequest extends HacknetHotReplaceRequest {
+    constructor(Payload: ExecuteActionRequestPayload) {
+        super('ExecuteAction', Payload);
+    }
+}

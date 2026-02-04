@@ -2,7 +2,7 @@
   "name": "hacknetextensionhelper",
   "displayName": "HacknetExtensionHelper",
   "description": "hacknet extension write helper",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "engines": {
     "vscode": "^1.103.0"
   },
@@ -207,7 +207,7 @@
     ],
     "configuration": [
       {
-        "title": "Hacknet提示文件监控设置",
+        "title": "Hacknet提示文件设置",
         "properties": {
           "hacknetextensionhelperconfig.hintFile.autoRefresh": {
             "type": "boolean",
@@ -228,6 +228,19 @@
             "type": "string",
             "default": "-enabledebug",
             "description": "Hacknet可执行文件的启动参数：\n-disableweb: 不渲染html网页\n-disablebackground: 不渲染背景\n-altmonitor: 副屏显示\n-enablefc: 强制完成任务\n-enabledebug: 开启调试模式\n-allowextpublish: 允许发布扩展\n-extstart ${path}:自启动扩展，path为扩展所在路径"
+          },
+          "hacknetextensionhelperconfig.hotReplace.executeActionType": {
+            "type": "string",
+            "default": "orderExecute",
+            "description": "动态执行Action的方式",
+            "enum": [
+              "orderExecute",
+              "parallelExecute"
+            ],
+            "enumDescriptions": [
+              "按顺序执行Action",
+              "并行执行Action"
+            ]
           }
         }
       }

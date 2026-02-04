@@ -21,6 +21,7 @@ import { InitHotReplaceClent } from "./hot-replace/HotReplaceClient/HotReplaceCl
 import { InitHacknetEditorActiveFileContextSet } from "./utils/HacknetEditorActiveFileContextSet";
 import { RegisterHotReplaceClientCommands } from "./hot-replace/Interaction/HotReplaceCommandRegister";
 import { InitHacknetActionTest } from "./hot-replace/Interaction/DynamicExecuteActionTest";
+import { RegisterHacknetXmlDocCodeLensProvider } from './decorator/HacknetXmlDocCodeLens';
 
 
 
@@ -73,6 +74,9 @@ export async function activate(context: vscode.ExtensionContext) {
 	// 创建可链接xml节点文本装饰器
 	RegisterXmlNodeLinkTextDecorator();
 
+	// 注册xml文档悬浮小子装饰
+	RegisterHacknetXmlDocCodeLensProvider(context);
+	
 	// 开始文件诊断
 	StartDiagnostic();
 

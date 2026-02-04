@@ -2,7 +2,7 @@
   "name": "hacknetextensionhelper",
   "displayName": "HacknetExtensionHelper",
   "description": "hacknet extension write helper",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "engines": {
     "vscode": "^1.103.0"
   },
@@ -213,6 +213,16 @@
             "type": "boolean",
             "default": "true",
             "description": "监听提示文件改变后自动刷新提示内容"
+          }
+        }
+      },
+      {
+        "title": "Hacknet视图设置",
+        "properties": {
+          "hacknetextensionhelperconfig.viewer.showTagDescInEditor": {
+            "type": "boolean",
+            "default": "true",
+            "description": "在编辑器中显示标签的作用描述"
           }
         }
       },

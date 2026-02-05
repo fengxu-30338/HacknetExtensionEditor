@@ -1,3 +1,4 @@
+import os from 'os';
 import * as vscode from 'vscode';
 import fs from 'fs';
 import * as crypto from 'crypto';
@@ -25,6 +26,10 @@ export function GetWorkspaceRootUri(): vscode.Uri | undefined {
 
 export function GetFilepathInExtension(relativePath: string): string {
   return vscodeContext.asAbsolutePath(relativePath);
+}
+
+export function IsWindows():boolean {
+  return os.platform() === 'win32';
 }
 
 export function GetReplaceTextInfo(text: string, index: number, findRange: number = 30): string | undefined {
@@ -274,7 +279,7 @@ export function WithTimeout<T>(promise: Promise<T>, timeoutMs: number, errorMess
   const timeoutPromise = new Promise<never>((_, reject) => {
     setTimeout(() => reject(new Error(errorMessage)), timeoutMs);
   });
-  
+
   return Promise.race([promise, timeoutPromise]);
 }
 

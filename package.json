@@ -229,6 +229,11 @@
       {
         "title": "Hacknet热替换设置",
         "properties": {
+          "hacknetextensionhelperconfig.hotReplace.steamInstallPath": {
+            "type": "string",
+            "default": "auto",
+            "description": "Steam安装路径(自动查找时为auto)"
+          },
           "hacknetextensionhelperconfig.hotReplace.hacknetExePath": {
             "type": "string",
             "default": "auto",

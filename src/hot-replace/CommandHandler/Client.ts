@@ -3,6 +3,9 @@ import { HacknetHotReplaceRequest } from './Request';
 import { HacknetHotReplaceResponse } from './Response';
 import OutputManager from '../../utils/OutputChannelUtils';
 import { ReadRegistry } from '../../utils/RegistryUtil';
+import * as CommonUtils from '../../utils/CommonUtils';
+import fs from 'fs';
+import os from 'os';
 
 interface RequestPromiseWrapper<T> {
     msgType: string;
@@ -45,14 +48,23 @@ export function DeInitUdpClient() {
 
 async function GetHotReplaceServerPort(): Promise<number> {
     try {
-        const port = await ReadRegistry('HKEY_CURRENT_USER\\Software\\Hacknet', 'HotReplaceServerPort');
-        if (port) {
-            return parseInt(port);
+        let port:string | null = null;
+
+        if (CommonUtils.IsWindows()) {
+            port = await ReadRegistry('HKEY_CURRENT_USER\\Software\\Hacknet', 'HotReplaceServerPort');
+            if (port) {
+                return parseInt(port);
+            }
+        } else {
+            port = (await fs.promises.readFile(`${os.homedir()}/.HacknetHotReplace/HotReplaceServerPort`)).toString();
+            if (port) {
+                return parseInt(port);
+            }
         }
 
         throw new Error(`获取到热替换服务器端口信息异常:${port}，请先尝试启动服务后在执行该操作。`); 
     } catch (error) {
-        throw new Error('未获取到热替换服务器端口，请先尝试启动服务后在执行该操作。'); 
+        throw new Error(`未获取到热替换服务器端口，请先尝试启动服务后在执行该操作, err:${error}`); 
     }
 }
 

@@ -9,6 +9,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import path, { dirname } from 'path';
 import fs from 'fs';
+import os from 'os';
 import { HacknetHotReplaceRequest } from '../CommandHandler/Request';
 import * as HotReplaceRequest from '../CommandHandler/Request';
 import { HacknetHotReplaceResponse } from '../CommandHandler/Response';
@@ -22,10 +23,19 @@ let InSendRequestPreCheck = false;
  */
 async function CheckHotReplaceServerOnline(): Promise<boolean> {
     try {
-        const timespan = await ReadRegistry('HKEY_CURRENT_USER\\Software\\Hacknet', 'HotReplaceServerOnlineTimespan');
-        if (!timespan) {
-            return false;
+        let timespan:string | null = null;
+        if (CommonUtils.IsWindows()) {
+            timespan = await ReadRegistry('HKEY_CURRENT_USER\\Software\\Hacknet', 'HotReplaceServerOnlineTimespan');
+            if (!timespan) {
+                return false;
+            }
+        } else {
+            timespan = (await fs.promises.readFile(`${os.homedir()}/.HacknetHotReplace/HotReplaceServerOnlineTimespan`)).toString();
+            if (!timespan) {
+                return false;
+            }
         }
+
         const timespanMill = parseInt(timespan);
 
         const currentTimespan = Date.now();
@@ -34,6 +44,7 @@ async function CheckHotReplaceServerOnline(): Promise<boolean> {
         }
     } catch (error) {
         console.log(`检查热替换服务器是否在线失败: ${error}`);
+        throw error;
     }
 
     return false;
@@ -50,21 +61,21 @@ async function GetHacknetFolder(): Promise<string> {
 
 async function CheckHacknetExeExist(): Promise<string | null> {
     const hacknetFolder = await GetHacknetFolder();
-    const hacknetExePath = path.join(hacknetFolder, 'Hacknet.exe');
+    const hacknetExePath = path.join(hacknetFolder, `Hacknet${CommonUtils.IsWindows() ? '.exe' : ''}`);
     return fs.existsSync(hacknetExePath) ? hacknetExePath : null;
 }
 
 async function CheckHacknetProcessExist(): Promise<boolean> {
     try {
-        const command = `tasklist /FI "IMAGENAME eq Hacknet.exe"`;
+        const command = CommonUtils.IsWindows() ? `tasklist /FI "IMAGENAME eq Hacknet.exe"` : `ps -ef |  grep -E "Hacknet(Pathfinder)?.bin" | grep -v grep || true`;
         const result = await execAsync(command);
-        return result.stdout.includes('Hacknet.exe');
+        return result.stdout.includes('Hacknet');
     } catch (error) {
         throw new Error(`检查Hacknet进程失败: ${error}`);
     }
 }
 
-async function KillHacknetProcess() {
+async function KillHacknetProcessForWindows() {
     const loadingId = ShowLoading('关闭Hacknet进程中...');
     try {
         const command = `taskkill /F /IM Hacknet.exe`;
@@ -85,12 +96,16 @@ async function TipUseraCloseHacknetProcessIfExist(tipMsg:string): Promise<void> 
         return;
     }
 
-    const result = await vscode.window.showInformationMessage(tipMsg, {modal: true}, '关闭Hacknet进程');
-    if (result !== '关闭Hacknet进程') {
-        throw new Error('请先关闭Hacknet进程后在尝试执行该操作');
-    }
+    if (CommonUtils.IsWindows()) {
+        const result = await vscode.window.showInformationMessage(tipMsg, {modal: true}, '关闭Hacknet进程');
+        if (result !== '关闭Hacknet进程') {
+            throw new Error('请先关闭Hacknet进程后在尝试执行该操作');
+        }
 
-    await KillHacknetProcess();
+        await KillHacknetProcessForWindows();
+    } else {
+        throw new Error(tipMsg);
+    }
 }
 
 /**
@@ -111,7 +126,7 @@ async function CheckAndUpdateHotReplaceDll() {
         await fs.promises.copyFile(localDllPath, hotReplaceDllFullPath);
         OutputManager.log(`热替换服务插件已安装成功，路径: ${hotReplaceDllFullPath}`);
         // 检查Hacknet.exe进程是否启动，启动则提醒用户需要重启
-        await TipUseraCloseHacknetProcessIfExist('热替换服务插件已安装成功，检测到Hacknet.exe进程已启动，需要关闭后重启才可生效，是否关闭Hacknet.exe进程？');
+        await TipUseraCloseHacknetProcessIfExist('热替换服务插件已安装成功，检测到Hacknet.exe进程已启动，需要关闭后重启才可生效。');
         return;
     }
     
@@ -121,7 +136,7 @@ async function CheckAndUpdateHotReplaceDll() {
         return;
     }
     // 检查Hacknet.exe进程是否启动，启动则提醒用户需要关闭Hacknet.exe，覆盖dll，在重启Hacknet.exe
-    await TipUseraCloseHacknetProcessIfExist('热替换服务插件需要更新，检测到Hacknet.exe进程已启动，需要关闭后才可执行更新，是否关闭Hacknet.exe进程？');
+    await TipUseraCloseHacknetProcessIfExist('热替换服务插件需要更新，检测到Hacknet.exe进程已启动，需要关闭后才可执行更新。');
     // 覆盖dll
     await fs.promises.copyFile(localDllPath, hotReplaceDllFullPath);
     OutputManager.log(`热替换服务插件更新成功，路径: ${hotReplaceDllFullPath}`);
@@ -150,9 +165,9 @@ async function GetHacknetStartCommand():Promise<{folder: string, command: string
     
     return {
         folder: dirname(hacknetExePath!),
-        command: `.\\${path.basename(hacknetExePath!)} ${args}`
+        command: `${CommonUtils.IsWindows() ? '.\\' : './'}${path.basename(hacknetExePath!)} ${args}`
     };
-    }
+}
 
 /**
  * hacknet热替换指令运行前检查

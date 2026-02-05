@@ -13,6 +13,7 @@ export enum HintFileExistRule {
 }
 
 const XmlParser = new StandardXMLParser({ ignoreAttributes: false, attributeNamePrefix: '' });
+let InTipUserCreateHintFile = false;
 
 async function readHacknetDefaultEditorHintFile(context: vscode.ExtensionContext) {
     const filePath = path.join(context.extensionPath, 'templates', 'Hacknet-EditorHint.xml');
@@ -147,6 +148,11 @@ async function CheckExtensionTipUserCreateHintFileImpl(context: vscode.Extension
             return;
         }
 
+        if (InTipUserCreateHintFile) {
+            return;
+        }
+        InTipUserCreateHintFile = true;
+        
         const choice = await vscode.window.showInformationMessage(
             '检测到当前项目为Hacknet扩展，是否创建Hacknet扩展编辑器提示文件?',
             {
@@ -165,6 +171,8 @@ async function CheckExtensionTipUserCreateHintFileImpl(context: vscode.Extension
     } catch (error) {
         // ignore error
         console.error(error);
+    } finally {
+        InTipUserCreateHintFile = false;
     }
 }
 

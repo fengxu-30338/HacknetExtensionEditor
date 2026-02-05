@@ -14,6 +14,7 @@ import * as HotReplaceRequest from '../CommandHandler/Request';
 import { HacknetHotReplaceResponse } from '../CommandHandler/Response';
 
 const execAsync = promisify(exec);
+let InSendRequestPreCheck = false;
 
 /**
  * 检查热替换服务器是否在线
@@ -64,34 +65,17 @@ async function CheckHacknetProcessExist(): Promise<boolean> {
 }
 
 async function KillHacknetProcess() {
+    const loadingId = ShowLoading('关闭Hacknet进程中...');
     try {
         const command = `taskkill /F /IM Hacknet.exe`;
         await execAsync(command);
 
         // 等待进程关闭
-        const loadingId = ShowLoading('关闭Hacknet进程中...');
-        let retryTimes = -1;
-        await new Promise((resolve, reject) => {
-            retryTimes++;
-            const checkInterval = setInterval(async () => {
-                const processExist = await CheckHacknetProcessExist();
-                if (!processExist) {
-                    clearInterval(checkInterval);
-                    CloseLoading(loadingId);
-                    resolve(true);
-                    return;
-                }
-
-                if (retryTimes > 30) {
-                    clearInterval(checkInterval);
-                    CloseLoading(loadingId);
-                    reject(new Error('关闭Hacknet进程超时'));
-                    return;
-                }
-            }, 1000);
-        });
+        await CommonUtils.IntervalCheck(async () => !(await CheckHacknetProcessExist()), 500, 30000, '关闭Hacknet进程超时');
     } catch (error) {
         throw new Error(`关闭Hacknet进程失败: ${error}`);
+    } finally {
+        CloseLoading(loadingId);
     }
 }
 
@@ -138,7 +122,6 @@ async function CheckAndUpdateHotReplaceDll() {
     }
     // 检查Hacknet.exe进程是否启动，启动则提醒用户需要关闭Hacknet.exe，覆盖dll，在重启Hacknet.exe
     await TipUseraCloseHacknetProcessIfExist('热替换服务插件需要更新，检测到Hacknet.exe进程已启动，需要关闭后才可执行更新，是否关闭Hacknet.exe进程？');
-    await CommonUtils.Delay(500);
     // 覆盖dll
     await fs.promises.copyFile(localDllPath, hotReplaceDllFullPath);
     OutputManager.log(`热替换服务插件更新成功，路径: ${hotReplaceDllFullPath}`);
@@ -175,50 +158,50 @@ async function GetHacknetStartCommand():Promise<{folder: string, command: string
  * hacknet热替换指令运行前检查
  */
 async function RunHotReplaceCommandPreCheck() {
-    // 更新热替换动态库
-    await CheckAndUpdateHotReplaceDll();
+    while (InSendRequestPreCheck) {
+        // 等待check完成
+        await CommonUtils.IntervalCheck(() => !InSendRequestPreCheck, 5, 30000);
+    }
 
-    // hacknet进程存在时，检查热替换服务是否运行
-    const hacknetProcessExist = await CheckHacknetProcessExist();
-    if (hacknetProcessExist) {
-        const hotReplaceServerOnline = await CheckHotReplaceServerOnline();
-        if (!hotReplaceServerOnline) {
-            throw new Error('热替换服务未运行，可能的原因是您未安装或启用PathFinder插件');
-        }
-    } else {
-        // 启动Hacknet.exe并等待热替换服务启动
-        const hacknetStartCmd = await GetHacknetStartCommand();
-        try {
-            const terminal = vscode.window.createTerminal({
-                name: 'HacknetHotReplace',
-                cwd: hacknetStartCmd.folder
-            });
-            terminal.sendText(hacknetStartCmd.command);
-            terminal.show();
-        } catch (error) {
-            throw new Error(`启动Hacknet.exe失败: ${error}`);
-        }
-        const loadingId = ShowLoading('正在启动Hacknet.exe并等待热替换服务开启...');
-        await new Promise((resolve, reject) => {
-            let waitTimes = -1;
-            const checkInterval = setInterval(async () => {
-                waitTimes++;
-                const hotReplaceServerOnline = await CheckHotReplaceServerOnline();
-                if (hotReplaceServerOnline) {
-                    clearInterval(checkInterval);
-                    CloseLoading(loadingId);
-                    resolve(null);
-                    return;
-                }
-                if (waitTimes >= 30) {
-                    clearInterval(checkInterval);
-                    CloseLoading(loadingId);
-                    reject(new Error('热替换服务启动超时，可能的原因是您未安装或启用PathFinder插件'));
-                }
+    try {
+        InSendRequestPreCheck = true;
+        // 更新热替换动态库
+        await CheckAndUpdateHotReplaceDll();
 
-            }, 1000);
-        });
-        OutputManager.log('Hacknet热替换服务已启动');
+        // hacknet进程存在时，检查热替换服务是否运行
+        const hacknetProcessExist = await CheckHacknetProcessExist();
+        if (hacknetProcessExist) {
+            const hotReplaceServerOnline = await CheckHotReplaceServerOnline();
+            if (!hotReplaceServerOnline) {
+                throw new Error('热替换服务未运行，可能的原因是您未安装或启用PathFinder插件');
+            }
+        } else {
+            // 启动Hacknet.exe并等待热替换服务启动
+            const hacknetStartCmd = await GetHacknetStartCommand();
+            try {
+                const terminal = vscode.window.createTerminal({
+                    name: 'HacknetHotReplace',
+                    cwd: hacknetStartCmd.folder
+                });
+                terminal.sendText(hacknetStartCmd.command);
+                terminal.show();
+            } catch (error) {
+                throw new Error(`启动Hacknet.exe失败: ${error}`);
+            }
+
+            // 等待热替换服务启动
+            const loadingId = ShowLoading('正在启动Hacknet.exe并等待热替换服务开启...');
+            try {
+                await CommonUtils.IntervalCheck(() => CheckHotReplaceServerOnline(), 100, 30000);
+                OutputManager.log('Hacknet热替换服务已启动');
+            } catch (error) {
+                throw new Error('热替换服务启动超时，可能的原因是您未安装或启用PathFinder插件');
+            } finally  {
+                CloseLoading(loadingId);
+            }  
+        }
+    } finally {
+        InSendRequestPreCheck = false;
     }
 }
 

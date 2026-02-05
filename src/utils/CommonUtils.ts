@@ -277,3 +277,14 @@ export function WithTimeout<T>(promise: Promise<T>, timeoutMs: number, errorMess
   
   return Promise.race([promise, timeoutPromise]);
 }
+
+export function IntervalCheck(checkFunc: () => boolean | Promise<boolean>, intervalMs: number, timeoutMs: number, errorMessage = 'Operation timed out'): Promise<void> {
+  return WithTimeout(new Promise(async (resolve, reject) => {
+    const checkInterval = setInterval(async () => {
+      if (await checkFunc()) {
+        clearInterval(checkInterval);
+        resolve();
+      }
+    }, intervalMs);
+  }), timeoutMs, errorMessage);
+}

@@ -59,9 +59,9 @@ async function GetHacknetFolder(): Promise<string> {
     return folder;
 }
 
-async function CheckHacknetExeExist(): Promise<string | null> {
+async function GetHacknetExePath(): Promise<string | null> {
     const hacknetFolder = await GetHacknetFolder();
-    const hacknetExePath = path.join(hacknetFolder, `Hacknet${CommonUtils.IsWindows() ? '.exe' : ''}`);
+    const hacknetExePath = path.join(hacknetFolder, `${CommonUtils.IsWindows() ? 'Hacknet.exe' : 'StartPathfinder.sh'}`);
     return fs.existsSync(hacknetExePath) ? hacknetExePath : null;
 }
 
@@ -146,7 +146,7 @@ async function GetHacknetStartCommand():Promise<{folder: string, command: string
     const config = vscode.workspace.getConfiguration('hacknetextensionhelperconfig.hotReplace');
     let hacknetExePath = config.get<string>('hacknetExePath') || null;
     if (hacknetExePath === undefined || hacknetExePath?.toLowerCase() === 'auto') {
-        hacknetExePath = await CheckHacknetExeExist();
+        hacknetExePath = await GetHacknetExePath();
         if (!hacknetExePath) {
             throw new Error('未获取到Hacknet.exe路径，可能未安装Hacknet');
         }
@@ -165,7 +165,7 @@ async function GetHacknetStartCommand():Promise<{folder: string, command: string
     
     return {
         folder: dirname(hacknetExePath!),
-        command: `${CommonUtils.IsWindows() ? '.\\' : './'}${path.basename(hacknetExePath!)} ${args}`
+        command: `${CommonUtils.IsWindows() ? '.\\' : 'bash '}${path.basename(hacknetExePath!)} ${args}`
     };
 }
 

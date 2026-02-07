@@ -6,6 +6,7 @@ import { hacknetNodeHolder } from '../../worker/GlobalHacknetXmlNodeHolder';
 import { Node, XmlParser } from '../../parser/XmlParser';
 import { EventManager, EventType } from '../../event/EventManager';
 import { HacknetNodeType } from '../../worker/GlobalHacknetXmlNodeHolderDefine';
+import { HintFileExist } from '../../code-hint/CodeHint';
 
 
 class HacknetActionTestController extends vscode.Disposable {
@@ -21,6 +22,18 @@ class HacknetActionTestController extends vscode.Disposable {
         this.xmlParser = new XmlParser();
         this.setupTestDiscovery();
         EventManager.onEvent(EventType.HacknetNodeFileChange, this.handleXmlFileChanged.bind(this));
+        EventManager.onEvent(EventType.CodeHintParseCompleted, this.discoverActionTestsInWorkspace.bind(this));
+        EventManager.onEvent(EventType.CodeHintSourceChange, this.clearTestItems.bind(this));
+    }
+
+    private clearTestItems() {
+        const ids:string[] = [];
+        this.controller.items.forEach((item) => {
+            ids.push(item.id);
+        });
+        ids.forEach(id => {
+            this.controller.items.delete(id);
+        });
     }
 
     // 设置测试发现
@@ -186,6 +199,7 @@ class HacknetActionTestController extends vscode.Disposable {
 
      // 工作区测试发现
     private async discoverActionTestsInWorkspace() {
+        this.clearTestItems();
         for (const node of hacknetNodeHolder.GetActions()) {
             const actionTestItem = await this.parseActionFile(hacknetNodeHolder.GetNodeFilepath(node)!);
             if (actionTestItem) {
@@ -218,6 +232,10 @@ class HacknetActionTestController extends vscode.Disposable {
     }
 
     private async parseIncludeActionFilePath(actionPath:string, actionNodePatterm:string):Promise<vscode.TestItem | null> {
+        if (!HintFileExist()) {
+            return null;
+        }
+        
         if (!actionPath) {
             return null;
         }

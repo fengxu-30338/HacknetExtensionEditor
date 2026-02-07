@@ -8,7 +8,7 @@ const tokenDefine = {
     comment:            {match: /<!--(?:[^-]|-(?!->))*-->/s, lineBreaks: true},
     // 下面解析content时都可能为content
     attrValue:          {match: /(?:"[^"]*"|'[^']*')/, lineBreaks: true, value: (text:string) => text.substring(1, text.length - 1)},
-    attrName:           /[a-zA-Z_][\w\-]+/,
+    attrName:           /[a-zA-Z_][\w\-]*/,
     space:              {match: /[ \t\r\n]+/, lineBreaks: true },
     equal:              '=',
     content:            {match: /[^<>]+/, lineBreaks: true },

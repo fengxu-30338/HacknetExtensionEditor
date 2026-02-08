@@ -2,8 +2,6 @@
 
 > English Version：[README_en.md](README_en.md)
 
-
-
 下载地址：[Hacknet扩展编写插件](https://marketplace.visualstudio.com/items?itemName=fengxu30338.hacknetextensionhelper)
 
 1.创建编辑器提示文件
@@ -489,6 +487,7 @@ diag的取值为：
 6. 热重载Theme文件
 7. 热重载People文件（一次性所有People全部重新加载）
 8. 动态执行Action
+9. 打印当前游戏中的os信息与计算机信息
 
 使用方法：
 

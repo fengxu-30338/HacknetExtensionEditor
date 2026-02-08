@@ -146,3 +146,27 @@ export class ExecuteActionRequest extends HacknetHotReplaceRequest {
         super('ExecuteAction', Payload);
     }
 }
+
+/**
+ * 打印当前Os信息请求
+ */
+
+export class PrintOsInfoRequest extends HacknetHotReplaceRequest {
+    constructor() {
+        super('PrintOS', {});
+    }
+}
+
+export interface PrintComputerRequestPayload {
+    /** 计算机ID */
+    ComputerId: string;
+}
+
+/**
+ * 打印当前Computer信息请求
+ */
+export class PrintComputerInfoRequest extends HacknetHotReplaceRequest {
+    constructor(Payload: PrintComputerRequestPayload) {
+        super('PrintComputer', Payload);
+    }
+}

@@ -175,6 +175,9 @@ class HacknetNodeHolder {
     }
 
     private attachNodeFunc(rootNode: any, realNode: any) {
+        if (typeof realNode !== 'object' || realNode === null) {
+            return;
+        }
         realNode[this.FilePathSymbol] = rootNode[this.FilePathSymbol];
         realNode[this.RelativePathSymbol] = rootNode[this.RelativePathSymbol];
     }

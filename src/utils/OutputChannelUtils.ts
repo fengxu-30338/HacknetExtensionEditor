@@ -2,10 +2,10 @@ import * as vscode from 'vscode';
 
 class OutputManager {
     private static instance: OutputManager;
-    private outputChannel: vscode.OutputChannel;
+    private outputChannel: vscode.LogOutputChannel;
     
     private constructor(channelName: string) {
-        this.outputChannel = vscode.window.createOutputChannel(channelName);
+        this.outputChannel = vscode.window.createOutputChannel(channelName, {log: true});
     }
     
     public static getInstance(channelName: string = 'HacknetExtensionHelper'): OutputManager {
@@ -14,12 +14,26 @@ class OutputManager {
         }
         return OutputManager.instance;
     }
+
+    public debug(message: string, show: boolean = false): void {
+        const viewConfig = vscode.workspace.getConfiguration('hacknetextensionhelperconfig.viewer');
+        const showDebugMessage = viewConfig.get<boolean>('showDebugMessage') || false;
+        if (!showDebugMessage) {return;}
+
+        const timestamp = new Date().toLocaleTimeString();
+        console.log(`[${timestamp}] [DEBUG] ${message}`);
+        this.outputChannel.info(`${message}`);
+        
+        if (show) {
+            this.show();
+        }
+    }
     
     // 输出信息
     public log(message: string, show: boolean = false): void {
         const timestamp = new Date().toLocaleTimeString();
-        console.log(`[${timestamp}] ${message}`);
-        this.outputChannel.appendLine(`[${timestamp}] ${message}`);
+        console.log(`[${timestamp}] [INFO] ${message}`);
+        this.outputChannel.info(`${message}`);
         
         if (show) {
             this.show();
@@ -31,7 +45,7 @@ class OutputManager {
         const timestamp = new Date().toLocaleTimeString();
         const errorMessage = error instanceof Error ? error.message : String(error);
         console.error(`[${timestamp}] [ERROR] ${errorMessage}`);
-        this.outputChannel.appendLine(`[${timestamp}] [ERROR] ${errorMessage}`);
+        this.outputChannel.error(error);
         
         if (show) {
             this.show();
@@ -59,4 +73,8 @@ class OutputManager {
     }
 }
 
+// 导出实例
 export default OutputManager.getInstance();
+
+// 导出类型
+export { OutputManager };

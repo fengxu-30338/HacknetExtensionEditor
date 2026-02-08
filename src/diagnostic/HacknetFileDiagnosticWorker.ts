@@ -1106,6 +1106,9 @@ function GetDependencyFileType(nodeType: HacknetNodeType) {
 function AttachFuncToNodeHolder(req:DiagnosticRequest) { 
     const nodeHolder = req.nodeHolder;
     const attachNodeFunc = (rootNode:any, realNode:any) => {
+        if (typeof realNode !== 'object' || realNode === null) {
+            return;
+        }
         realNode[req.nodeHolder.FilePathSymbol] = rootNode[req.nodeHolder.FilePathSymbol];
         realNode[req.nodeHolder.RelativePathSymbol] = rootNode[req.nodeHolder.RelativePathSymbol];
     };

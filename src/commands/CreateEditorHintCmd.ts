@@ -117,12 +117,6 @@ export async function CreateHacknetEditorHintFileInWorkspaceRoot(context: vscode
         await vscode.workspace.fs.writeFile(filePath, Buffer.from(text.replace("<!-- %placeholder% -->", GetIncludeNodeFromXmlContent(oldFileContent))));
 
         if (notifyUser) {
-            // const document = await vscode.workspace.openTextDocument(filePath);
-            // await vscode.window.showTextDocument(document, {
-            //     preview: true,
-            //     preserveFocus: true,
-            //     viewColumn: vscode.ViewColumn.One
-            // });
             revealFileInExplorer(filePath.fsPath);
             vscode.window.showInformationMessage(`Hacknet-EditorHint Create Success`);
         }

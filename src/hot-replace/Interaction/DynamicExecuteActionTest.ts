@@ -307,6 +307,10 @@ class HacknetActionTestController extends vscode.Disposable {
                 curTestItem.children.add(item);
             });
 
+            if (level < nodePathArr.length && curTestItem.children.size <= 0) {
+                continue;
+            }
+
             result.push(curTestItem);
         }
         return result;

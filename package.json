@@ -2,7 +2,7 @@
   "name": "hacknetextensionhelper",
   "displayName": "HacknetExtensionHelper",
   "description": "hacknet extension write helper",
-  "version": "0.4.7",
+  "version": "0.4.8",
   "engines": {
     "vscode": "^1.103.0"
   },
@@ -195,6 +195,24 @@
           "dark": "resources/HotReplace/Icon/dark/ReloadFile.svg",
           "light": "resources/HotReplace/Icon/light/ReloadFile.svg"
         }
+      },
+      {
+        "command": "hacknetextensionhelper.HotReplace.PrintOsInfo",
+        "title": "打印Hacknet当前OS信息",
+        "category": "Hacknet HotReplace",
+        "icon": {
+          "dark": "resources/HotReplace/Icon/dark/OS.svg",
+          "light": "resources/HotReplace/Icon/light/OS.svg"
+        }
+      },
+      {
+        "command": "hacknetextensionhelper.HotReplace.PrintComputerInfo",
+        "title": "打印Hacknet当前Computer信息",
+        "category": "Hacknet HotReplace",
+        "icon": {
+          "dark": "resources/HotReplace/Icon/dark/Computer.svg",
+          "light": "resources/HotReplace/Icon/light/Computer.svg"
+        }
       }
     ],
     "keybindings": [
@@ -211,7 +229,7 @@
         "properties": {
           "hacknetextensionhelperconfig.hintFile.autoRefresh": {
             "type": "boolean",
-            "default": "true",
+            "default": true,
             "description": "监听提示文件改变后自动刷新提示内容"
           }
         }
@@ -221,8 +239,13 @@
         "properties": {
           "hacknetextensionhelperconfig.viewer.showTagDescInEditor": {
             "type": "boolean",
-            "default": "true",
+            "default": true,
             "description": "在编辑器中显示标签的作用描述"
+          },
+          "hacknetextensionhelperconfig.viewer.showDebugMessage": {
+            "type": "boolean",
+            "default": false,
+            "description": "是否在输出窗口显示调试信息"
           }
         }
       },
@@ -269,52 +292,62 @@
       "editor/title": [
         {
           "command": "hacknetextensionhelper.HotReplace.EnterExtension",
-          "group": "navigation@0",
+          "group": "navigation@200",
+          "when": "hacknetextensionhelper.HasCodeHintFile"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.PrintOsInfo",
+          "group": "navigation@201",
           "when": "hacknetextensionhelper.HasCodeHintFile"
         },
         {
           "command": "hacknetextensionhelper.HotReplace.HotReloadComputer",
-          "group": "navigation@1",
+          "group": "navigation@210",
           "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsComputer"
         },
         {
           "command": "hacknetextensionhelper.HotReplace.ConnectComputerAndGrantAdmin",
-          "group": "navigation@2",
+          "group": "navigation@211",
+          "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsComputer"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.PrintComputerInfo",
+          "group": "navigation@212",
           "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsComputer"
         },
         {
           "command": "hacknetextensionhelper.HotReplace.HotReloadMission",
-          "group": "navigation@3",
+          "group": "navigation@220",
           "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsMission"
         },
         {
           "command": "hacknetextensionhelper.HotReplace.HotReloadMissionAndClearOldAction",
-          "group": "navigation@4",
+          "group": "navigation@221",
           "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsMission"
         },
         {
           "command": "hacknetextensionhelper.HotReplace.HotReloadAction",
-          "group": "navigation@5",
+          "group": "navigation@230",
           "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsAction"
         },
         {
           "command": "hacknetextensionhelper.HotReplace.HotReloadActionAndClearOldAction",
-          "group": "navigation@6",
+          "group": "navigation@231",
           "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsAction"
         },
         {
           "command": "hacknetextensionhelper.HotReplace.HotReloadTheme",
-          "group": "navigation@7",
+          "group": "navigation@240",
           "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsTheme"
         },
         {
           "command": "hacknetextensionhelper.HotReplace.HotReloadFaction",
-          "group": "navigation@8",
+          "group": "navigation@250",
           "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsFaction"
         },
         {
           "command": "hacknetextensionhelper.HotReplace.HotReloadPeople",
-          "group": "navigation@9",
+          "group": "navigation@260",
           "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsPeople"
         }
       ],
@@ -328,52 +361,62 @@
       "hacknetextensionhelper/HotReplace":[
         {
           "command": "hacknetextensionhelper.HotReplace.EnterExtension",
-          "group": "navigation@0",
+          "group": "navigation@200",
+          "when": "hacknetextensionhelper.HasCodeHintFile"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.PrintOsInfo",
+          "group": "navigation@201",
           "when": "hacknetextensionhelper.HasCodeHintFile"
         },
         {
           "command": "hacknetextensionhelper.HotReplace.HotReloadComputer",
-          "group": "navigation@1",
+          "group": "navigation@210",
           "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsComputer"
         },
         {
           "command": "hacknetextensionhelper.HotReplace.ConnectComputerAndGrantAdmin",
-          "group": "navigation@2",
+          "group": "navigation@211",
+          "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsComputer"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.PrintComputerInfo",
+          "group": "navigation@212",
           "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsComputer"
         },
         {
           "command": "hacknetextensionhelper.HotReplace.HotReloadMission",
-          "group": "navigation@3",
+          "group": "navigation@220",
           "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsMission"
         },
         {
           "command": "hacknetextensionhelper.HotReplace.HotReloadMissionAndClearOldAction",
-          "group": "navigation@4",
+          "group": "navigation@221",
           "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsMission"
         },
         {
           "command": "hacknetextensionhelper.HotReplace.HotReloadAction",
-          "group": "navigation@5",
+          "group": "navigation@230",
           "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsAction"
         },
         {
           "command": "hacknetextensionhelper.HotReplace.HotReloadActionAndClearOldAction",
-          "group": "navigation@6",
+          "group": "navigation@231",
           "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsAction"
         },
         {
           "command": "hacknetextensionhelper.HotReplace.HotReloadTheme",
-          "group": "navigation@7",
+          "group": "navigation@240",
           "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsTheme"
         },
         {
           "command": "hacknetextensionhelper.HotReplace.HotReloadFaction",
-          "group": "navigation@8",
+          "group": "navigation@250",
           "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsFaction"
         },
         {
           "command": "hacknetextensionhelper.HotReplace.HotReloadPeople",
-          "group": "navigation@9",
+          "group": "navigation@260",
           "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsPeople"
         }
       ],
@@ -517,6 +560,10 @@
         },
         {
           "command": "hacknetextensionhelper.HotReplace.HotReloadPeople",
+          "when": "false"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.PrintOsInfo",
           "when": "false"
         }
       ]

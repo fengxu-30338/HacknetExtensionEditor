@@ -21,7 +21,7 @@ async function ExecHotReplaceCommandWrapper<T>(command: () => Promise<T>, title:
     });
 }
 
-function GetCurrentOpenFilePath() {
+function GetCurrentOpenFilePath():string {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
         throw new Error("当前没有打开的文件");
@@ -42,6 +42,23 @@ function GetCurrentOpenComputerId():string {
     } catch (error) {
         throw new Error("获取当前打开的计算机ID失败");
     }
+}
+
+async function ShowXmlDocument(content: string) {
+    // 将content中所有转义字符替换为实际xml字符
+    content = content.replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&apos;/g, "'");
+
+    const doc = await vscode.workspace.openTextDocument({
+        language: 'xml',
+        content: content,
+    });
+
+    await vscode.window.showTextDocument(doc, {
+        preview: true,
+        preserveFocus: true,
+        viewColumn: vscode.ViewColumn.One
+    });
 }
 
 
@@ -148,6 +165,30 @@ export function RegisterHotReplaceClientCommands() {
             ExecHotReplaceCommandWrapper(() => {
                 return HotReplaceClient.HotReloadPeople();
             }, "正在执行[重载所有People文件]指令...");
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('hacknetextensionhelper.HotReplace.PrintOsInfo', async () => {
+            const content = await ExecHotReplaceCommandWrapper(() => {
+                return HotReplaceClient.PrintOsInfo();
+            }, "正在执行[打印当前Os信息]指令...");
+            if (content) {
+                ShowXmlDocument(content);
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('hacknetextensionhelper.HotReplace.PrintComputerInfo', async () => {
+            const content = await ExecHotReplaceCommandWrapper(() => {
+                return HotReplaceClient.PrintComputerInfo({
+                    ComputerId: GetCurrentOpenComputerId(),
+                });
+            }, "正在执行[打印当前Computer信息]指令...");
+            if (content) {
+                ShowXmlDocument(content);
+            }
         })
     );
 }

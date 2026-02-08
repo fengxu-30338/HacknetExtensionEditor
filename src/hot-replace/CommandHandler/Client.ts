@@ -72,7 +72,7 @@ export async function SendRequest(request: HacknetHotReplaceRequest): Promise<Ha
     const HotReplaceServePort = await GetHotReplaceServerPort();
     return new Promise<HacknetHotReplaceResponse<any>>((resolve, reject) => {
         const msg = request.GetMessage();
-        OutputManager.log(`[HacknetHotReplaceClient] Message sent to ${HOST}:${HotReplaceServePort}, Content:\n${msg}`);
+        OutputManager.debug(`[HacknetHotReplaceClient] Message sent to ${HOST}:${HotReplaceServePort}, Content:\n${msg}`);
         client.send(msg, HotReplaceServePort, HOST, (err) => {
             if (err) {
                 console.error('Failed to send message:', err);
@@ -93,7 +93,7 @@ export async function SendRequest(request: HacknetHotReplaceRequest): Promise<Ha
 
 client.on('message', (msg, rinfo) => {
     const msgStr = msg.toString();
-    OutputManager.log(`[HacknetHotReplaceClient] Received message from ${rinfo.address}:${rinfo.port}, Content:\n${msgStr}`);
+    OutputManager.debug(`[HacknetHotReplaceClient] Received message from ${rinfo.address}:${rinfo.port}, Content:\n${msgStr}`);
     try {
         const response = new HacknetHotReplaceResponse(msgStr);
         const wrapper = RequestMap.get(response.MsgGuid);

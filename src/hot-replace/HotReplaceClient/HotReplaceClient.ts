@@ -311,6 +311,23 @@ class HotReplaceClient {
     public async ExecuteAction(reqPayload: HotReplaceRequest.ExecuteActionRequestPayload): Promise<void> {
         await this.CommonSendRequest(new HotReplaceRequest.ExecuteActionRequest(reqPayload));
     }
+
+    /**
+     * 打印当前Os信息
+     */
+    public async PrintOsInfo(): Promise<string> {
+        const res = await this.CommonSendRequest(new HotReplaceRequest.PrintOsInfoRequest());
+        return res.Payload as string;
+    }
+
+    /**
+     * 打印当前Computer信息
+     * @param reqPayload 打印Computer信息请求参数
+     */
+    public async PrintComputerInfo(reqPayload: HotReplaceRequest.PrintComputerRequestPayload): Promise<string> {
+        const res = await this.CommonSendRequest(new HotReplaceRequest.PrintComputerInfoRequest(reqPayload));
+        return res.Payload as string;
+    }
 }
 
 export default HotReplaceClient.getInstance();

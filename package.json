@@ -2,7 +2,7 @@
   "name": "hacknetextensionhelper",
   "displayName": "HacknetExtensionHelper",
   "description": "hacknet extension write helper",
-  "version": "0.4.8",
+  "version": "0.4.9",
   "engines": {
     "vscode": "^1.103.0"
   },

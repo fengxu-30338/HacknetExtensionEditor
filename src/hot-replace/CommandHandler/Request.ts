@@ -170,3 +170,16 @@ export class PrintComputerInfoRequest extends HacknetHotReplaceRequest {
         super('PrintComputer', Payload);
     }
 }
+
+export interface AnalysisDrawCallRequestPayload {
+    /** 查找类型 */
+    Type: 'text' | 'graphics';
+    /** 查找内容,Type=text时生效 */
+    Content: string;
+}
+
+export class AnalysisDrawCallRequest extends HacknetHotReplaceRequest {
+    constructor(Payload: AnalysisDrawCallRequestPayload) {
+        super('AnalysisDrawCall', Payload);
+    }
+}

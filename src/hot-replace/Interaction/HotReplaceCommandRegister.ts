@@ -61,6 +61,19 @@ async function ShowXmlDocument(content: string) {
     });
 }
 
+async function ShowTextDocument(content: string) {
+    const doc = await vscode.workspace.openTextDocument({
+        language: 'text',
+        content: content,
+    });
+
+    await vscode.window.showTextDocument(doc, {
+        preview: true,
+        preserveFocus: true,
+        viewColumn: vscode.ViewColumn.One
+    });
+}
+
 
 export function RegisterHotReplaceClientCommands() {
     const context = CommonUtils.GetExtensionContext();
@@ -188,6 +201,47 @@ export function RegisterHotReplaceClientCommands() {
             }, "正在执行[打印当前Computer信息]指令...");
             if (content) {
                 ShowXmlDocument(content);
+            }
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('hacknetextensionhelper.HotReplace.AnalysisDrawCall', async () => {
+            const analysisType = [
+                {
+                    label: 'text',
+                    description: '分析文本绘制调用',
+                },
+                {
+                    label: 'graphics',
+                    description: '分析图形绘制调用',
+                },
+            ];
+            const type = await vscode.window.showQuickPick(analysisType, {
+                placeHolder: '请选择分析类型',
+            });
+            if (!type) {
+                return;
+            }
+
+            let content = '';
+            if (type.label === 'text') {
+                content = await vscode.window.showInputBox({
+                    prompt: '请输入要查找的文本内容',
+                }) || '';
+                if (!content) {
+                    return;
+                }
+            }
+            vscode.window.showInformationMessage(`请在Hacknet中使用中键点击要分析的绘制调用的区域`);
+            const res = await ExecHotReplaceCommandWrapper(() => {
+                return HotReplaceClient.AnalysisDrawCall({
+                    Type: type.label as any,
+                    Content: content,
+                });
+            }, `正在执行[${type.description}]指令...`);
+            if (res) {
+                ShowTextDocument(res);
             }
         })
     );

@@ -232,9 +232,9 @@ class HotReplaceClient {
         return HotReplaceClient.Instance;
     }
 
-    private async CommonSendRequest<T extends HacknetHotReplaceRequest>(request: T): Promise<HacknetHotReplaceResponse<any>> {
+    private async CommonSendRequest<T extends HacknetHotReplaceRequest>(request: T, timeout: number = 30000): Promise<HacknetHotReplaceResponse<any>> {
         await RunHotReplaceCommandPreCheck();
-        const response = await HotReplaceClientUtil.SendRequest(request);
+        const response = await HotReplaceClientUtil.SendRequest(request, timeout);
         if (!response.Success) {
             throw new Error(`执行指令[${request.CommandType}]失败: ${response.ErrorMsg}`);
         }
@@ -326,6 +326,15 @@ class HotReplaceClient {
      */
     public async PrintComputerInfo(reqPayload: HotReplaceRequest.PrintComputerRequestPayload): Promise<string> {
         const res = await this.CommonSendRequest(new HotReplaceRequest.PrintComputerInfoRequest(reqPayload));
+        return res.Payload as string;
+    }
+
+    /**
+     * 分析绘制调用
+     * @param reqPayload 分析绘制调用请求参数
+     */
+    public async AnalysisDrawCall(reqPayload: HotReplaceRequest.AnalysisDrawCallRequestPayload): Promise<string> {
+        const res = await this.CommonSendRequest(new HotReplaceRequest.AnalysisDrawCallRequest(reqPayload), 40000);
         return res.Payload as string;
     }
 }

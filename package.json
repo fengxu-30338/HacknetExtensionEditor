@@ -2,7 +2,7 @@
   "name": "hacknetextensionhelper",
   "displayName": "HacknetExtensionHelper",
   "description": "hacknet extension write helper",
-  "version": "0.4.9",
+  "version": "0.5.0",
   "engines": {
     "vscode": "^1.103.0"
   },
@@ -213,6 +213,15 @@
           "dark": "resources/HotReplace/Icon/dark/Computer.svg",
           "light": "resources/HotReplace/Icon/light/Computer.svg"
         }
+      },
+      {
+        "command": "hacknetextensionhelper.HotReplace.AnalysisDrawCall",
+        "title": "分析Hacknet当前绘制调用",
+        "category": "Hacknet HotReplace",
+        "icon": {
+          "dark": "resources/HotReplace/Icon/dark/DrawCall.svg",
+          "light": "resources/HotReplace/Icon/light/DrawCall.svg"
+        }
       }
     ],
     "keybindings": [
@@ -301,6 +310,11 @@
           "when": "hacknetextensionhelper.HasCodeHintFile"
         },
         {
+          "command": "hacknetextensionhelper.HotReplace.AnalysisDrawCall",
+          "group": "navigation@202",
+          "when": "hacknetextensionhelper.HasCodeHintFile"
+        },
+        {
           "command": "hacknetextensionhelper.HotReplace.HotReloadComputer",
           "group": "navigation@210",
           "when": "hacknetextensionhelper.HasCodeHintFile && hacknetextensionhelper.CurrentIsComputer"
@@ -367,6 +381,11 @@
         {
           "command": "hacknetextensionhelper.HotReplace.PrintOsInfo",
           "group": "navigation@201",
+          "when": "hacknetextensionhelper.HasCodeHintFile"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.AnalysisDrawCall",
+          "group": "navigation@202",
           "when": "hacknetextensionhelper.HasCodeHintFile"
         },
         {
@@ -564,6 +583,10 @@
         },
         {
           "command": "hacknetextensionhelper.HotReplace.PrintOsInfo",
+          "when": "false"
+        },
+        {
+          "command": "hacknetextensionhelper.HotReplace.AnalysisDrawCall",
           "when": "false"
         }
       ]

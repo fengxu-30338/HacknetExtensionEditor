@@ -10,6 +10,7 @@ import os from 'os';
 interface RequestPromiseWrapper<T> {
     msgType: string;
     sendTime: number;
+    timeout: number;
     resolve: (response: HacknetHotReplaceResponse<T>) => void;
     reject: (error: Error) => void;
 }
@@ -32,7 +33,7 @@ export function InitUdpClient(localPort?: number) {
     Timer = setInterval(() => {
         const now = Date.now();
         for (const [msgGuid, wrapper] of RequestMap) {
-            if (now - wrapper.sendTime > 30000) {
+            if (now - wrapper.sendTime > wrapper.timeout) {
                 wrapper.reject(new Error(`Command[${wrapper.msgType}], Request timeout`));
                 RequestMap.delete(msgGuid);
             }
@@ -68,7 +69,7 @@ async function GetHotReplaceServerPort(): Promise<number> {
     }
 }
 
-export async function SendRequest(request: HacknetHotReplaceRequest): Promise<HacknetHotReplaceResponse<any>> {
+export async function SendRequest(request: HacknetHotReplaceRequest, timeout: number): Promise<HacknetHotReplaceResponse<any>> {
     const HotReplaceServePort = await GetHotReplaceServerPort();
     return new Promise<HacknetHotReplaceResponse<any>>((resolve, reject) => {
         const msg = request.GetMessage();
@@ -84,6 +85,7 @@ export async function SendRequest(request: HacknetHotReplaceRequest): Promise<Ha
                 sendTime: Date.now(),
                 resolve,
                 reject,
+                timeout,
             });
         });
     });

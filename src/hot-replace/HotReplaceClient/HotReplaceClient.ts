@@ -13,6 +13,7 @@ import os from 'os';
 import { HacknetHotReplaceRequest } from '../CommandHandler/Request';
 import * as HotReplaceRequest from '../CommandHandler/Request';
 import { HacknetHotReplaceResponse } from '../CommandHandler/Response';
+import { getAllProcessNames } from '../../utils/ProcessUtils';
 
 const execAsync = promisify(exec);
 let InSendRequestPreCheck = false;
@@ -59,17 +60,38 @@ async function GetHacknetFolder(): Promise<string> {
     return folder;
 }
 
-async function GetHacknetExePath(): Promise<string | null> {
-    const hacknetFolder = await GetHacknetFolder();
-    const hacknetExePath = path.join(hacknetFolder, `${CommonUtils.IsWindows() ? 'Hacknet.exe' : 'StartPathfinder.sh'}`);
-    return fs.existsSync(hacknetExePath) ? hacknetExePath : null;
+async function GetHacknetExePath(): Promise<string> {
+    const config = vscode.workspace.getConfiguration('hacknetextensionhelperconfig.hotReplace');
+    let hacknetExePath = config.get<string>('hacknetExePath') || null;
+    if (!hacknetExePath || hacknetExePath.toLowerCase() === 'auto') {
+        const hacknetFolder = await GetHacknetFolder();
+        const defaultName = CommonUtils.IsWindows() ? 'Hacknet.exe' : 'StartPathfinder.sh';
+        hacknetExePath = path.join(hacknetFolder, defaultName);
+        if (!hacknetExePath) {
+            throw new Error(`未获取到${defaultName}路径，可能未安装Hacknet`);
+        }
+    }
+    hacknetExePath = hacknetExePath.trim().replace(/^["']|["']$/g, '');
+
+    if (!fs.existsSync(hacknetExePath)) {
+        throw new Error(`Hacknet执行文件路径不存在: ${hacknetExePath}`);
+    }
+
+    // 检查该路径是否是一个文件
+    if (!fs.statSync(hacknetExePath).isFile()) {
+        throw new Error(`请指定一个Hacknet的执行文件路径，而非目录`);
+    }
+
+    return hacknetExePath;
 }
 
 async function CheckHacknetProcessExist(): Promise<boolean> {
     try {
-        const command = CommonUtils.IsWindows() ? `tasklist /FI "IMAGENAME eq Hacknet.exe"` : `ps -ef |  grep -E "Hacknet(Pathfinder)?.bin" | grep -v grep || true`;
-        const result = await execAsync(command);
-        return result.stdout.includes('Hacknet');
+        const hacknetExePath = await GetHacknetExePath();
+        const fileName = path.basename(hacknetExePath);
+        const processes = await getAllProcessNames();
+        const isExist = processes.some((process) => process === 'Hacknet.exe' || process === 'StartPathfinder.sh' || process === fileName);
+        return isExist;
     } catch (error) {
         throw new Error(`检查Hacknet进程失败: ${error}`);
     }
@@ -144,24 +166,7 @@ async function CheckAndUpdateHotReplaceDll() {
 
 async function GetHacknetStartCommand():Promise<{folder: string, command: string}> {
     const config = vscode.workspace.getConfiguration('hacknetextensionhelperconfig.hotReplace');
-    let hacknetExePath = config.get<string>('hacknetExePath') || null;
-    if (!hacknetExePath || hacknetExePath.toLowerCase() === 'auto') {
-        hacknetExePath = await GetHacknetExePath();
-        if (!hacknetExePath) {
-            throw new Error('未获取到Hacknet.exe路径，可能未安装Hacknet');
-        }
-    }
-    hacknetExePath = hacknetExePath.trim().replace(/^["']|["']$/g, '');
-
-    if (!fs.existsSync(hacknetExePath!)) {
-        throw new Error(`Hacknet执行文件路径不存在: ${hacknetExePath}`);
-    }
-
-    // 检查该路径是否是一个文件
-    if (!fs.statSync(hacknetExePath!).isFile()) {
-        throw new Error(`请指定一个Hacknet的执行文件路径，而非目录`);
-    }
-    
+    const hacknetExePath = await GetHacknetExePath();
     const args = config.get<string>('hacknetExeStartArgs') || '';
     
     return {
@@ -189,7 +194,7 @@ async function RunHotReplaceCommandPreCheck() {
         if (hacknetProcessExist) {
             const hotReplaceServerOnline = await CheckHotReplaceServerOnline();
             if (!hotReplaceServerOnline) {
-                throw new Error('热替换服务未运行，可能的原因是您未安装或启用PathFinder插件');
+                throw new Error('热替换服务未运行，可能的原因是您未安装或启用PathFinder插件,或系统配置的Hacknet非PathFinder版本，请自行在设置中配置PF版本的启动路径');
             }
         } else {
             // 启动Hacknet.exe并等待热替换服务启动

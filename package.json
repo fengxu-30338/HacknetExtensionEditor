@@ -2,7 +2,7 @@
   "name": "hacknetextensionhelper",
   "displayName": "HacknetExtensionHelper",
   "description": "hacknet extension write helper",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "engines": {
     "vscode": "^1.103.0"
   },
@@ -372,7 +372,7 @@
           "when": "hacknetextensionhelper.HasCodeHintFile"
         }
       ],
-      "hacknetextensionhelper/HotReplace":[
+      "hacknetextensionhelper/HotReplace": [
         {
           "command": "hacknetextensionhelper.HotReplace.EnterExtension",
           "group": "navigation@200",

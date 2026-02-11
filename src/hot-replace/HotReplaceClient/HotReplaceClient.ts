@@ -90,7 +90,7 @@ async function CheckHacknetProcessExist(): Promise<boolean> {
         const hacknetExePath = await GetHacknetExePath();
         const fileName = path.basename(hacknetExePath);
         const processes = await getAllProcessNames();
-        const isExist = processes.some((process) => process === 'Hacknet.exe' || process === 'StartPathfinder.sh' || process === fileName);
+        const isExist = processes.some((process) => process === 'Hacknet.exe' || process === 'HacknetPathfind' || process === fileName);
         return isExist;
     } catch (error) {
         throw new Error(`检查Hacknet进程失败: ${error}`);

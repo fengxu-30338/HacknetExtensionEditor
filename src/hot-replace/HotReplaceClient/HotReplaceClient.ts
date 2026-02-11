@@ -145,12 +145,13 @@ async function CheckAndUpdateHotReplaceDll() {
 async function GetHacknetStartCommand():Promise<{folder: string, command: string}> {
     const config = vscode.workspace.getConfiguration('hacknetextensionhelperconfig.hotReplace');
     let hacknetExePath = config.get<string>('hacknetExePath') || null;
-    if (hacknetExePath === undefined || hacknetExePath?.toLowerCase() === 'auto') {
+    if (!hacknetExePath || hacknetExePath.toLowerCase() === 'auto') {
         hacknetExePath = await GetHacknetExePath();
         if (!hacknetExePath) {
             throw new Error('未获取到Hacknet.exe路径，可能未安装Hacknet');
         }
     }
+    hacknetExePath = hacknetExePath.trim().replace(/^["']|["']$/g, '');
 
     if (!fs.existsSync(hacknetExePath!)) {
         throw new Error(`Hacknet执行文件路径不存在: ${hacknetExePath}`);

@@ -5,9 +5,6 @@
           allowsDefaultBootModule="true"
           type="empty" >
 
-<adminPass pass="donottrustanyone" />
-<account username="#PLAYERNAME#" password="makeitpossible" type="ADMIN" />
-
 <ports>21, 22, 25, 80</ports>
 
 <proxy time="-1" />

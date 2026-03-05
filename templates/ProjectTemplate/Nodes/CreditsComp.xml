@@ -6,9 +6,6 @@
           allowsDefaultBootModule="true"
           type="2" >
 
-<adminPass pass="Thanks" />
-<account username="#PLAYERNAME#" password="Thanks" type="ADMIN" />
-
 <ports>21, 22, 25, 80</ports>
 
 <proxy time="-1" />

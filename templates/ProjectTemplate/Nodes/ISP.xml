@@ -6,8 +6,6 @@
     security="0" 
     type="empty">
 
-    <adminPass pass="a561dwa5wd" />
-
     <portsForCrack val="3" />
     <ports>22, 21, 25</ports>
 
